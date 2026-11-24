@@ -47,13 +47,14 @@ export function Footer() {
         scrollTrigger: { trigger: scope, start: 'top 88%', once: true },
       });
 
-      // 3. Masked letter-by-letter rise from baseline
+      // 3. Staggered letter-by-letter rise without bottom overflow clipping
       gsap.from(scope.querySelectorAll('[data-footer-letter]'), {
-        yPercent: 105,
-        duration: 1.0,
+        y: 28,
+        opacity: 0,
+        duration: 0.9,
         stagger: 0.045,
         ease: 'power4.out',
-        clearProps: 'transform',
+        clearProps: 'transform,opacity',
         scrollTrigger: {
           trigger: scope.querySelector('[data-footer-mask]'),
           start: 'top 95%',
@@ -179,10 +180,10 @@ export function Footer() {
           <div
             data-footer-mask
             onPointerLeave={() => setHoveredIdx(null)}
-            className="overflow-hidden pt-4 pb-3"
+            className="overflow-visible pt-4"
           >
             <div
-              className="flex w-full items-end justify-between font-display leading-[1.08] font-extrabold tracking-tighter select-none"
+              className="flex w-full items-end justify-between pb-6 font-display leading-[1.15] font-extrabold tracking-tighter select-none"
               style={{ fontSize: 'clamp(2.05rem, 14.2cqw, 14.5rem)' }}
             >
               {WORDMARK_LETTERS.map((char, index) => {
@@ -199,16 +200,17 @@ export function Footer() {
                       style={{ transform: `translateY(${liftY})` }}
                     >
                       <span
-                        className="block bg-clip-text pb-1 text-transparent"
-                        style={{ backgroundImage: BASE_GRADIENT }}
+                        className="block bg-clip-text pb-3 text-transparent"
+                        style={{ backgroundImage: BASE_GRADIENT, WebkitBackgroundClip: 'text' }}
                       >
                         {char}
                       </span>
                       <span
                         data-footer-letter-sheen={index}
-                        className="pointer-events-none absolute inset-0 block bg-clip-text pb-1 text-transparent transition-opacity duration-300 ease-out"
+                        className="pointer-events-none absolute inset-0 block bg-clip-text pb-3 text-transparent transition-opacity duration-300 ease-out"
                         style={{
                           backgroundImage: SHEEN_GRADIENT,
+                          WebkitBackgroundClip: 'text',
                           opacity: sheenOpacity,
                         }}
                       >
@@ -222,7 +224,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-2 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 {SITE_META.name}</span>
           <nav aria-label="Footer chapters" className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {CHAPTERS.map((chapter, index) => (
