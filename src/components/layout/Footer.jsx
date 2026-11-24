@@ -1,39 +1,42 @@
-import { Fragment, useLayoutEffect, useRef } from 'react';
-import { ArrowUp } from 'lucide-react';
+import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { ArrowUp, Crosshair } from 'lucide-react';
 import { CHAPTERS, SITE_META } from '@data';
 import { useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
 
+const WORDMARK_LETTERS = 'BANGLADESH'.split('');
+
+const BASE_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 100%)';
+const SHEEN_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.22) 100%)';
+
 export function Footer() {
-  const { expoMode, setExpoMode } = useShowcase();
+  const { spots, expoMode, setExpoMode } = useShowcase();
+  const [hoveredIdx, setHoveredIdx] = useState(null);
   const footerRef = useRef(null);
   const backBtnRef = useRef(null);
-  const sweepStrokeRef = useRef(null);
-  const sweepFillRef = useRef(null);
 
   useLayoutEffect(() => {
     const mm = gsap.matchMedia(footerRef);
 
-    mm.add({ isDesktop: MEDIA.desktop, reduce: MEDIA.reduceMotion }, (ctx) => {
-      const { isDesktop, reduce } = ctx.conditions;
-      if (reduce) return;
+    mm.add({ reduce: MEDIA.reduceMotion }, (ctx) => {
+      if (ctx.conditions.reduce) return;
       const scope = footerRef.current;
 
-      // 1. Dark rounded footer card smooth entrance
+      // 1. Dark rounded footer card entrance
       gsap.fromTo(
         scope.querySelector('[data-footer-card]'),
-        { scale: 0.96, opacity: 0 },
+        { scale: 0.97, opacity: 0 },
         {
           scale: 1,
           opacity: 1,
-          duration: 0.95,
+          duration: 0.9,
           ease: 'power3.out',
           clearProps: 'transform',
           scrollTrigger: { trigger: scope, start: 'top 92%', once: true },
         }
       );
 
-      // 2. Stagger-reveal eyebrow, headline, description, and Back to top pill
+      // 2. Editorial header row stagger reveal
       gsap.from(scope.querySelectorAll('[data-footer-reveal]'), {
         y: 24,
         opacity: 0,
@@ -44,56 +47,41 @@ export function Footer() {
         scrollTrigger: { trigger: scope, start: 'top 88%', once: true },
       });
 
-      // 3. Responsive SVG BANGLADESH wordmark entrance
-      gsap.from(scope.querySelector('[data-footer-wordmark-stroke]'), {
-        y: 28,
-        opacity: 0,
-        duration: 0.95,
-        ease: 'expo.out',
+      // 3. Masked letter-by-letter rise from baseline
+      gsap.from(scope.querySelectorAll('[data-footer-letter]'), {
+        yPercent: 105,
+        duration: 1.0,
+        stagger: 0.045,
+        ease: 'power4.out',
         clearProps: 'transform',
-        scrollTrigger: { trigger: scope.querySelector('[data-footer-wordmark]'), start: 'top 96%', once: true },
+        scrollTrigger: {
+          trigger: scope.querySelector('[data-footer-mask]'),
+          start: 'top 95%',
+          once: true,
+        },
       });
 
-      // 4. Scroll-scrubbed subtle parallax on the BANGLADESH wordmark
-      const wordmark = scope.querySelector('[data-footer-wordmark]');
-      if (wordmark) {
-        gsap.fromTo(
-          wordmark,
-          isDesktop ? { x: -16, y: 16 } : { y: 12 },
-          {
-            ...(isDesktop ? { x: 8, y: 0 } : { y: 0 }),
-            ease: 'none',
-            scrollTrigger: {
-              trigger: scope,
-              start: 'top bottom',
-              end: 'bottom bottom',
-              scrub: 0.8,
-            },
-          }
-        );
-      }
-
-      // 5. Smooth, wide GSAP ambient light sweep across all 10 letters
-      const sweepNodes = [sweepStrokeRef.current, sweepFillRef.current].filter(Boolean);
-      if (sweepNodes.length > 0) {
-        gsap.fromTo(
-          sweepNodes,
-          { attr: { x1: -480, x2: 40 } },
-          {
-            attr: { x1: 960, x2: 1480 },
-            duration: 5.2,
-            ease: 'sine.inOut',
-            repeat: -1,
-            repeatDelay: 1.0,
-          }
-        );
-      }
+      // 4. Subtle scroll-scrubbed vertical parallax on the giant wordmark
+      gsap.fromTo(
+        scope.querySelector('[data-footer-wordmark]'),
+        { y: 22 },
+        {
+          y: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: scope,
+            start: 'top bottom',
+            end: 'bottom bottom',
+            scrub: 1,
+          },
+        }
+      );
     });
 
     return () => mm.revert();
   }, []);
 
-  // Subtle magnetic hover effect on the Back to top pill
+  // Magnetic hover pull on the Back to top pill
   const handleMagneticMove = (e) => {
     if (e.pointerType !== 'mouse') return;
     const btn = backBtnRef.current;
@@ -152,7 +140,18 @@ export function Footer() {
               A purely visual showcase and travel guide — no bookings, no pricing. Photography courtesy of Wikimedia
               Commons contributors; tap the credit on any photo for its source and license.
             </p>
+            <div data-footer-reveal className="mt-5">
+              <span className="inline-flex flex-wrap items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-[11px] font-medium tracking-wide text-white/70 tabular-nums">
+                <Crosshair className="h-3.5 w-3.5 shrink-0 text-white/50" strokeWidth={2} aria-hidden="true" />
+                <span>23.6850° N, 90.3563° E</span>
+                <span className="text-white/30" aria-hidden="true">
+                  ·
+                </span>
+                <span>{spots.length} Curated Destinations</span>
+              </span>
+            </div>
           </div>
+
           <div data-footer-reveal>
             <button
               ref={backBtnRef}
@@ -171,128 +170,59 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Full-width seamlessly illuminated BANGLADESH wordmark (zero rectangular cutout) */}
+        {/* Architectural solid-fill BANGLADESH display wordmark with masked letter rise & soft metallic hover */}
         <div
           data-footer-wordmark
           aria-hidden="true"
-          className="group/wordmark relative mt-10 w-full cursor-default select-none will-change-transform sm:mt-12"
+          className="mt-10 w-full [container-type:inline-size] will-change-transform sm:mt-12"
         >
-          <svg viewBox="0 0 1000 132" className="block h-auto w-full overflow-visible">
-            <defs>
-              {/* Oversized filter region ensures bloom feathers cleanly with zero box clipping */}
-              <filter id="footer-soft-bloom" x="-30%" y="-80%" width="160%" height="260%">
-                <feGaussianBlur stdDeviation="5" />
-              </filter>
-
-              {/* Seamless full-width emerald-to-slate stroke gradient across all 10 letters */}
-              <linearGradient id="footer-stroke-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(226, 232, 240, 0.58)" />
-                <stop offset="28%" stopColor="rgba(16, 185, 129, 0.82)" />
-                <stop offset="52%" stopColor="rgba(226, 232, 240, 0.78)" />
-                <stop offset="76%" stopColor="rgba(16, 185, 129, 0.72)" />
-                <stop offset="100%" stopColor="rgba(226, 232, 240, 0.58)" />
-              </linearGradient>
-
-              {/* Subtle ambient inner fill across all 10 letters */}
-              <linearGradient id="footer-fill-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(226, 232, 240, 0.06)" />
-                <stop offset="28%" stopColor="rgba(16, 185, 129, 0.14)" />
-                <stop offset="52%" stopColor="rgba(226, 232, 240, 0.10)" />
-                <stop offset="76%" stopColor="rgba(16, 185, 129, 0.12)" />
-                <stop offset="100%" stopColor="rgba(226, 232, 240, 0.06)" />
-              </linearGradient>
-
-              {/* Wide GSAP ambient light sweep gradients */}
-              <linearGradient
-                ref={sweepStrokeRef}
-                id="footer-sweep-stroke"
-                gradientUnits="userSpaceOnUse"
-                x1="-480"
-                y1="0"
-                x2="40"
-                y2="0"
-              >
-                <stop offset="0%" stopColor="rgba(16, 185, 129, 0)" />
-                <stop offset="28%" stopColor="rgba(16, 185, 129, 0.55)" />
-                <stop offset="50%" stopColor="rgba(248, 250, 252, 0.98)" />
-                <stop offset="72%" stopColor="rgba(16, 185, 129, 0.55)" />
-                <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
-              </linearGradient>
-
-              <linearGradient
-                ref={sweepFillRef}
-                id="footer-sweep-fill"
-                gradientUnits="userSpaceOnUse"
-                x1="-480"
-                y1="0"
-                x2="40"
-                y2="0"
-              >
-                <stop offset="0%" stopColor="rgba(16, 185, 129, 0)" />
-                <stop offset="35%" stopColor="rgba(16, 185, 129, 0.2)" />
-                <stop offset="50%" stopColor="rgba(248, 250, 252, 0.24)" />
-                <stop offset="65%" stopColor="rgba(16, 185, 129, 0.2)" />
-                <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
-              </linearGradient>
-            </defs>
-
-            {/* 1. Soft outer bloom */}
-            <text
-              x="500"
-              y="108"
-              textAnchor="middle"
-              textLength="990"
-              lengthAdjust="spacing"
-              fill="none"
-              stroke="url(#footer-stroke-grad)"
-              strokeWidth="4"
-              filter="url(#footer-soft-bloom)"
-              fontSize="132"
-              fontWeight="900"
-              className="font-display opacity-45 transition-opacity duration-500 group-hover/wordmark:opacity-75"
+          <div
+            data-footer-mask
+            onPointerLeave={() => setHoveredIdx(null)}
+            className="overflow-hidden pt-3 pb-1"
+          >
+            <div
+              className="flex w-full items-end justify-between font-display leading-[0.85] font-extrabold tracking-tighter select-none"
+              style={{ fontSize: 'clamp(2.05rem, 14.2cqw, 14.5rem)' }}
             >
-              BANGLADESH
-            </text>
+              {WORDMARK_LETTERS.map((char, index) => {
+                const dist = hoveredIdx === null ? null : Math.abs(hoveredIdx - index);
+                const liftY = dist === 0 ? '-4px' : dist === 1 ? '-1.5px' : '0px';
+                const sheenOpacity = dist === 0 ? 1 : dist === 1 ? 0.48 : 0;
 
-            {/* 2. Full-width illuminated base */}
-            <text
-              data-footer-wordmark-stroke
-              x="500"
-              y="108"
-              textAnchor="middle"
-              textLength="990"
-              lengthAdjust="spacing"
-              fill="url(#footer-fill-grad)"
-              stroke="url(#footer-stroke-grad)"
-              strokeWidth="1.6"
-              fontSize="132"
-              fontWeight="900"
-              className="font-display"
-            >
-              BANGLADESH
-            </text>
-
-            {/* 3. Wide GSAP ambient light sweep */}
-            <text
-              x="500"
-              y="108"
-              textAnchor="middle"
-              textLength="990"
-              lengthAdjust="spacing"
-              fill="url(#footer-sweep-fill)"
-              stroke="url(#footer-sweep-stroke)"
-              strokeWidth="2.2"
-              fontSize="132"
-              fontWeight="900"
-              pointerEvents="none"
-              className="font-display"
-            >
-              BANGLADESH
-            </text>
-          </svg>
+                return (
+                  <span key={index} data-footer-letter className="inline-block will-change-transform">
+                    <span
+                      data-footer-hover-letter={index}
+                      onPointerEnter={() => setHoveredIdx(index)}
+                      className="relative inline-block transition-transform duration-300 ease-out"
+                      style={{ transform: `translateY(${liftY})` }}
+                    >
+                      <span
+                        className="block bg-clip-text text-transparent"
+                        style={{ backgroundImage: BASE_GRADIENT }}
+                      >
+                        {char}
+                      </span>
+                      <span
+                        data-footer-letter-sheen={index}
+                        className="pointer-events-none absolute inset-0 block bg-clip-text text-transparent transition-opacity duration-300 ease-out"
+                        style={{
+                          backgroundImage: SHEEN_GRADIENT,
+                          opacity: sheenOpacity,
+                        }}
+                      >
+                        {char}
+                      </span>
+                    </span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 {SITE_META.name}</span>
           <nav aria-label="Footer chapters" className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {CHAPTERS.map((chapter, index) => (
