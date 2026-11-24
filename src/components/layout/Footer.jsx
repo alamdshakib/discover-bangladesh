@@ -7,8 +7,9 @@ import { gsap, MEDIA, scrollToTarget } from '@animations';
 export function Footer() {
   const { expoMode, setExpoMode } = useShowcase();
   const footerRef = useRef(null);
-  const wordmarkRef = useRef(null);
   const backBtnRef = useRef(null);
+  const sweepStrokeRef = useRef(null);
+  const sweepFillRef = useRef(null);
 
   useLayoutEffect(() => {
     const mm = gsap.matchMedia(footerRef);
@@ -71,24 +72,26 @@ export function Footer() {
           }
         );
       }
+
+      // 5. Smooth, wide GSAP ambient light sweep across all 10 letters
+      const sweepNodes = [sweepStrokeRef.current, sweepFillRef.current].filter(Boolean);
+      if (sweepNodes.length > 0) {
+        gsap.fromTo(
+          sweepNodes,
+          { attr: { x1: -480, x2: 40 } },
+          {
+            attr: { x1: 960, x2: 1480 },
+            duration: 5.2,
+            ease: 'sine.inOut',
+            repeat: -1,
+            repeatDelay: 1.0,
+          }
+        );
+      }
     });
 
     return () => mm.revert();
   }, []);
-
-  // Mouse-tracking radial spotlight on BANGLADESH wordmark (zero React re-renders)
-  const handleWordmarkMove = (e) => {
-    const el = wordmarkRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    el.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
-    el.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
-    el.style.setProperty('--spot-opacity', '1');
-  };
-
-  const handleWordmarkLeave = () => {
-    wordmarkRef.current?.style.setProperty('--spot-opacity', '0');
-  };
 
   // Subtle magnetic hover effect on the Back to top pill
   const handleMagneticMove = (e) => {
@@ -168,74 +171,120 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Full-width seamlessly illuminated BANGLADESH wordmark (zero rectangular cutout) */}
         <div
-          ref={wordmarkRef}
           data-footer-wordmark
-          onPointerMove={handleWordmarkMove}
-          onPointerLeave={handleWordmarkLeave}
           aria-hidden="true"
-          className="relative mt-10 w-full cursor-default select-none will-change-transform sm:mt-12"
-          style={{ '--spot-x': '50%', '--spot-y': '50%', '--spot-opacity': 0 }}
+          className="group/wordmark relative mt-10 w-full cursor-default select-none will-change-transform sm:mt-12"
         >
-          {/* Ambient radial halo behind the letters */}
-          <div
-            className="pointer-events-none absolute -inset-x-6 -inset-y-4 transition-opacity duration-300"
-            style={{
-              opacity: 'var(--spot-opacity)',
-              background:
-                'radial-gradient(280px circle at var(--spot-x) var(--spot-y), rgba(16, 185, 129, 0.16), rgba(226, 232, 240, 0.08) 45%, transparent 72%)',
-            }}
-          />
+          <svg viewBox="0 0 1000 132" className="block h-auto w-full overflow-visible">
+            <defs>
+              {/* Oversized filter region ensures bloom feathers cleanly with zero box clipping */}
+              <filter id="footer-soft-bloom" x="-30%" y="-80%" width="160%" height="260%">
+                <feGaussianBlur stdDeviation="5" />
+              </filter>
 
-          {/* Responsive base SVG wordmark — guaranteed 100% width fit with zero edge clipping */}
-          <svg viewBox="0 0 1000 124" className="block h-auto w-full">
+              {/* Seamless full-width emerald-to-slate stroke gradient across all 10 letters */}
+              <linearGradient id="footer-stroke-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(226, 232, 240, 0.58)" />
+                <stop offset="28%" stopColor="rgba(16, 185, 129, 0.82)" />
+                <stop offset="52%" stopColor="rgba(226, 232, 240, 0.78)" />
+                <stop offset="76%" stopColor="rgba(16, 185, 129, 0.72)" />
+                <stop offset="100%" stopColor="rgba(226, 232, 240, 0.58)" />
+              </linearGradient>
+
+              {/* Subtle ambient inner fill across all 10 letters */}
+              <linearGradient id="footer-fill-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(226, 232, 240, 0.06)" />
+                <stop offset="28%" stopColor="rgba(16, 185, 129, 0.14)" />
+                <stop offset="52%" stopColor="rgba(226, 232, 240, 0.10)" />
+                <stop offset="76%" stopColor="rgba(16, 185, 129, 0.12)" />
+                <stop offset="100%" stopColor="rgba(226, 232, 240, 0.06)" />
+              </linearGradient>
+
+              {/* Wide GSAP ambient light sweep gradients */}
+              <linearGradient
+                ref={sweepStrokeRef}
+                id="footer-sweep-stroke"
+                gradientUnits="userSpaceOnUse"
+                x1="-480"
+                y1="0"
+                x2="40"
+                y2="0"
+              >
+                <stop offset="0%" stopColor="rgba(16, 185, 129, 0)" />
+                <stop offset="28%" stopColor="rgba(16, 185, 129, 0.55)" />
+                <stop offset="50%" stopColor="rgba(248, 250, 252, 0.98)" />
+                <stop offset="72%" stopColor="rgba(16, 185, 129, 0.55)" />
+                <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
+              </linearGradient>
+
+              <linearGradient
+                ref={sweepFillRef}
+                id="footer-sweep-fill"
+                gradientUnits="userSpaceOnUse"
+                x1="-480"
+                y1="0"
+                x2="40"
+                y2="0"
+              >
+                <stop offset="0%" stopColor="rgba(16, 185, 129, 0)" />
+                <stop offset="35%" stopColor="rgba(16, 185, 129, 0.2)" />
+                <stop offset="50%" stopColor="rgba(248, 250, 252, 0.24)" />
+                <stop offset="65%" stopColor="rgba(16, 185, 129, 0.2)" />
+                <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
+              </linearGradient>
+            </defs>
+
+            {/* 1. Soft outer bloom */}
             <text
-              data-footer-wordmark-stroke
               x="500"
-              y="106"
+              y="108"
               textAnchor="middle"
               textLength="990"
               lengthAdjust="spacing"
               fill="none"
-              stroke="rgba(255, 255, 255, 0.22)"
-              strokeWidth="1.5"
+              stroke="url(#footer-stroke-grad)"
+              strokeWidth="4"
+              filter="url(#footer-soft-bloom)"
+              fontSize="132"
+              fontWeight="900"
+              className="font-display opacity-45 transition-opacity duration-500 group-hover/wordmark:opacity-75"
+            >
+              BANGLADESH
+            </text>
+
+            {/* 2. Full-width illuminated base */}
+            <text
+              data-footer-wordmark-stroke
+              x="500"
+              y="108"
+              textAnchor="middle"
+              textLength="990"
+              lengthAdjust="spacing"
+              fill="url(#footer-fill-grad)"
+              stroke="url(#footer-stroke-grad)"
+              strokeWidth="1.6"
               fontSize="132"
               fontWeight="900"
               className="font-display"
             >
               BANGLADESH
             </text>
-          </svg>
 
-          {/* Cursor-masked illuminated slate-white & emerald SVG outline layer */}
-          <svg
-            viewBox="0 0 1000 124"
-            className="pointer-events-none absolute inset-0 block h-auto w-full transition-opacity duration-300"
-            style={{
-              opacity: 'var(--spot-opacity)',
-              maskImage: 'radial-gradient(240px circle at var(--spot-x) var(--spot-y), black 0%, transparent 72%)',
-              WebkitMaskImage:
-                'radial-gradient(240px circle at var(--spot-x) var(--spot-y), black 0%, transparent 72%)',
-            }}
-          >
-            <defs>
-              <linearGradient id="footer-spotlight-fill" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(255, 255, 255, 0.25)" />
-                <stop offset="50%" stopColor="rgba(110, 231, 183, 0.45)" />
-                <stop offset="100%" stopColor="rgba(226, 232, 240, 0.35)" />
-              </linearGradient>
-            </defs>
+            {/* 3. Wide GSAP ambient light sweep */}
             <text
               x="500"
-              y="106"
+              y="108"
               textAnchor="middle"
               textLength="990"
               lengthAdjust="spacing"
-              fill="url(#footer-spotlight-fill)"
-              stroke="rgba(226, 232, 240, 0.92)"
-              strokeWidth="2"
+              fill="url(#footer-sweep-fill)"
+              stroke="url(#footer-sweep-stroke)"
+              strokeWidth="2.2"
               fontSize="132"
               fontWeight="900"
+              pointerEvents="none"
               className="font-display"
             >
               BANGLADESH
