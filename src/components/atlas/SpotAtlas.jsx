@@ -193,14 +193,18 @@ export function SpotAtlas() {
   const invScale = 1 / Math.sqrt(zoom);
 
   return (
-    <section id={SECTION_IDS.atlas} aria-labelledby="atlas-title" className="mt-24 scroll-mt-24 px-3 sm:mt-32 sm:px-5">
+    <section
+      id={SECTION_IDS.atlas}
+      aria-labelledby="atlas-title"
+      className="relative z-0 mt-24 scroll-mt-24 px-3 sm:mt-32 sm:px-5"
+    >
       <div className="mx-auto grid max-w-[1600px] gap-3 lg:grid-cols-[1fr_1.15fr] lg:gap-4">
-        <div className="flex flex-col rounded-4xl border border-line bg-card p-5 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-8 lg:p-10">
+        <div className="flex min-w-0 flex-col rounded-4xl border border-line bg-card p-5 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-8 lg:p-10">
           <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">Interactive Map</p>
           <h2
             id="atlas-title"
             className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"
-            style={{ fontSize: 'clamp(2.4rem, 5vw, 4.75rem)' }}
+            style={{ fontSize: 'clamp(2rem, 5vw, 4.75rem)' }}
           >
             Coordinate Atlas
           </h2>
@@ -269,59 +273,60 @@ export function SpotAtlas() {
           )}
         </div>
 
-        <div className="relative overflow-hidden rounded-4xl border border-line bg-[#eef2f6] p-3 transition-colors duration-300 dark:border-white/10 dark:bg-[#080D17] sm:p-5">
-          {/* Top-left floating division indicator */}
-          <div className="glass pointer-events-none absolute top-4 left-4 z-30 flex items-center gap-2 rounded-full border border-white/70 px-3.5 py-1.5 text-xs font-semibold text-ink shadow-sm transition-colors duration-300 dark:border-white/10 dark:text-slate-100 sm:top-6 sm:left-6">
-            <span className="h-2 w-2 rounded-full bg-bd-green dark:bg-emerald-400" aria-hidden="true" />
-            {hoveredDivision ? (
-              <span>
-                {hoveredDivision} Division · {divisionCounts[hoveredDivision] ?? 0}{' '}
-                {divisionCounts[hoveredDivision] === 1 ? 'spot' : 'spots'}
-              </span>
-            ) : (
-              <span>Bangladesh · 8 Divisions</span>
-            )}
-          </div>
+        <div className="relative min-w-0 overflow-hidden rounded-4xl border border-line bg-[#eef2f6] p-3 transition-colors duration-300 dark:border-white/10 dark:bg-[#080D17] sm:p-5">
+          {/* Non-overlapping top floating bar: division badge + zoom controls */}
+          <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex items-center justify-between gap-2 sm:inset-x-5 sm:top-5">
+            <div className="glass flex min-w-0 items-center gap-2 rounded-full border border-white/70 px-2.5 py-1.5 text-[11px] font-semibold text-ink shadow-sm transition-colors duration-300 dark:border-white/10 dark:text-slate-100 sm:px-3.5 sm:text-xs">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-bd-green dark:bg-emerald-400" aria-hidden="true" />
+              {hoveredDivision ? (
+                <span className="truncate">
+                  {hoveredDivision} Division · {divisionCounts[hoveredDivision] ?? 0}{' '}
+                  {divisionCounts[hoveredDivision] === 1 ? 'spot' : 'spots'}
+                </span>
+              ) : (
+                <span className="truncate">Bangladesh · 8 Divisions</span>
+              )}
+            </div>
 
-          {/* Top-right floating zoom controls */}
-          <div
-            data-map-control
-            role="group"
-            aria-label="Map zoom controls"
-            className="glass absolute top-4 right-4 z-30 flex items-center gap-1 rounded-full border border-white/70 p-1 shadow-sm transition-colors duration-300 dark:border-white/10 sm:top-6 sm:right-6"
-          >
-            <button
-              type="button"
-              onClick={zoomIn}
-              disabled={zoom >= MAX_ZOOM}
-              aria-label="Zoom in"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10"
+            <div
+              data-map-control
+              role="group"
+              aria-label="Map zoom controls"
+              className="glass pointer-events-auto flex shrink-0 items-center gap-0.5 rounded-full border border-white/70 p-1 shadow-sm transition-colors duration-300 dark:border-white/10 sm:gap-1"
             >
-              <Plus className="h-4 w-4" strokeWidth={2.2} />
-            </button>
-            <button
-              type="button"
-              onClick={zoomOut}
-              disabled={zoom <= MIN_ZOOM}
-              aria-label="Zoom out"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10"
-            >
-              <Minus className="h-4 w-4" strokeWidth={2.2} />
-            </button>
-            {zoom > 1 && (
-              <span className="px-1.5 text-[11px] font-bold text-ink-soft tabular-nums dark:text-slate-300">
-                {zoom.toFixed(1)}×
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={resetView}
-              disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
-              aria-label="Reset map zoom"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10"
-            >
-              <RotateCcw className="h-3.5 w-3.5" strokeWidth={2.2} />
-            </button>
+              <button
+                type="button"
+                onClick={zoomIn}
+                disabled={zoom >= MAX_ZOOM}
+                aria-label="Zoom in"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10 sm:h-8 sm:w-8"
+              >
+                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.2} />
+              </button>
+              <button
+                type="button"
+                onClick={zoomOut}
+                disabled={zoom <= MIN_ZOOM}
+                aria-label="Zoom out"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10 sm:h-8 sm:w-8"
+              >
+                <Minus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.2} />
+              </button>
+              {zoom > 1 && (
+                <span className="px-1 text-[10px] font-bold text-ink-soft tabular-nums dark:text-slate-300 sm:px-1.5 sm:text-[11px]">
+                  {zoom.toFixed(1)}×
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={resetView}
+                disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
+                aria-label="Reset map zoom"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10 sm:h-8 sm:w-8"
+              >
+                <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.2} />
+              </button>
+            </div>
           </div>
 
           <div
@@ -338,7 +343,7 @@ export function SpotAtlas() {
               viewBox={`0 0 ${SVG_W} ${SVG_H}`}
               role="img"
               aria-label="Interactive vector map of Bangladesh showing 8 divisions and 24 tourist destinations"
-              className="h-full w-full overflow-visible"
+              className="h-full w-full overflow-hidden"
             >
               <defs>
                 <filter id="bd-land-shadow" x="-10%" y="-10%" width="120%" height="120%">

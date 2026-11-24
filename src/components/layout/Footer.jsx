@@ -4,8 +4,6 @@ import { CHAPTERS, SITE_META } from '@data';
 import { useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
 
-const WORDMARK_LETTERS = 'BANGLADESH'.split('');
-
 export function Footer() {
   const { expoMode, setExpoMode } = useShowcase();
   const footerRef = useRef(null);
@@ -45,12 +43,11 @@ export function Footer() {
         scrollTrigger: { trigger: scope, start: 'top 88%', once: true },
       });
 
-      // 3. Giant BANGLADESH letter-stagger reveal
-      gsap.from(scope.querySelectorAll('[data-footer-letter]'), {
-        yPercent: 40,
+      // 3. Responsive SVG BANGLADESH wordmark entrance
+      gsap.from(scope.querySelector('[data-footer-wordmark-stroke]'), {
+        y: 28,
         opacity: 0,
-        duration: 0.9,
-        stagger: 0.032,
+        duration: 0.95,
         ease: 'expo.out',
         clearProps: 'transform',
         scrollTrigger: { trigger: scope.querySelector('[data-footer-wordmark]'), start: 'top 96%', once: true },
@@ -61,9 +58,9 @@ export function Footer() {
       if (wordmark) {
         gsap.fromTo(
           wordmark,
-          isDesktop ? { x: -24, y: 18 } : { y: 12 },
+          isDesktop ? { x: -16, y: 16 } : { y: 12 },
           {
-            ...(isDesktop ? { x: 10, y: 0 } : { y: 0 }),
+            ...(isDesktop ? { x: 8, y: 0 } : { y: 0 }),
             ease: 'none',
             scrollTrigger: {
               trigger: scope,
@@ -132,7 +129,7 @@ export function Footer() {
   };
 
   return (
-    <footer ref={footerRef} className="mt-24 px-3 pb-3 sm:mt-32 sm:px-5 sm:pb-5">
+    <footer ref={footerRef} className="relative z-0 mt-24 px-3 pb-3 sm:mt-32 sm:px-5 sm:pb-5">
       <div
         data-footer-card
         className="mx-auto max-w-[1600px] overflow-hidden rounded-4xl border border-transparent bg-ink px-5 pt-10 pb-6 text-white transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#131C2E] sm:px-10 sm:pt-14 lg:px-14"
@@ -177,7 +174,7 @@ export function Footer() {
           onPointerMove={handleWordmarkMove}
           onPointerLeave={handleWordmarkLeave}
           aria-hidden="true"
-          className="relative mt-12 cursor-default select-none will-change-transform"
+          className="relative mt-10 w-full cursor-default select-none will-change-transform sm:mt-12"
           style={{ '--spot-x': '50%', '--spot-y': '50%', '--spot-opacity': 0 }}
         >
           {/* Ambient radial halo behind the letters */}
@@ -190,35 +187,60 @@ export function Footer() {
             }}
           />
 
-          {/* Base outlined BANGLADESH wordmark */}
-          <p
-            className="relative font-display leading-[0.8] font-black tracking-[-0.06em] whitespace-nowrap text-transparent [-webkit-text-stroke:1px_rgb(255_255_255/0.22)]"
-            style={{ fontSize: 'clamp(2.4rem, 12.6vw, 14.5rem)' }}
-          >
-            {WORDMARK_LETTERS.map((char, i) => (
-              <span key={`base-${i}`} data-footer-letter className="inline-block">
-                {char}
-              </span>
-            ))}
-          </p>
+          {/* Responsive base SVG wordmark — guaranteed 100% width fit with zero edge clipping */}
+          <svg viewBox="0 0 1000 124" className="block h-auto w-full">
+            <text
+              data-footer-wordmark-stroke
+              x="500"
+              y="106"
+              textAnchor="middle"
+              textLength="990"
+              lengthAdjust="spacing"
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.22)"
+              strokeWidth="1.5"
+              fontSize="132"
+              fontWeight="900"
+              className="font-display"
+            >
+              BANGLADESH
+            </text>
+          </svg>
 
-          {/* Cursor-masked illuminated slate-white & emerald outline layer */}
-          <p
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/30 via-emerald-300/45 to-slate-200/35 bg-clip-text font-display leading-[0.8] font-black tracking-[-0.06em] whitespace-nowrap text-transparent transition-opacity duration-300 [-webkit-text-stroke:1.5px_rgb(226_232_240/0.92)]"
+          {/* Cursor-masked illuminated slate-white & emerald SVG outline layer */}
+          <svg
+            viewBox="0 0 1000 124"
+            className="pointer-events-none absolute inset-0 block h-auto w-full transition-opacity duration-300"
             style={{
-              fontSize: 'clamp(2.4rem, 12.6vw, 14.5rem)',
               opacity: 'var(--spot-opacity)',
               maskImage: 'radial-gradient(240px circle at var(--spot-x) var(--spot-y), black 0%, transparent 72%)',
               WebkitMaskImage:
                 'radial-gradient(240px circle at var(--spot-x) var(--spot-y), black 0%, transparent 72%)',
             }}
           >
-            {WORDMARK_LETTERS.map((char, i) => (
-              <span key={`glow-${i}`} data-footer-letter className="inline-block">
-                {char}
-              </span>
-            ))}
-          </p>
+            <defs>
+              <linearGradient id="footer-spotlight-fill" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(255, 255, 255, 0.25)" />
+                <stop offset="50%" stopColor="rgba(110, 231, 183, 0.45)" />
+                <stop offset="100%" stopColor="rgba(226, 232, 240, 0.35)" />
+              </linearGradient>
+            </defs>
+            <text
+              x="500"
+              y="106"
+              textAnchor="middle"
+              textLength="990"
+              lengthAdjust="spacing"
+              fill="url(#footer-spotlight-fill)"
+              stroke="rgba(226, 232, 240, 0.92)"
+              strokeWidth="2"
+              fontSize="132"
+              fontWeight="900"
+              className="font-display"
+            >
+              BANGLADESH
+            </text>
+          </svg>
         </div>
 
         <div className="mt-6 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">

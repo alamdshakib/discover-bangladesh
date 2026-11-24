@@ -16,8 +16,8 @@ export function ThemeToggle({ className = '', showLabel = false }) {
       aria-pressed={isDark}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className={`group inline-flex h-10 items-center justify-center gap-2 rounded-full border border-line bg-white/90 text-xs font-semibold tracking-wide text-ink transition-colors duration-300 hover:bg-white active:scale-95 dark:border-white/15 dark:bg-white/10 dark:text-amber-300 dark:hover:bg-white/15 ${
-        showLabel ? 'px-3.5' : 'w-10 px-0 sm:w-auto sm:px-3.5'
+      className={`group inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-line bg-white/90 text-xs font-semibold tracking-wide text-ink transition-colors duration-300 hover:bg-white active:scale-95 dark:border-white/15 dark:bg-white/10 dark:text-amber-300 dark:hover:bg-white/15 ${
+        showLabel ? 'h-10 px-3.5' : 'h-9 w-9 px-0 sm:h-10 sm:w-auto sm:px-3.5'
       } ${className}`}
     >
       <span className="relative flex h-4 w-4 items-center justify-center">

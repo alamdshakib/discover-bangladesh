@@ -89,13 +89,13 @@ export function Hero() {
           <span
             data-hero-reveal
             className="block leading-[0.88] font-black tracking-[-0.06em]"
-            style={{ fontSize: 'clamp(3.4rem, 14.5vw, 14.5rem)' }}
+            style={{ fontSize: 'clamp(2.85rem, 13.8vw, 14.5rem)' }}
           >
             DISCOVER
           </span>
           <span
             data-hero-reveal
-            className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.45em] text-mist transition-colors duration-300 dark:text-slate-400"
+            className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.32em] text-mist transition-colors duration-300 dark:text-slate-400 sm:tracking-[0.45em]"
             style={{ fontSize: 'clamp(0.8rem, 1.55vw, 1.5rem)' }}
           >
             <span className="h-px w-8 bg-mist dark:bg-slate-600 sm:w-12" aria-hidden="true" />
@@ -151,11 +151,11 @@ export function Hero() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2.5 sm:gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => scrollToTarget(`#${SECTION_IDS.showcase}`)}
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-ink transition hover:bg-canvas active:scale-95"
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-xs font-semibold text-ink transition hover:bg-canvas active:scale-95 sm:h-12 sm:px-6 sm:text-sm"
               >
                 Explore Destinations
                 <ArrowDownRight className="h-4 w-4" strokeWidth={2.2} />
@@ -163,7 +163,7 @@ export function Hero() {
               <button
                 type="button"
                 onClick={() => scrollToTarget(`#${SECTION_IDS.atlas}`)}
-                className="glass-dark inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:bg-ink active:scale-95"
+                className="glass-dark inline-flex h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-xs font-semibold text-white transition hover:bg-ink active:scale-95 sm:h-12 sm:px-6 sm:text-sm"
               >
                 <Map className="h-4 w-4" strokeWidth={2} />
                 Interactive Map

@@ -70,7 +70,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
               onClick={() => setActive(i)}
               aria-label={`Show photo ${i + 1} of ${spot.name}`}
               aria-pressed={i === active}
-              className={`h-9 w-9 overflow-hidden rounded-full transition active:scale-95 sm:h-10 sm:w-10 ${
+              className={`h-8 w-8 overflow-hidden rounded-full transition active:scale-95 sm:h-10 sm:w-10 ${
                 i === active
                   ? 'ring-2 ring-ink ring-offset-1 ring-offset-white dark:ring-white dark:ring-offset-[#131C2E]'
                   : 'opacity-75 hover:opacity-100'

@@ -27,18 +27,18 @@ export function ChapterHeader({ chapter, count, coverUrl }) {
       </div>
 
       <div className="mt-8 flex flex-col gap-6 lg:mt-12 lg:flex-row lg:items-end lg:justify-between">
-        <h2 className="flex items-end gap-3 font-display sm:gap-5">
+        <h2 className="flex items-end gap-2.5 font-display sm:gap-5">
           <span
             data-chapter-number
             className="leading-[0.8] font-black tracking-[-0.06em] text-transparent [-webkit-text-stroke:1.5px_rgb(255_255_255/0.55)]"
-            style={{ fontSize: 'clamp(3.2rem, 10vw, 9.5rem)' }}
+            style={{ fontSize: 'clamp(2.5rem, 9.5vw, 9.5rem)' }}
           >
             {chapter.number}
           </span>
           <span
             data-chapter-title
             className="leading-[0.8] font-black tracking-[-0.06em]"
-            style={{ fontSize: 'clamp(3.2rem, 10vw, 9.5rem)' }}
+            style={{ fontSize: 'clamp(2.5rem, 9.5vw, 9.5rem)' }}
           >
             {chapter.title}
           </span>

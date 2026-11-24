@@ -9,7 +9,7 @@ export default function App() {
   return (
     <ShowcaseProvider>
       <Navbar />
-      <main>
+      <main className="relative z-0">
         <HomePage />
       </main>
       <Footer />
