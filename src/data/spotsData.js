@@ -1,5 +1,7 @@
 export const SPOT_CATEGORIES = ['Hills', 'Sea', 'Forest', 'Heritage'];
 
+export const SEASON_TAGS = ['Winter', 'Monsoon', 'Year-Round'];
+
 export const BANGLADESH_DIVISIONS = [
   'Dhaka',
   'Chattogram',
@@ -22,6 +24,7 @@ export const spotsData = [
     description:
       "Stretching roughly 120 kilometers along Bangladesh's southeastern coast, Cox's Bazar is celebrated as the world's longest unbroken natural sandy sea beach. Framed by rolling green hills on one side and rhythmic Bay of Bengal surf on the other, its coastline shifts from bustling Laboni and Sugandha shores to the tranquil coral-strewn sands of Inani and the dramatic cliffs of Himchari along Marine Drive.",
     bestTime: 'November to March (cool coastal breeze, clear skies, calm sea)',
+    seasons: ['Winter'],
     howToGo:
       "Fly directly from Dhaka to Cox's Bazar Airport in under an hour, or take an overnight highway coach or Cox's Bazar Express intercity train from Dhaka and Chattogram.",
     highlights: [
@@ -51,6 +54,7 @@ export const spotsData = [
       'Known poetically as the Queen of Hills and the Roof of Rangamati, Sajek Valley sits nearly 1,800 feet above sea level along the lush eastern ridges bordering Mizoram. Mornings open above a drifting ocean of white clouds that weave through bamboo cottages, Ruilui and Konglak indigenous villages, and layered blue mountain horizons.',
     bestTime:
       'August to February (monsoon brings dramatic rolling clouds; winter offers crisp golden sunrises)',
+    seasons: ['Monsoon', 'Winter'],
     howToGo:
       'Travel by overnight bus from Dhaka or Chattogram to Khagrachhari town, then ride a Chander Gari (open-top hill jeep) via Dighinala and Baghaihat under scheduled highland escort timings.',
     highlights: [
@@ -80,6 +84,7 @@ export const spotsData = [
       'Where the mighty Padma, Brahmaputra, and Meghna rivers dissolve into the Bay of Bengal, the Sundarbans forms a labyrinth of tidal creeks, mudflats, and towering sundari and keora mangroves. Home to the elusive Royal Bengal Tiger, spotted chital deer, estuarine crocodiles, and Irrawaddy dolphins, this UNESCO World Heritage Site pulses with ancient estuarine silence.',
     bestTime:
       'November to February (pleasant winter temperatures, calm tidal rivers, peak wildlife sightings)',
+    seasons: ['Winter'],
     howToGo:
       'Reach Khulna or Mongla from Dhaka via highway over the Padma Bridge, by intercity train to Khulna, or by flight to Jashore Airport, then board an authorized forest vessel into the reserve with Forest Department permits.',
     highlights: [
@@ -109,6 +114,7 @@ export const spotsData = [
       'Tucked beside the Goain River in Gowainghat, Ratargul is Bangladesh’s iconic freshwater swamp forest. During the monsoon months, hill waters from Meghalaya flood the forest floor up to twenty feet deep, transforming the woodland into a mirror-like labyrinth where wooden country boats glide quietly beneath an unbroken green canopy.',
     bestTime:
       'June to October (peak monsoon submergence allows full exploration by wooden country boat)',
+    seasons: ['Monsoon'],
     howToGo:
       'Travel to Sylhet by train, bus, or flight from Dhaka, then drive about one hour north via Airport Road and Dhopagul to Motorghat or Chourangi Ghat to board a hand-rowed wooden dinghy.',
     highlights: [
@@ -138,6 +144,7 @@ export const spotsData = [
       "Lying at the southernmost tip of Bangladesh in the northeastern Bay of Bengal, Saint Martin's Island is a tiny palm-fringed coral sanctuary encircled by translucent turquoise shallows. Known locally as Narikel Jinjira (Coconut Island), its quiet cycling lanes, rocky tidal pools, and southern islet of Chera Dwip offer a rare coastal rhythm far from mainland bustle.",
     bestTime:
       'November to February (calm seas permit seasonal vessel crossings and crystal-clear water)',
+    seasons: ['Winter'],
     howToGo:
       "Travel from Dhaka or Chattogram to Cox's Bazar or Teknaf, then take an authorized seasonal tourist vessel across the Naf River estuary and open bay to the island jetty.",
     highlights: [
@@ -167,6 +174,7 @@ export const spotsData = [
       'Carved along the wild Remakri Canal—a tributary of the Sangu River—Nafakhum is among the largest and most powerful waterfalls in Bangladesh by water volume. Reaching it is half the legend: a cinematic journey by longtail wooden boat through towering stone gorges at Raja Pathor followed by a barefoot stream trek across mossy boulders and Marma hill hamlets.',
     bestTime:
       'September to December (late monsoon and autumn bring strong cascades with safe, clear trekking trails)',
+    seasons: ['Monsoon'],
     howToGo:
       'Take an overnight bus from Dhaka to Bandarban town, continue via winding hill highway to Thanchi, register with a certified local guide, boat upriver along the Sangu to Remakri, and trek roughly two to three hours to Nafakhum.',
     highlights: [
@@ -196,6 +204,7 @@ export const spotsData = [
       'Known historically as Somapura Mahavihara, this monumental UNESCO World Heritage monastery was built under the Pala Emperor Dharmapala in the late eighth century. Spanning 27 acres with 177 monastic cells framing a colossal cruciform central stupa adorned with thousands of sculpted terracotta plaques, it once served as one of Asia’s foremost centers of Buddhist scholarship.',
     bestTime:
       'October to March (dry, mild North Bengal weather ideal for walking the open archaeological grounds)',
+    seasons: ['Winter'],
     howToGo:
       'Take an intercity train from Dhaka to Jamalganj or Joypurhat station, or travel by road to Naogaon town, then continue by local transport to Paharpur village in Badalgachhi Upazila.',
     highlights: [
@@ -225,6 +234,7 @@ export const spotsData = [
       'Standing peacefully amid the dense historic lanes of Old Dhaka near the Buriganga River, Lalbagh Fort was begun in 1678 by Prince Muhammad Azam and later overseen by Subahdar Shaista Khan. Though never completed after the tragic passing of Shaista Khan’s daughter Pari Bibi, its symmetrical Mughal gardens, marble-and-basalt mausoleum, Diwan-i-Am audience hall, and three-domed mosque preserve Dhaka’s imperial grace.',
     bestTime:
       'November to February (crisp winter mornings and late afternoons cast warm light across the sandstone arches)',
+    seasons: ['Year-Round'],
     howToGo:
       'Located in Old Dhaka (Lalbagh Road); easily reached from central Dhaka via rickshaw, CNG auto-rickshaw, car, or Dhaka Metro Rail to Dhaka University station followed by a short ride into Old Dhaka.',
     highlights: [
@@ -254,6 +264,7 @@ export const spotsData = [
       'Set along the northern frontier of Gowainghat where several layers of the Khasi-Jaintia hills converge into a dramatic natural amphitheater, Bichanakandi is celebrated for its broad beds of rounded river pebbles washed by crystal-clear mountain water. Mist drapes the sheer green escarpments overhead while shallow streams ripple lazily toward the Piyain River.',
     bestTime:
       'June to October (monsoon swells the mountain streams and waterfalls; dry season reveals vast stone plains)',
+    seasons: ['Monsoon'],
     howToGo:
       'From Sylhet city (Ambarkhana), travel north by car or CNG auto-rickshaw to Hadarpar Ghat via Airport Road and Salutikor, then glide upstream by engine boat to the Bichanakandi stone beds.',
     highlights: [
@@ -283,6 +294,7 @@ export const spotsData = [
       'Recognized internationally as a Ramsar Wetland of Global Importance, Tanguar Haor spans nearly 100 square kilometers of interconnected beels, swamp forests, and floating villages beneath the Meghalaya foothills. In monsoon, it transforms into a serene inland sea drifted across by wooden houseboats; in winter, receding waters welcome hundreds of thousands of migratory birds.',
     bestTime:
       'July to September for monsoon houseboat voyages; December to February for migratory birdwatching',
+    seasons: ['Monsoon', 'Winter'],
     howToGo:
       'Travel from Dhaka to Sunamganj town by overnight bus (or via Sylhet), then cross the Surma River and proceed to Tahirpur Ghat to embark on a wooden haor houseboat.',
     highlights: [
@@ -312,6 +324,7 @@ export const spotsData = [
       'Rising roughly 2,200 feet above sea level along the scenic Bandarban–Thanchi ridge road, Nilgiri offers one of the most commanding high-altitude vistas in Bangladesh. As mist curls directly across the stone terraces, visitors watch the Sangu River snake far below through undisturbed Chittagong Hill Tracts ridges and Mro hill settlements.',
     bestTime:
       'July to February (monsoon brings dramatic clouds rolling across the peak; winter unveils crisp multi-layered horizons)',
+    seasons: ['Monsoon', 'Winter'],
     howToGo:
       'Take an overnight bus from Dhaka or Chattogram to Bandarban town, then hire a Chander Gari or 4WD jeep for the dramatic two-hour ridge climb via Chimbuk Hill and Shoilo Propat.',
     highlights: [
@@ -341,6 +354,7 @@ export const spotsData = [
       'Known nationwide as the Tea Capital of Bangladesh, Sreemangal unfolds across undulating hills blanketed in meticulously manicured emerald tea bushes shaded by tall albizia trees. Beyond the century-old estates lie the semi-evergreen canopy of Lawachara National Park, tranquil Baikka Beel bird sanctuary, and the iconic seven-layer tea tradition.',
     bestTime:
       'October to March for crisp misty mornings; May to September for vibrant rain-washed greenery',
+    seasons: ['Year-Round'],
     howToGo:
       'Take an intercity train (Parabat, Jayantika, Upaban, or Kalni Express) directly from Dhaka to Sreemangal Railway Station, or travel via highway coach from Dhaka or Sylhet.',
     highlights: [
@@ -370,6 +384,7 @@ export const spotsData = [
       'Revered in Bengali poetry as Sagar Kanya (Daughter of the Sea), Kuakata is a serene 18-kilometer panoramic beach on Bangladesh’s southern deltaic coast. Its unique geographic curvature allows travelers standing on the very same shoreline to witness both the rising sun emerge from the Bay of Bengal and the evening sun melt back into its waves.',
     bestTime:
       'November to March (clear horizons for unobstructed sunrise and sunset photography)',
+    seasons: ['Winter'],
     howToGo:
       'Drive or take a direct highway bus from Dhaka across the Padma Bridge to Kuakata in roughly six to seven hours, or enjoy an overnight river launch to Barishal or Patuakhali followed by a scenic coastal drive.',
     highlights: [
@@ -399,6 +414,7 @@ export const spotsData = [
       'Overlooking the western bank of the Karatoya River north of Bogura, Mahasthangarh is the earliest documented urban archaeological site in Bangladesh, dating back to at least the third century BCE. Its massive brick ramparts, sacred Govinda Bhita temple ruins, Behula’s Lakshindarer Medh (Gokul Medh), and museum artifacts chronicle Mauryan, Gupta, Pala, and Sultanate civilizations.',
     bestTime:
       'November to February (cool winter days ideal for exploring the citadel ramparts and surrounding mounds)',
+    seasons: ['Winter'],
     howToGo:
       'Travel from Dhaka to Bogura by highway bus or train (Rangpur / Lalmoni Express via Santahar or Bogura), then take a 20-minute ride north along the Bogura–Rangpur highway to Mahasthangarh.',
     highlights: [
@@ -428,6 +444,7 @@ export const spotsData = [
       'Deep in the untamed frontier of Thanchi Upazila near the Myanmar border, Amiakhum is hailed by trekkers as one of the most breathtaking natural wonders in Bangladesh. Framed by sheer dark canyon walls and crystal-green pools, reaching it demands crossing bamboo-shaded hill villages, descending the legendary steep slope of Debota Pahar, and rafting by bamboo bhela into adjacent Velakhum and Satvai Khum.',
     bestTime:
       'October to January (post-monsoon water clarity turns the canyon pools a surreal jade green with safer descents)',
+    seasons: ['Winter'],
     howToGo:
       'Journey from Bandarban to Thanchi, register with an approved local mountain guide, boat upriver to Padmamukh or Remakri, and complete a multi-day ridge trek through Thuisapara and Debota Pahar.',
     highlights: [
@@ -457,6 +474,7 @@ export const spotsData = [
       'Built in the early twentieth century by Maharaja Kumar Gopal Lal Roy on the southern edge of Rangpur city, Tajhat Palace is one of North Bengal’s finest surviving Indo-Saracenic mansions. Its sweeping white Italian-marble grand staircase, Corinthian colonnades, central ribbed dome, and tranquil botanical lawns now house the Rangpur Regional Museum.',
     bestTime:
       'October to March (cool northern winters make strolling the palace gardens and museum halls especially pleasant)',
+    seasons: ['Year-Round'],
     howToGo:
       'Fly from Dhaka to Saidpur Airport and drive roughly one hour to Rangpur city, or take the Rangpur Express intercity train or highway coach directly to Rangpur, then ride 15 minutes southeast to Tajhat.',
     highlights: [
@@ -486,6 +504,7 @@ export const spotsData = [
       'Set beside the crystalline Someshwari River in Susang Durgapur, Birishiri’s Chinamatir Pahar (Ceramic Hills) presents one of Bangladesh’s most unexpected geological landscapes. Decades of natural white-clay excavation along the Bijoypur ridge carved pale mineral cliffs that rise dramatically above luminous turquoise and emerald pools beneath the Garo Hills horizon.',
     bestTime:
       'October to March (clear skies bring out the vivid turquoise mineral tint of the lakes and comfortable river crossings)',
+    seasons: ['Winter'],
     howToGo:
       'Take an overnight bus or Haor Express train from Dhaka to Mymensingh or Jaria Jhanjail, then continue by local transport to Durgapur and cross the Someshwari River to Bijoypur Ceramic Hills.',
     highlights: [
@@ -515,6 +534,7 @@ export const spotsData = [
       'Standing roughly 986 meters above sea level in Ruma Upazila, Keokradong has long held a legendary place in Bangladesh’s mountaineering imagination. The ascent winds past the sapphire crater waters of Boga Lake, terraced bamboo hill slopes, and the spotless mountain hamlet of Darjeeling Para before opening onto sweeping 360-degree sunrise views above drifting valleys of mist.',
     bestTime:
       'November to February (dry ridge trails, crisp mountain air, and sweeping dawn views above the cloud deck)',
+    seasons: ['Winter'],
     howToGo:
       'Travel from Dhaka or Chattogram to Bandarban town, continue by local jeep to Ruma Bazar, complete mandatory tourist registration with a local guide, and climb via Boga Lake and Darjeeling Para.',
     highlights: [
@@ -544,6 +564,7 @@ export const spotsData = [
       'As the largest man-made freshwater lake in Bangladesh, Kaptai Lake weaves like an emerald labyrinth around forested islands and steep Chittagong Hill Tracts ridges. At its heart stands Rangamati’s beloved 335-foot Jhulonto Bridge (Hanging Bridge), framing wooden Sampan boats gliding toward Shuvolong Waterfall, Rajban Vihara, and lakeside Chakma villages.',
     bestTime:
       'September to March (post-monsoon fills the lake around the bridge and feeds Shuvolong Waterfall; winter offers calm sunsets)',
+    seasons: ['Year-Round'],
     howToGo:
       'Take a direct overnight highway bus from Dhaka to Rangamati town, or travel two hours east from Chattogram along the scenic hilly Kaptai–Rangamati highway.',
     highlights: [
@@ -573,6 +594,7 @@ export const spotsData = [
       'Rising gracefully from the Meghna estuary where river silt meets the open Bay of Bengal, Nijhum Dwip (Silent Island) is a protected national park of sweeping mudflats, coastal keora mangrove forests, and deserted beaches. True to its name, the island moves to the hushed rhythm of tides, herds of shy spotted deer slipping through forest clearings, and thousands of winter shorebirds.',
     bestTime:
       'November to March (calm estuarine crossings, mild sunshine, and vibrant migratory bird flocks)',
+    seasons: ['Winter'],
     howToGo:
       'Board an overnight river launch from Dhaka’s Sadarghat to Tamruddi Ghat on Hatiya Island (or travel via Noakhali to Chairman Ghat and cross by sea-truck to Hatiya), then ride south to Moktaria Ghat and take a short boat across to Nijhum Dwip.',
     highlights: [
@@ -602,6 +624,7 @@ export const spotsData = [
       'Located roughly 25 kilometers south of Cox’s Bazar town in Ukhia Upazila, Inani Beach trades urban energy for wide, whisper-quiet golden sand strewn with ancient dark coral stones. At low tide, the receding Bay of Bengal reveals sculpted tidal pools, emerald sea-moss boulders, and dramatic silhouettes of traditional wooden Sampan fishing boats lined along the shore.',
     bestTime:
       'November to March (calm crystal-clear waters and low tides exposing the signature coral boulder formations)',
+    seasons: ['Winter'],
     howToGo:
       "From Cox's Bazar town (Kolatoli Circle), enjoy a 45-minute coastal drive south along Marine Drive by open Chander Gari, CNG auto-rickshaw, or private car passing Himchari.",
     highlights: [
@@ -631,6 +654,7 @@ export const spotsData = [
       'Spanning 1,250 hectares of West Bhanugach Reserve Forest just outside Sreemangal, Lawachara National Park is one of Bangladesh’s richest remaining pockets of tropical rainforest. Towering chapalish, teak, and bamboo groves filter shafts of morning sunlight onto shaded footpaths, a historic railway line cutting through the woods, and traditional Khasia betel-leaf punjis.',
     bestTime:
       'October to March for dry forest trails and birdwatching; June to September for lush monsoon canopy drama',
+    seasons: ['Year-Round'],
     howToGo:
       'Arrive at Sreemangal by intercity train or highway bus from Dhaka or Sylhet, then ride 15 minutes east along the Kamalganj road straight to the Lawachara National Park entrance.',
     highlights: [
@@ -660,6 +684,7 @@ export const spotsData = [
       'Built in the mid-fifteenth century by the revered saint-general Khan Jahan Ali as the centerpiece of ancient Khalifatabad, the Sixty Dome Mosque is the largest historic Sultanate mosque in Bangladesh and a jewel of the UNESCO World Heritage Mosque City of Bagerhat. Despite its famous name, 60 slender stone pillars support 77 low brick domes—plus four corner turrets—creating a solemn hypostyle hall rich in Bengali terracotta floral reliefs.',
     bestTime:
       'November to February (mild winter sunlight illuminates the warm red terracotta facade and surrounding Ghora Dighi lake)',
+    seasons: ['Winter'],
     howToGo:
       'Take a direct highway bus from Dhaka via the Padma Bridge to Bagerhat in roughly four to five hours, or travel 45 minutes east from Khulna city along the Khulna–Bagerhat highway.',
     highlights: [
@@ -689,6 +714,7 @@ export const spotsData = [
       'Constructed between 1859 and 1872 as the official residential palace and seat of the Nawabs of Dhaka, Ahsan Manzil stands in unmistakable rose-pink splendor along Kumartoli on the northern bank of the Buriganga River. Combining Indo-Saracenic grandeur with European classical symmetry, its grand double staircase, soaring octagonal dome, and 23 curated museum galleries tell the story of nineteenth-century Bengal’s aristocratic and political awakening.',
     bestTime:
       'November to February (pleasant mornings for exploring both the palace lawns and historic Old Dhaka lanes)',
+    seasons: ['Year-Round'],
     howToGo:
       'Located at Kumartoli beside Sadarghat in Old Dhaka; accessible by car, CNG auto-rickshaw, rickshaw, or Dhaka Metro Rail to Motijheel or Dhaka University station followed by a short ride south.',
     highlights: [
