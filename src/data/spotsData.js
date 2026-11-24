@@ -475,6 +475,238 @@ export const spotsData = [
       ],
     },
   },
+  {
+    id: 'birishiri-ceramic-hills',
+    name: 'Birishiri Ceramic Hills',
+    division: 'Mymensingh',
+    district: 'Netrokona',
+    category: 'Hills',
+    tagline: 'Chalk-white kaolin cliffs cradling surreal turquoise lakes along the Garo border.',
+    description:
+      'Set beside the crystalline Someshwari River in Susang Durgapur, Birishiri’s Chinamatir Pahar (Ceramic Hills) presents one of Bangladesh’s most unexpected geological landscapes. Decades of natural white-clay excavation along the Bijoypur ridge carved pale mineral cliffs that rise dramatically above luminous turquoise and emerald pools beneath the Garo Hills horizon.',
+    bestTime:
+      'October to March (clear skies bring out the vivid turquoise mineral tint of the lakes and comfortable river crossings)',
+    howToGo:
+      'Take an overnight bus or Haor Express train from Dhaka to Mymensingh or Jaria Jhanjail, then continue by local transport to Durgapur and cross the Someshwari River to Bijoypur Ceramic Hills.',
+    highlights: [
+      'Striking pastel-white and ochre kaolin clay cliffs framing the sapphire-blue Nil Pani lake',
+      'Wide sandy banks and quiet ferry crossings over the borderland Someshwari River',
+      'Living Garo and Hajong cultural heritage showcased at the Birishiri Tribal Cultural Academy',
+    ],
+    coordinates: { lat: 25.1342, lng: 90.6788 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Blue_water_Birishiri.jpg/1280px-Blue_water_Birishiri.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Birishiri%2C_Netrokona.jpg/1280px-Birishiri%2C_Netrokona.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/Birishiri_Durgapur_Netrakona_Bangladesh_%28159746505%29.jpeg/1280px-Birishiri_Durgapur_Netrakona_Bangladesh_%28159746505%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/Birishiri_Durgapur_Netrokona.jpg/1280px-Birishiri_Durgapur_Netrokona.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'keokradong',
+    name: 'Keokradong',
+    division: 'Chattogram',
+    district: 'Bandarban',
+    category: 'Hills',
+    tagline: 'A storied cloud-piercing summit above Boga Lake and Darjeeling Para.',
+    description:
+      'Standing roughly 986 meters above sea level in Ruma Upazila, Keokradong has long held a legendary place in Bangladesh’s mountaineering imagination. The ascent winds past the sapphire crater waters of Boga Lake, terraced bamboo hill slopes, and the spotless mountain hamlet of Darjeeling Para before opening onto sweeping 360-degree sunrise views above drifting valleys of mist.',
+    bestTime:
+      'November to February (dry ridge trails, crisp mountain air, and sweeping dawn views above the cloud deck)',
+    howToGo:
+      'Travel from Dhaka or Chattogram to Bandarban town, continue by local jeep to Ruma Bazar, complete mandatory tourist registration with a local guide, and climb via Boga Lake and Darjeeling Para.',
+    highlights: [
+      'Unforgettable golden sunrise above layered cloud seas from the Keokradong summit helipad',
+      'High-altitude trail linking serene Boga Lake, Chingri Waterfall, and immaculate Darjeeling Para',
+      'Panoramic vistas extending toward distant Tajingdong ridges and Jadipai valley below',
+    ],
+    coordinates: { lat: 21.9498, lng: 92.5145 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/Above_The_Clouds_Close_To_Heaven.jpg/1280px-Above_The_Clouds_Close_To_Heaven.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Goodmorning_Keokaradang_%286830453822%29.jpg/1280px-Goodmorning_Keokaradang_%286830453822%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/Keokradong%2C_Ruma%2C_Bandarban%2C_Bangladesh.jpg/1280px-Keokradong%2C_Ruma%2C_Bandarban%2C_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Jadipai_Para.JPG/1280px-Jadipai_Para.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'kaptai-lake-hanging-bridge',
+    name: 'Kaptai Lake & Hanging Bridge',
+    division: 'Chattogram',
+    district: 'Rangamati',
+    category: 'Hills',
+    tagline: 'Emerald hill-rimmed waters linked by Rangamati’s iconic suspension bridge.',
+    description:
+      'As the largest man-made freshwater lake in Bangladesh, Kaptai Lake weaves like an emerald labyrinth around forested islands and steep Chittagong Hill Tracts ridges. At its heart stands Rangamati’s beloved 335-foot Jhulonto Bridge (Hanging Bridge), framing wooden Sampan boats gliding toward Shuvolong Waterfall, Rajban Vihara, and lakeside Chakma villages.',
+    bestTime:
+      'September to March (post-monsoon fills the lake around the bridge and feeds Shuvolong Waterfall; winter offers calm sunsets)',
+    howToGo:
+      'Take a direct overnight highway bus from Dhaka to Rangamati town, or travel two hours east from Chattogram along the scenic hilly Kaptai–Rangamati highway.',
+    highlights: [
+      'Signature 335-foot pedestrian suspension bridge spanning two wooded peninsulas of Kaptai Lake',
+      'Tranquil wooden boat cruises past hidden island hamlets to the dramatic gorge of Shuvolong Waterfall',
+      'Golden-hour mirror reflections across the lake and visits to Rajban Vihara Buddhist Monastery',
+    ],
+    coordinates: { lat: 22.6336, lng: 92.1945 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/Hanging_Bridge%2C_Kaptai_Lake.jpg/1280px-Hanging_Bridge%2C_Kaptai_Lake.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Hanging_Bridge_at_Kaptai_Lake_%283%29.jpg/1280px-Hanging_Bridge_at_Kaptai_Lake_%283%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Rangamati_lake-kaptai.jpg/1280px-Rangamati_lake-kaptai.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Sunset_on_Rangamati_Lake01.jpg/1280px-Sunset_on_Rangamati_Lake01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'nijhum-dwip',
+    name: 'Nijhum Dwip',
+    division: 'Chattogram',
+    district: 'Noakhali',
+    category: 'Sea',
+    tagline: 'A quiet deltaic sanctuary of keora mangroves, wild deer, and untamed shores.',
+    description:
+      'Rising gracefully from the Meghna estuary where river silt meets the open Bay of Bengal, Nijhum Dwip (Silent Island) is a protected national park of sweeping mudflats, coastal keora mangrove forests, and deserted beaches. True to its name, the island moves to the hushed rhythm of tides, herds of shy spotted deer slipping through forest clearings, and thousands of winter shorebirds.',
+    bestTime:
+      'November to March (calm estuarine crossings, mild sunshine, and vibrant migratory bird flocks)',
+    howToGo:
+      'Board an overnight river launch from Dhaka’s Sadarghat to Tamruddi Ghat on Hatiya Island (or travel via Noakhali to Chairman Ghat and cross by sea-truck to Hatiya), then ride south to Moktaria Ghat and take a short boat across to Nijhum Dwip.',
+    highlights: [
+      'Peaceful dawn walks along Namar Bazar Beach and remote coastal sandbars facing the Bay of Bengal',
+      'Quiet wooden boat journeys along Chowdhury Khal winding deep inside keora mangrove groves',
+      'Protected coastal wildlife sanctuary sheltering spotted deer herds and winter migratory waterbirds',
+    ],
+    coordinates: { lat: 22.0568, lng: 91.0021 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Nijhum_Dwip.jpg/1280px-Nijhum_Dwip.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/%E0%A6%A8%E0%A6%BF%E0%A6%9D%E0%A7%81%E0%A6%AE_%E0%A6%A6%E0%A7%8D%E0%A6%AC%E0%A7%80%E0%A6%AA%E0%A7%87_%E0%A6%B8%E0%A7%82%E0%A6%B0%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%B8%E0%A7%8D%E0%A6%A4.jpg/1280px-%E0%A6%A8%E0%A6%BF%E0%A6%9D%E0%A7%81%E0%A6%AE_%E0%A6%A6%E0%A7%8D%E0%A6%AC%E0%A7%80%E0%A6%AA%E0%A7%87_%E0%A6%B8%E0%A7%82%E0%A6%B0%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%B8%E0%A7%8D%E0%A6%A4.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/%E0%A6%A8%E0%A6%BF%E0%A6%9D%E0%A7%81%E0%A6%AE%E0%A7%87%E0%A6%B0_%E0%A6%A6%E0%A7%8D%E0%A6%AC%E0%A7%80%E0%A6%AA%E0%A7%87_%E0%A6%9A%E0%A7%8C%E0%A6%A7%E0%A7%81%E0%A6%B0%E0%A7%80_%E0%A6%96%E0%A6%BE%E0%A6%B2%E0%A7%87_%E0%A6%AF%E0%A6%BE%E0%A6%AC%E0%A6%BE%E0%A6%B0_%E0%A6%AA%E0%A6%A5%E0%A7%87.jpg/1280px-%E0%A6%A8%E0%A6%BF%E0%A6%9D%E0%A7%81%E0%A6%AE%E0%A7%87%E0%A6%B0_%E0%A6%A6%E0%A7%8D%E0%A6%AC%E0%A7%80%E0%A6%AA%E0%A7%87_%E0%A6%9A%E0%A7%8C%E0%A6%A7%E0%A7%81%E0%A6%B0%E0%A7%80_%E0%A6%96%E0%A6%BE%E0%A6%B2%E0%A7%87_%E0%A6%AF%E0%A6%BE%E0%A6%AC%E0%A6%BE%E0%A6%B0_%E0%A6%AA%E0%A6%A5%E0%A7%87.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Nijum_dip_-_HATIA_-_NOAKHALI.jpg/1280px-Nijum_dip_-_HATIA_-_NOAKHALI.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'inani-beach',
+    name: 'Inani Beach',
+    division: 'Chattogram',
+    district: "Cox's Bazar",
+    category: 'Sea',
+    tagline: 'Moss-green coral boulders and glassy tides along serene Marine Drive.',
+    description:
+      'Located roughly 25 kilometers south of Cox’s Bazar town in Ukhia Upazila, Inani Beach trades urban energy for wide, whisper-quiet golden sand strewn with ancient dark coral stones. At low tide, the receding Bay of Bengal reveals sculpted tidal pools, emerald sea-moss boulders, and dramatic silhouettes of traditional wooden Sampan fishing boats lined along the shore.',
+    bestTime:
+      'November to March (calm crystal-clear waters and low tides exposing the signature coral boulder formations)',
+    howToGo:
+      "From Cox's Bazar town (Kolatoli Circle), enjoy a 45-minute coastal drive south along Marine Drive by open Chander Gari, CNG auto-rickshaw, or private car passing Himchari.",
+    highlights: [
+      'Sculpted fossilized coral boulders and reflective tide pools revealed during morning and afternoon low tide',
+      'Hand-built traditional moon-shaped Sampan fishing boats silhouetted against amber sunsets',
+      'Quieter, cleaner stretch of the Bay of Bengal bordered by lush coastal hills along Marine Drive',
+    ],
+    coordinates: { lat: 21.2279, lng: 92.0493 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Inani_Beach_Fishing_Boat_Silhouette_Bay_of_Bengal_Bangladesh.jpg/1280px-Inani_Beach_Fishing_Boat_Silhouette_Bay_of_Bengal_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Inani_Beach_%28Cox%27s_Bazar%29.jpg/1280px-Inani_Beach_%28Cox%27s_Bazar%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Sunrise_over_Inani_Beach%2C_Cox%27s_Bazar%2C_Bangladesh.jpg/1280px-Sunrise_over_Inani_Beach%2C_Cox%27s_Bazar%2C_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Beach_rocks_coral_rocks.jpg/1280px-Beach_rocks_coral_rocks.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'lawachara-national-park',
+    name: 'Lawachara National Park',
+    division: 'Sylhet',
+    district: 'Moulvibazar',
+    category: 'Forest',
+    tagline: 'A living semi-evergreen rainforest echoing with hoolock gibbon calls.',
+    description:
+      'Spanning 1,250 hectares of West Bhanugach Reserve Forest just outside Sreemangal, Lawachara National Park is one of Bangladesh’s richest remaining pockets of tropical rainforest. Towering chapalish, teak, and bamboo groves filter shafts of morning sunlight onto shaded footpaths, a historic railway line cutting through the woods, and traditional Khasia betel-leaf punjis.',
+    bestTime:
+      'October to March for dry forest trails and birdwatching; June to September for lush monsoon canopy drama',
+    howToGo:
+      'Arrive at Sreemangal by intercity train or highway bus from Dhaka or Sylhet, then ride 15 minutes east along the Kamalganj road straight to the Lawachara National Park entrance.',
+    highlights: [
+      'Early-morning wildlife trails for spotting endangered western hoolock gibbons and Phayre’s leaf monkeys',
+      'Photogenic narrow railway track threading directly through towering rainforest canopies',
+      'Visits to neighboring Magurchara and Lawachara Khasia indigenous villages nestled amid betel groves',
+    ],
+    coordinates: { lat: 24.3267, lng: 91.7867 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/Way_back_home_Lawachara_National_Park_Srimongol_Sylhet_Bangladesh.jpg/1280px-Way_back_home_Lawachara_National_Park_Srimongol_Sylhet_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Bamboo_in_Lawachara.JPG/1280px-Bamboo_in_Lawachara.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Forest_Interior.jpg/1280px-Forest_Interior.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Lawachara_National_Park_%2840992565742%29.jpg/1280px-Lawachara_National_Park_%2840992565742%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'sixty-dome-mosque',
+    name: 'Sixty Dome Mosque (Shat Gombuj Masjid)',
+    division: 'Khulna',
+    district: 'Bagerhat',
+    category: 'Heritage',
+    tagline: 'A fifteenth-century Bengal Sultanate brick cathedral crowned by 81 domes.',
+    description:
+      'Built in the mid-fifteenth century by the revered saint-general Khan Jahan Ali as the centerpiece of ancient Khalifatabad, the Sixty Dome Mosque is the largest historic Sultanate mosque in Bangladesh and a jewel of the UNESCO World Heritage Mosque City of Bagerhat. Despite its famous name, 60 slender stone pillars support 77 low brick domes—plus four corner turrets—creating a solemn hypostyle hall rich in Bengali terracotta floral reliefs.',
+    bestTime:
+      'November to February (mild winter sunlight illuminates the warm red terracotta facade and surrounding Ghora Dighi lake)',
+    howToGo:
+      'Take a direct highway bus from Dhaka via the Padma Bridge to Bagerhat in roughly four to five hours, or travel 45 minutes east from Khulna city along the Khulna–Bagerhat highway.',
+    highlights: [
+      'UNESCO World Heritage hypostyle prayer hall uniting 60 stone columns with 77 curved brick domes and chauchala vaults',
+      'Signature curved Bengali cornice and intricately carved fifteenth-century terracotta mihrabs',
+      'Tranquil historic Ghora Dighi water tank and nearby Bagerhat Archaeological Museum',
+    ],
+    coordinates: { lat: 22.6746, lng: 89.7419 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/Sixty_dome_mosque_bagerhat_Bangladesh.jpg/1280px-Sixty_dome_mosque_bagerhat_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/The_Shat_Gombuj_Masjid%2C_Bagherhat%2C_khulna%2C_February_2018.jpg/1280px-The_Shat_Gombuj_Masjid%2C_Bagherhat%2C_khulna%2C_February_2018.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Sixty_Dome_Mosque%2CBagerhat.jpg/1280px-Sixty_Dome_Mosque%2CBagerhat.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Sixty_Dome_Mosque%2C_Bagerhat%2C_Bangladesh_01.jpg/1280px-Sixty_Dome_Mosque%2C_Bagerhat%2C_Bangladesh_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'ahsan-manzil',
+    name: 'Ahsan Manzil',
+    division: 'Dhaka',
+    district: 'Dhaka',
+    category: 'Heritage',
+    tagline: 'Old Dhaka’s legendary Pink Palace overlooking the lively Buriganga River.',
+    description:
+      'Constructed between 1859 and 1872 as the official residential palace and seat of the Nawabs of Dhaka, Ahsan Manzil stands in unmistakable rose-pink splendor along Kumartoli on the northern bank of the Buriganga River. Combining Indo-Saracenic grandeur with European classical symmetry, its grand double staircase, soaring octagonal dome, and 23 curated museum galleries tell the story of nineteenth-century Bengal’s aristocratic and political awakening.',
+    bestTime:
+      'November to February (pleasant mornings for exploring both the palace lawns and historic Old Dhaka lanes)',
+    howToGo:
+      'Located at Kumartoli beside Sadarghat in Old Dhaka; accessible by car, CNG auto-rickshaw, rickshaw, or Dhaka Metro Rail to Motijheel or Dhaka University station followed by a short ride south.',
+    highlights: [
+      'Iconic rose-pink Indo-Saracenic facade crowned by a high octagonal central dome facing the Buriganga River',
+      'Sweeping ceremonial front staircase leading into the restored Rangmahal and Darbar Hall',
+      'National Museum galleries preserving period portraits, silver filigree crafts, chandeliers, and Nawab-era archives',
+    ],
+    coordinates: { lat: 23.7086, lng: 90.406 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Historic_Ahsan_Manzil_Palace_Bangladesh.jpg/1280px-Historic_Ahsan_Manzil_Palace_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Ahsan_Manzil-Front_View.jpg/1280px-Ahsan_Manzil-Front_View.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/Ahsan_Manjl_Pink_Palace_Old_Dhaka_Bangladesh_-_panoramio.jpg/1280px-Ahsan_Manjl_Pink_Palace_Old_Dhaka_Bangladesh_-_panoramio.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Ahsan_Manzil_Museum%2C_Dhaka%2C_Bangladesh.jpg/1280px-Ahsan_Manzil_Museum%2C_Dhaka%2C_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
 ];
 
 export default spotsData;
