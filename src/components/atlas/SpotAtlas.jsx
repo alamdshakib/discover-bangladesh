@@ -1,28 +1,156 @@
-import { useState } from 'react';
-import { ArrowUpRight, Crosshair } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { geoMercator, geoPath } from 'd3-geo';
+import { ArrowUpRight, Crosshair, Minus, Plus, RotateCcw } from 'lucide-react';
 import { CHAPTERS, SECTION_IDS } from '@data';
+import bangladeshDivisions from '@data/bangladeshDivisions.json';
 import { useShowcase } from '@hooks';
 import { countByCategory, formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 
-// Geographic frame around Bangladesh (degrees).
-const BOUNDS = { north: 26.7, south: 20.5, west: 88.0, east: 92.75 };
+const SVG_W = 600;
+const SVG_H = 740;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+const ZOOM_STEP = 0.5;
+
 const LAT_LINES = [21, 22, 23, 24, 25, 26];
-const LNG_LINES = [89, 90, 91, 92];
+const LNG_LINES = [88, 89, 90, 91, 92, 93];
+
+const CATEGORY_COLORS = {
+  Hills: '#059669',
+  Sea: '#0284c7',
+  Forest: '#4d7c0f',
+  Heritage: '#d97706',
+};
+
 const chapterByCategory = Object.fromEntries(CHAPTERS.map((c) => [c.category, c]));
 
-const project = ({ lat, lng }) => ({
-  left: ((lng - BOUNDS.west) / (BOUNDS.east - BOUNDS.west)) * 100,
-  top: ((BOUNDS.north - lat) / (BOUNDS.north - BOUNDS.south)) * 100,
-});
+const projection = geoMercator().fitExtent(
+  [
+    [46, 46],
+    [SVG_W - 46, SVG_H - 64],
+  ],
+  bangladeshDivisions
+);
 
-/** Interactive coordinate atlas: every spot plotted by its verified GPS position. */
+const pathGenerator = geoPath(projection);
+
+const DIVISIONS = bangladeshDivisions.features.map((feature) => ({
+  name: feature.properties.name,
+  d: pathGenerator(feature),
+  centroid: pathGenerator.centroid(feature),
+}));
+
+const GRATICULE_LAT = LAT_LINES.map((lat) => ({
+  lat,
+  y: projection([90, lat])[1],
+}));
+
+const GRATICULE_LNG = LNG_LINES.map((lng) => ({
+  lng,
+  x: projection([lng, 23.5])[0],
+}));
+
+const BAY_LABEL = projection([90.05, 21.05]);
+
+function clampPan(nextPan, nextZoom) {
+  if (nextZoom <= 1) return { x: 0, y: 0 };
+  const maxX = ((nextZoom - 1) * SVG_W) / 2;
+  const maxY = ((nextZoom - 1) * SVG_H) / 2;
+  return {
+    x: Math.max(-maxX, Math.min(maxX, nextPan.x)),
+    y: Math.max(-maxY, Math.min(maxY, nextPan.y)),
+  };
+}
+
+/** Interactive coordinate atlas: Bangladesh 8-division vector map aligned with all 24 GPS pins. */
 export function SpotAtlas() {
   const { spots, openSpot } = useShowcase();
   const [focusId, setFocusId] = useState(spots[0]?.id);
   const [category, setCategory] = useState(null);
+  const [hoveredDivision, setHoveredDivision] = useState(null);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const svgRef = useRef(null);
+  const dragRef = useRef(null);
+
   const focus = spots.find((s) => s.id === focusId) ?? spots[0];
-  const counts = countByCategory(spots);
+  const counts = useMemo(() => countByCategory(spots), [spots]);
+
+  const divisionCounts = useMemo(
+    () =>
+      spots.reduce((acc, s) => {
+        acc[s.division] = (acc[s.division] || 0) + 1;
+        return acc;
+      }, {}),
+    [spots]
+  );
+
+  const projectedSpots = useMemo(() => {
+    const items = spots.map((spot) => {
+      const [px, py] = projection([spot.coordinates.lng, spot.coordinates.lat]);
+      return { spot, px, py };
+    });
+    // Render focused pin last so its marker and tooltip stay on top.
+    return items.sort((a, b) => (a.spot.id === focus?.id ? 1 : b.spot.id === focus?.id ? -1 : 0));
+  }, [spots, focus?.id]);
+
+  const zoomIn = () => {
+    setZoom((prev) => {
+      const next = Math.min(MAX_ZOOM, prev + ZOOM_STEP);
+      setPan((p) => clampPan(p, next));
+      return next;
+    });
+  };
+
+  const zoomOut = () => {
+    setZoom((prev) => {
+      const next = Math.max(MIN_ZOOM, prev - ZOOM_STEP);
+      setPan((p) => clampPan(p, next));
+      return next;
+    });
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const onPointerDown = (e) => {
+    if (zoom <= 1) return;
+    if (e.target.closest?.('[data-map-pin]')) return;
+    const svg = svgRef.current;
+    if (!svg) return;
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      origPan: pan,
+      rect: svg.getBoundingClientRect(),
+    };
+    setIsDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const scaleX = SVG_W / Math.max(drag.rect.width, 1);
+    const scaleY = SVG_H / Math.max(drag.rect.height, 1);
+    const dx = (e.clientX - drag.startX) * scaleX;
+    const dy = (e.clientY - drag.startY) * scaleY;
+    setPan(clampPan({ x: drag.origPan.x + dx, y: drag.origPan.y + dy }, zoom));
+  };
+
+  const onPointerEnd = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    setIsDragging(false);
+  };
+
+  const mapTransform = `translate(${SVG_W / 2 + pan.x}, ${SVG_H / 2 + pan.y}) scale(${zoom}) translate(${-SVG_W / 2}, ${-SVG_H / 2})`;
+  const invScale = 1 / Math.sqrt(zoom);
 
   return (
     <section id={SECTION_IDS.atlas} aria-labelledby="atlas-title" className="mt-24 scroll-mt-24 px-3 sm:mt-32 sm:px-5">
@@ -96,64 +224,304 @@ export function SpotAtlas() {
         </div>
 
         <div className="relative overflow-hidden rounded-4xl border border-line bg-[#eef2f6] p-3 sm:p-5">
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-[640px]">
-            {LAT_LINES.map((lat) => {
-              const { top } = project({ lat, lng: BOUNDS.west });
-              return (
-                <div key={lat} className="absolute inset-x-0 border-t border-dashed border-haze" style={{ top: `${top}%` }}>
-                  <span className="absolute -top-2.5 left-1 bg-[#eef2f6] px-1 text-[10px] font-semibold text-mist tabular-nums">
-                    {lat}°N
-                  </span>
-                </div>
-              );
-            })}
-            {LNG_LINES.map((lng) => {
-              const { left } = project({ lat: BOUNDS.north, lng });
-              return (
-                <div key={lng} className="absolute inset-y-0 border-l border-dashed border-haze" style={{ left: `${left}%` }}>
-                  <span className="absolute bottom-1 -left-4 bg-[#eef2f6] px-1 text-[10px] font-semibold text-mist tabular-nums">
-                    {lng}°E
-                  </span>
-                </div>
-              );
-            })}
+          {/* Top-left floating division indicator */}
+          <div className="glass pointer-events-none absolute top-4 left-4 z-30 flex items-center gap-2 rounded-full border border-white/70 px-3.5 py-1.5 text-xs font-semibold text-ink shadow-sm sm:top-6 sm:left-6">
+            <span className="h-2 w-2 rounded-full bg-bd-green" aria-hidden="true" />
+            {hoveredDivision ? (
+              <span>
+                {hoveredDivision} Division · {divisionCounts[hoveredDivision] ?? 0}{' '}
+                {divisionCounts[hoveredDivision] === 1 ? 'spot' : 'spots'}
+              </span>
+            ) : (
+              <span>Bangladesh · 8 Divisions</span>
+            )}
+          </div>
 
-            <span className="absolute top-[63%] left-[18%] text-[10px] font-semibold tracking-[0.3em] text-mist/70 uppercase sm:text-xs">
-              Bay of Bengal ↓
-            </span>
+          {/* Top-right floating zoom controls */}
+          <div
+            data-map-control
+            role="group"
+            aria-label="Map zoom controls"
+            className="glass absolute top-4 right-4 z-30 flex items-center gap-1 rounded-full border border-white/70 p-1 shadow-sm sm:top-6 sm:right-6"
+          >
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={zoom >= MAX_ZOOM}
+              aria-label="Zoom in"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.2} />
+            </button>
+            <button
+              type="button"
+              onClick={zoomOut}
+              disabled={zoom <= MIN_ZOOM}
+              aria-label="Zoom out"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              <Minus className="h-4 w-4" strokeWidth={2.2} />
+            </button>
+            {zoom > 1 && (
+              <span className="px-1.5 text-[11px] font-bold text-ink-soft tabular-nums">{zoom.toFixed(1)}×</span>
+            )}
+            <button
+              type="button"
+              onClick={resetView}
+              disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
+              aria-label="Reset map zoom"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              <RotateCcw className="h-3.5 w-3.5" strokeWidth={2.2} />
+            </button>
+          </div>
 
-            {spots.map((spot) => {
-              const pos = project(spot.coordinates);
-              const chapter = chapterByCategory[spot.category];
-              const isFocus = spot.id === focus?.id;
-              const dimmed = category && spot.category !== category;
-              return (
-                <button
-                  key={spot.id}
-                  type="button"
-                  onMouseEnter={() => setFocusId(spot.id)}
-                  onFocus={() => setFocusId(spot.id)}
-                  onClick={() => (isFocus ? openSpot(spot.id) : setFocusId(spot.id))}
-                  aria-label={`${spot.name}, ${spot.district}`}
-                  className={`group absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition duration-300 active:scale-95 ${
-                    isFocus ? 'z-20' : 'z-10'
-                  } ${dimmed ? 'opacity-25' : 'opacity-100'}`}
-                  style={{ left: `${pos.left}%`, top: `${pos.top}%` }}
+          <div
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerEnd}
+            onPointerCancel={onPointerEnd}
+            className={`relative mx-auto aspect-[600/740] w-full max-w-[640px] select-none ${
+              zoom > 1 ? (isDragging ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : ''
+            }`}
+          >
+            <svg
+              ref={svgRef}
+              viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+              role="img"
+              aria-label="Interactive vector map of Bangladesh showing 8 divisions and 24 tourist destinations"
+              className="h-full w-full overflow-visible"
+            >
+              <defs>
+                <filter id="bd-land-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                  <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#1E293B" floodOpacity="0.09" />
+                </filter>
+              </defs>
+
+              <g transform={mapTransform}>
+                {/* 1. Latitude / Longitude Graticule */}
+                <g aria-hidden="true">
+                  {GRATICULE_LAT.map(({ lat, y }) => (
+                    <g key={lat}>
+                      <line
+                        x1={0}
+                        y1={y}
+                        x2={SVG_W}
+                        y2={y}
+                        stroke="#CBD5E1"
+                        strokeWidth={1}
+                        strokeDasharray="4 4"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={6}
+                        y={y - 5}
+                        fill="#94A3B8"
+                        fontSize={10 * invScale}
+                        fontWeight={600}
+                        className="tabular-nums"
+                      >
+                        {lat}°N
+                      </text>
+                    </g>
+                  ))}
+                  {GRATICULE_LNG.map(({ lng, x }) => (
+                    <g key={lng}>
+                      <line
+                        x1={x}
+                        y1={0}
+                        x2={x}
+                        y2={SVG_H}
+                        stroke="#CBD5E1"
+                        strokeWidth={1}
+                        strokeDasharray="4 4"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={x + 4}
+                        y={SVG_H - 10}
+                        fill="#94A3B8"
+                        fontSize={10 * invScale}
+                        fontWeight={600}
+                        className="tabular-nums"
+                      >
+                        {lng}°E
+                      </text>
+                    </g>
+                  ))}
+                </g>
+
+                {/* 2. Ocean label */}
+                <text
+                  x={BAY_LABEL[0]}
+                  y={BAY_LABEL[1]}
+                  textAnchor="middle"
+                  fill="#94A3B8"
+                  opacity={0.75}
+                  fontSize={11 * invScale}
+                  fontWeight={600}
+                  letterSpacing="0.28em"
                 >
-                  {isFocus && <span className={`absolute inset-0 animate-ping rounded-full opacity-40 ${chapter.dotClass}`} />}
-                  <span
-                    className={`relative rounded-full ring-2 ring-white transition-all ${chapter.dotClass} ${
-                      isFocus ? 'h-4 w-4' : 'h-2.5 w-2.5 group-hover:h-3.5 group-hover:w-3.5'
-                    }`}
-                  />
-                  {isFocus && (
-                    <span className="pointer-events-none absolute bottom-full mb-1.5 rounded-full bg-ink px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap text-white shadow-lg">
-                      {spot.name}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                  BAY OF BENGAL
+                </text>
+
+                {/* 3. Outer National Silhouette & Soft Shadow */}
+                <g filter="url(#bd-land-shadow)" pointerEvents="none">
+                  {DIVISIONS.map((div) => (
+                    <path
+                      key={`outer-${div.name}`}
+                      d={div.d}
+                      fill="#FFFFFF"
+                      stroke="#94A3B8"
+                      strokeWidth={2.8}
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))}
+                </g>
+
+                {/* 4. Interactive 8-Division Fills & Crisp Internal Borders */}
+                <g>
+                  {DIVISIONS.map((div) => {
+                    const isHovered = hoveredDivision === div.name;
+                    const isFocusDiv = focus?.division === div.name;
+                    const fill = isHovered ? '#E2E8F0' : isFocusDiv ? '#F8FAFC' : '#FFFFFF';
+                    return (
+                      <path
+                        key={div.name}
+                        data-division-path={div.name}
+                        d={div.d}
+                        fill={fill}
+                        stroke="#CBD5E1"
+                        strokeWidth={1}
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                        onMouseEnter={() => setHoveredDivision(div.name)}
+                        onMouseLeave={() => setHoveredDivision((prev) => (prev === div.name ? null : prev))}
+                        className="transition-colors duration-200"
+                      />
+                    );
+                  })}
+                </g>
+
+                {/* 5. Subtle Division Micro-Labels */}
+                <g pointerEvents="none">
+                  {DIVISIONS.map((div) => {
+                    const [cx, cy] = div.centroid;
+                    const isHovered = hoveredDivision === div.name;
+                    // Nudge Chattogram label slightly inland toward mainland ridge
+                    const lx = div.name === 'Chattogram' ? cx + 12 : cx;
+                    const ly = div.name === 'Chattogram' ? cy - 22 : cy;
+                    return (
+                      <text
+                        key={`label-${div.name}`}
+                        x={lx}
+                        y={ly}
+                        textAnchor="middle"
+                        fill={isHovered ? '#334155' : '#94A3B8'}
+                        fontSize={8.5 * invScale}
+                        fontWeight={700}
+                        letterSpacing="0.16em"
+                        className="uppercase transition-colors duration-200"
+                      >
+                        {div.name}
+                      </text>
+                    );
+                  })}
+                </g>
+
+                {/* 6. 24 Color-Coded GPS Pins */}
+                <g>
+                  {projectedSpots.map(({ spot, px, py }) => {
+                    const isFocus = spot.id === focus?.id;
+                    const dimmed = Boolean(category && spot.category !== category);
+                    const color = CATEGORY_COLORS[spot.category] ?? '#1E293B';
+                    const dotRadius = (isFocus ? 7.5 : 4.8) * invScale;
+                    const strokeW = 2.2 * invScale;
+
+                    // Smart tooltip placement inside viewBox
+                    const flipBelow = py < 70;
+                    const tipW = Math.min(220, Math.max(88, spot.name.length * 7.2 + 22));
+                    const tipH = 26;
+                    const tipY = flipBelow ? 14 : -(tipH + 14);
+                    const scaledW = tipW * invScale;
+                    let tipX = -tipW / 2;
+                    if (px - scaledW / 2 < 10) tipX = (10 - px) / invScale;
+                    else if (px + scaledW / 2 > SVG_W - 10) tipX = (SVG_W - 10 - scaledW - px) / invScale;
+
+                    return (
+                      <g
+                        key={spot.id}
+                        data-map-pin={spot.id}
+                        transform={`translate(${px}, ${py})`}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${spot.name}, ${spot.district}`}
+                        onMouseEnter={() => setFocusId(spot.id)}
+                        onFocus={() => setFocusId(spot.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isFocus) openSpot(spot.id);
+                          else setFocusId(spot.id);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (isFocus) openSpot(spot.id);
+                            else setFocusId(spot.id);
+                          }
+                        }}
+                        opacity={dimmed ? 0.22 : 1}
+                        className="cursor-pointer transition-opacity duration-200 focus:outline-none"
+                      >
+                        {/* Generous invisible hit target */}
+                        <circle r={13 / zoom} fill="transparent" />
+
+                        {isFocus && (
+                          <circle
+                            r={12 * invScale}
+                            fill={color}
+                            opacity={0.35}
+                            className="animate-ping"
+                            style={{ transformOrigin: '0px 0px' }}
+                          />
+                        )}
+
+                        <circle
+                          r={dotRadius}
+                          fill={color}
+                          stroke="#FFFFFF"
+                          strokeWidth={strokeW}
+                        />
+
+                        {isFocus && (
+                          <g transform={`scale(${invScale})`} pointerEvents="none">
+                            <rect
+                              x={tipX}
+                              y={tipY}
+                              width={tipW}
+                              height={tipH}
+                              rx={tipH / 2}
+                              fill="#1E293B"
+                            />
+                            <text
+                              x={tipX + tipW / 2}
+                              y={tipY + tipH / 2 + 4}
+                              textAnchor="middle"
+                              fill="#FFFFFF"
+                              fontSize={11}
+                              fontWeight={600}
+                            >
+                              {spot.name}
+                            </text>
+                          </g>
+                        )}
+                      </g>
+                    );
+                  })}
+                </g>
+              </g>
+            </svg>
           </div>
         </div>
       </div>
