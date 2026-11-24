@@ -51,7 +51,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
 
         <div className="pointer-events-none absolute top-3 right-3 left-3 flex items-start justify-between gap-2 sm:top-4 sm:right-4 sm:left-4">
           <MetaPill tone="glass">{label}</MetaPill>
-          <MetaPill tone="dark" icon={CalendarDays}>
+          <MetaPill tone="dark" icon={CalendarDays} className="shrink-0">
             {getSeasonShort(spot)}
           </MetaPill>
         </div>
@@ -114,7 +114,10 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
               className="inline-flex items-center gap-2 rounded-full border border-line bg-canvas py-2 pr-2.5 pl-3.5 text-xs font-semibold text-ink transition-colors duration-300 hover:border-haze active:scale-95 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-100 dark:hover:border-white/25"
             >
               Travel Notes
-              <span className="font-display text-mist">[1] [2]</span>
+              <span className="text-mist" aria-hidden="true">
+                ·
+              </span>
+              <span className="font-display text-mist tabular-nums">2</span>
               <ChevronDown
                 className={`h-4 w-4 transition-transform duration-300 ${notesOpen ? 'rotate-180' : ''}`}
                 strokeWidth={2.2}

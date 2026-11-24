@@ -44,11 +44,11 @@ export function TravelNotes({ spot, open }) {
                   }`}
                 >
                   <span
-                    className={`font-display ${
+                    className={`font-display tabular-nums ${
                       selected ? 'text-white/60 dark:text-[#0B111E]/60' : 'text-mist'
                     }`}
                   >
-                    [{index}]
+                    {String(index).padStart(2, '0')}
                   </span>
                   {label}
                 </button>

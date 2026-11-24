@@ -29,12 +29,19 @@ export function getSeasonWindow(spot) {
   return spot.bestTime.split(' (')[0].trim();
 }
 
-/** "November to March" → "Nov – Mar" (compact pill label). */
+const MONTH_RANGE_RE =
+  /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+to\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/i;
+
+/** Compact pill label for card headers ("Nov – Mar", "Jul – Sep", "Year-round"). */
 export function getSeasonShort(spot) {
-  const window = getSeasonWindow(spot);
-  const parts = window.split(/\s+to\s+/i);
-  if (parts.length !== 2) return window;
-  return parts.map((p) => p.trim().slice(0, 3)).join(' – ');
+  if (spot.seasons?.includes('Year-Round') && spot.bestTime.includes(';')) {
+    return 'Year-round';
+  }
+  const match = spot.bestTime.match(MONTH_RANGE_RE);
+  if (match) {
+    return `${match[1].slice(0, 3)} – ${match[2].slice(0, 3)}`;
+  }
+  return 'Year-round';
 }
 
 /** The parenthetical reason from bestTime, if present. */
