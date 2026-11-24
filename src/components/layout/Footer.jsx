@@ -180,11 +180,14 @@ export function Footer() {
           <div
             data-footer-mask
             onPointerLeave={() => setHoveredIdx(null)}
-            className="overflow-visible pt-4"
+            className="overflow-visible px-1 pt-4"
           >
             <div
-              className="flex w-full items-end justify-between pb-6 font-display leading-[1.15] font-extrabold tracking-tighter select-none"
-              style={{ fontSize: 'clamp(2.05rem, 14.2cqw, 14.5rem)' }}
+              className="flex w-full items-end justify-between pb-6 leading-[1.15] font-black tracking-tight select-none"
+              style={{
+                fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
+                fontSize: 'clamp(1.5rem, 12.5cqw, 12.5rem)',
+              }}
             >
               {WORDMARK_LETTERS.map((char, index) => {
                 const dist = hoveredIdx === null ? null : Math.abs(hoveredIdx - index);
@@ -192,7 +195,7 @@ export function Footer() {
                 const sheenOpacity = dist === 0 ? 1 : dist === 1 ? 0.48 : 0;
 
                 return (
-                  <span key={index} data-footer-letter className="inline-block will-change-transform">
+                  <span key={index} data-footer-letter className="inline-block tracking-normal will-change-transform">
                     <span
                       data-footer-hover-letter={index}
                       onPointerEnter={() => setHoveredIdx(index)}
@@ -200,14 +203,14 @@ export function Footer() {
                       style={{ transform: `translateY(${liftY})` }}
                     >
                       <span
-                        className="block bg-clip-text pb-3 text-transparent"
+                        className="-mx-[0.06em] block bg-clip-text px-[0.06em] pb-3 text-transparent"
                         style={{ backgroundImage: BASE_GRADIENT, WebkitBackgroundClip: 'text' }}
                       >
                         {char}
                       </span>
                       <span
                         data-footer-letter-sheen={index}
-                        className="pointer-events-none absolute inset-0 block bg-clip-text pb-3 text-transparent transition-opacity duration-300 ease-out"
+                        className="pointer-events-none absolute inset-y-0 -inset-x-[0.06em] block bg-clip-text px-[0.06em] pb-3 text-transparent transition-opacity duration-300 ease-out"
                         style={{
                           backgroundImage: SHEEN_GRADIENT,
                           WebkitBackgroundClip: 'text',
