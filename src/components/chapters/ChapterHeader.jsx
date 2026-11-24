@@ -4,7 +4,7 @@ import { SmartImage } from '../ui/SmartImage.jsx';
 /** Bold typographic banner that opens each editorial chapter. */
 export function ChapterHeader({ chapter, count, coverUrl }) {
   return (
-    <header className="relative isolate overflow-hidden rounded-4xl bg-ink px-5 pt-6 pb-7 text-white sm:px-10 sm:pt-10 sm:pb-10 lg:px-14 lg:pt-12 lg:pb-14">
+    <header className="relative isolate overflow-hidden rounded-4xl border border-transparent bg-ink px-5 pt-6 pb-7 text-white transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:px-10 sm:pt-10 sm:pb-10 lg:px-14 lg:pt-12 lg:pb-14">
       <div data-chapter-bg aria-hidden="true" className="absolute inset-x-0 -top-[15%] -bottom-[15%] -z-10 opacity-35">
         <SmartImage
           src={getImageSrc(coverUrl, 'card')}

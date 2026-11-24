@@ -16,7 +16,7 @@ export function ExpoCard({ spot, tileClass, onOpen }) {
       data-flip-id={spot.id}
       onClick={() => onOpen(spot.id)}
       aria-label={`Open ${spot.name}, ${spot.district}`}
-      className={`group relative isolate overflow-hidden rounded-3xl bg-ink text-left text-white transition-transform duration-300 active:scale-[0.97] ${tileClass}`}
+      className={`group relative isolate overflow-hidden rounded-3xl bg-ink text-left text-white transition-transform duration-300 active:scale-[0.97] dark:ring-1 dark:ring-white/10 ${tileClass}`}
     >
       <SmartImage
         src={getImageSrc(spot.images.cover, 'card')}
@@ -27,7 +27,7 @@ export function ExpoCard({ spot, tileClass, onOpen }) {
       />
       <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent" />
 
-      <span className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold tracking-wide text-ink sm:top-3 sm:left-3">
+      <span className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold tracking-wide text-ink dark:border dark:border-white/15 dark:bg-[#131C2E]/85 dark:text-slate-100 sm:top-3 sm:left-3">
         <span className={`h-1.5 w-1.5 rounded-full ${chapter?.dotClass ?? 'bg-ink'}`} aria-hidden="true" />
         {chapter?.number} {spot.category}
       </span>

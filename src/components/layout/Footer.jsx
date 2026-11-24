@@ -135,7 +135,7 @@ export function Footer() {
     <footer ref={footerRef} className="mt-24 px-3 pb-3 sm:mt-32 sm:px-5 sm:pb-5">
       <div
         data-footer-card
-        className="mx-auto max-w-[1600px] overflow-hidden rounded-4xl bg-ink px-5 pt-10 pb-6 text-white will-change-transform sm:px-10 sm:pt-14 lg:px-14"
+        className="mx-auto max-w-[1600px] overflow-hidden rounded-4xl border border-transparent bg-ink px-5 pt-10 pb-6 text-white transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#131C2E] sm:px-10 sm:pt-14 lg:px-14"
       >
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">

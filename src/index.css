@@ -1,8 +1,10 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* Light-slate editorial palette */
+  /* Light-slate & Midnight Atlas editorial palettes */
   --color-canvas: #f4f6f8;
   --color-ink: #1e293b;
   --color-ink-soft: #334155;
@@ -10,6 +12,9 @@
   --color-haze: #cbd5e1;
   --color-line: #e2e8f0;
   --color-card: #ffffff;
+  --color-midnight: #0b111e;
+  --color-midnight-card: #131c2e;
+  --color-midnight-ocean: #080d17;
   --color-bd-green: #006a4e;
   --color-bd-red: #f42a41;
 
@@ -47,9 +52,19 @@
   html {
     background-color: var(--color-canvas);
     color: var(--color-ink);
+    color-scheme: light;
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
     text-rendering: optimizeLegibility;
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+
+  html.dark {
+    color-scheme: dark;
+    --color-canvas: #0b111e;
+    --color-card: #131c2e;
+    --color-line: rgb(255 255 255 / 0.1);
+    --color-haze: rgb(255 255 255 / 0.18);
   }
 
   body {
@@ -65,6 +80,10 @@
   :focus-visible {
     outline: 2px solid var(--color-ink);
     outline-offset: 3px;
+  }
+
+  html.dark :focus-visible {
+    outline-color: #f8fafc;
   }
 
   button {
@@ -87,6 +106,12 @@
   background-color: rgb(255 255 255 / 0.72);
   backdrop-filter: blur(18px) saturate(1.6);
   -webkit-backdrop-filter: blur(18px) saturate(1.6);
+}
+
+.dark .glass {
+  background-color: rgb(19 28 46 / 0.85);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
 }
 
 @utility glass-dark {

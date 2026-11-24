@@ -91,13 +91,18 @@ export function ExpoMatrix({ spots, onOpen }) {
 
   return (
     <div>
-      <div className="rounded-4xl border border-line bg-card p-4 sm:p-6">
+      <div className="rounded-4xl border border-line bg-card p-4 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="font-display text-lg font-bold tracking-tight text-ink sm:text-xl">Expo Matrix</p>
+            <p className="font-display text-lg font-bold tracking-tight text-ink dark:text-slate-50 sm:text-xl">
+              Expo Matrix
+            </p>
             <p className="text-xs text-mist sm:text-sm">Combine divisions and seasons — results update instantly.</p>
           </div>
-          <p className="shrink-0 rounded-full bg-canvas px-3 py-1.5 text-xs font-semibold text-ink tabular-nums" aria-live="polite">
+          <p
+            className="shrink-0 rounded-full bg-canvas px-3 py-1.5 text-xs font-semibold text-ink tabular-nums dark:bg-white/10 dark:text-slate-100"
+            aria-live="polite"
+          >
             {filtered.length} / {spots.length}
           </p>
         </div>
@@ -117,12 +122,16 @@ export function ExpoMatrix({ spots, onOpen }) {
                     type="button"
                     aria-pressed={activeCount === 0}
                     onClick={clearAll}
-                    className={`flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition active:scale-95 ${
-                      activeCount === 0 ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink hover:border-haze'
+                    className={`flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors duration-200 active:scale-95 ${
+                      activeCount === 0
+                        ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-[#0B111E]'
+                        : 'border-line bg-white text-ink hover:border-haze dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:border-white/25'
                     }`}
                   >
                     All
-                    <span className={activeCount === 0 ? 'text-white/60' : 'text-mist'}>{spots.length}</span>
+                    <span className={activeCount === 0 ? 'text-white/60 dark:text-[#0B111E]/60' : 'text-mist'}>
+                      {spots.length}
+                    </span>
                   </button>
                 ) : null
               }
@@ -141,14 +150,18 @@ export function ExpoMatrix({ spots, onOpen }) {
       </div>
 
       {filtered.length === 0 && (
-        <div className="mt-3 flex flex-col items-center rounded-4xl border border-dashed border-haze bg-card px-6 py-16 text-center">
+        <div className="mt-3 flex flex-col items-center rounded-4xl border border-dashed border-haze bg-card px-6 py-16 text-center transition-colors duration-300 dark:border-white/15 dark:bg-[#131C2E]">
           <SearchX className="h-8 w-8 text-mist" strokeWidth={1.6} />
-          <p className="mt-3 font-display text-xl font-bold text-ink">No destinations match these filters</p>
-          <p className="mt-1 max-w-sm text-sm text-ink-soft">Try removing a division or season tag to widen the search.</p>
+          <p className="mt-3 font-display text-xl font-bold text-ink dark:text-slate-50">
+            No destinations match these filters
+          </p>
+          <p className="mt-1 max-w-sm text-sm text-ink-soft dark:text-slate-400">
+            Try removing a division or season tag to widen the search.
+          </p>
           <button
             type="button"
             onClick={clearAll}
-            className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition active:scale-95"
+            className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition-colors active:scale-95 dark:bg-white dark:text-[#0B111E]"
           >
             <RotateCcw className="h-4 w-4" strokeWidth={2} />
             Reset filters

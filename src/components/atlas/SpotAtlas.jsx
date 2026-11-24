@@ -3,7 +3,7 @@ import { geoMercator, geoPath } from 'd3-geo';
 import { ArrowUpRight, Crosshair, Minus, Plus, RotateCcw } from 'lucide-react';
 import { CHAPTERS, SECTION_IDS } from '@data';
 import bangladeshDivisions from '@data/bangladeshDivisions.json';
-import { useShowcase } from '@hooks';
+import { useShowcase, useTheme } from '@hooks';
 import { countByCategory, formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 
@@ -16,11 +16,48 @@ const ZOOM_STEP = 0.5;
 const LAT_LINES = [21, 22, 23, 24, 25, 26];
 const LNG_LINES = [88, 89, 90, 91, 92, 93];
 
-const CATEGORY_COLORS = {
-  Hills: '#059669',
-  Sea: '#0284c7',
-  Forest: '#4d7c0f',
-  Heritage: '#d97706',
+const LIGHT_MAP = {
+  graticuleStroke: '#CBD5E1',
+  graticuleText: '#94A3B8',
+  landFill: '#FFFFFF',
+  landFocusFill: '#F8FAFC',
+  landHoverFill: '#E2E8F0',
+  outerStroke: '#94A3B8',
+  innerStroke: '#CBD5E1',
+  labelColor: '#94A3B8',
+  labelHoverColor: '#334155',
+  shadowColor: '#1E293B',
+  shadowOpacity: 0.09,
+  tooltipBg: '#1E293B',
+  tooltipText: '#FFFFFF',
+  pins: {
+    Hills: '#059669',
+    Sea: '#0284c7',
+    Forest: '#4d7c0f',
+    Heritage: '#d97706',
+  },
+};
+
+const DARK_MAP = {
+  graticuleStroke: 'rgba(148, 163, 184, 0.14)',
+  graticuleText: '#64748B',
+  landFill: '#1E293B',
+  landFocusFill: '#243247',
+  landHoverFill: '#2D3F59',
+  outerStroke: '#475569',
+  innerStroke: '#334155',
+  labelColor: '#64748B',
+  labelHoverColor: '#E2E8F0',
+  shadowColor: '#000000',
+  shadowOpacity: 0.55,
+  tooltipBg: '#F8FAFC',
+  tooltipText: '#0B111E',
+  pins: {
+    Hills: '#10b981',
+    Sea: '#38bdf8',
+    Forest: '#84cc16',
+    Heritage: '#f59e0b',
+  },
 };
 
 const chapterByCategory = Object.fromEntries(CHAPTERS.map((c) => [c.category, c]));
@@ -66,6 +103,7 @@ function clampPan(nextPan, nextZoom) {
 /** Interactive coordinate atlas: Bangladesh 8-division vector map aligned with all 24 GPS pins. */
 export function SpotAtlas() {
   const { spots, openSpot } = useShowcase();
+  const { isDark } = useTheme();
   const [focusId, setFocusId] = useState(spots[0]?.id);
   const [category, setCategory] = useState(null);
   const [hoveredDivision, setHoveredDivision] = useState(null);
@@ -75,6 +113,8 @@ export function SpotAtlas() {
 
   const svgRef = useRef(null);
   const dragRef = useRef(null);
+
+  const mapTheme = isDark ? DARK_MAP : LIGHT_MAP;
 
   const focus = spots.find((s) => s.id === focusId) ?? spots[0];
   const counts = useMemo(() => countByCategory(spots), [spots]);
@@ -155,16 +195,16 @@ export function SpotAtlas() {
   return (
     <section id={SECTION_IDS.atlas} aria-labelledby="atlas-title" className="mt-24 scroll-mt-24 px-3 sm:mt-32 sm:px-5">
       <div className="mx-auto grid max-w-[1600px] gap-3 lg:grid-cols-[1fr_1.15fr] lg:gap-4">
-        <div className="flex flex-col rounded-4xl border border-line bg-card p-5 sm:p-8 lg:p-10">
+        <div className="flex flex-col rounded-4xl border border-line bg-card p-5 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-8 lg:p-10">
           <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">Interactive Map</p>
           <h2
             id="atlas-title"
-            className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink"
+            className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"
             style={{ fontSize: 'clamp(2.4rem, 5vw, 4.75rem)' }}
           >
             Coordinate Atlas
           </h2>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft transition-colors duration-300 dark:text-slate-400">
             Every destination plotted by its verified GPS coordinates. Hover or tap a point to preview, then open the full
             travel story.
           </p>
@@ -178,20 +218,24 @@ export function SpotAtlas() {
                   type="button"
                   aria-pressed={on}
                   onClick={() => setCategory(on ? null : chapter.category)}
-                  className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition active:scale-95 ${
-                    on ? 'border-ink bg-ink text-white' : 'border-line bg-white text-ink hover:border-haze'
+                  className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors duration-200 active:scale-95 ${
+                    on
+                      ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-[#0B111E]'
+                      : 'border-line bg-white text-ink hover:border-haze dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:border-white/25'
                   }`}
                 >
                   <span className={`h-2 w-2 rounded-full ${chapter.dotClass}`} aria-hidden="true" />
                   {chapter.title}
-                  <span className={on ? 'text-white/60' : 'text-mist'}>{counts[chapter.category] ?? 0}</span>
+                  <span className={on ? 'text-white/60 dark:text-[#0B111E]/60' : 'text-mist'}>
+                    {counts[chapter.category] ?? 0}
+                  </span>
                 </button>
               );
             })}
           </div>
 
           {focus && (
-            <div className="mt-6 overflow-hidden rounded-3xl border border-line bg-canvas lg:mt-auto">
+            <div className="mt-6 overflow-hidden rounded-3xl border border-line bg-canvas transition-colors duration-300 dark:border-white/10 dark:bg-[#0B111E]/75 lg:mt-auto">
               <SmartImage
                 src={getImageSrc(focus.images.cover, 'card')}
                 fallbackSrc={focus.images.cover}
@@ -204,8 +248,10 @@ export function SpotAtlas() {
                   <p className="text-[11px] font-semibold tracking-[0.18em] text-mist uppercase">
                     {chapterByCategory[focus.category]?.number} · {focus.category} · {focus.division}
                   </p>
-                  <p className="mt-1 truncate font-display text-xl font-bold text-ink sm:text-2xl">{focus.name}</p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-soft tabular-nums">
+                  <p className="mt-1 truncate font-display text-xl font-bold text-ink dark:text-slate-50 sm:text-2xl">
+                    {focus.name}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-soft tabular-nums dark:text-slate-400">
                     <Crosshair className="h-3.5 w-3.5" strokeWidth={2} />
                     {formatCoordinates(focus.coordinates)}
                   </p>
@@ -213,7 +259,7 @@ export function SpotAtlas() {
                 <button
                   type="button"
                   onClick={() => openSpot(focus.id)}
-                  className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink-soft active:scale-95"
+                  className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
                 >
                   Open
                   <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
@@ -223,10 +269,10 @@ export function SpotAtlas() {
           )}
         </div>
 
-        <div className="relative overflow-hidden rounded-4xl border border-line bg-[#eef2f6] p-3 sm:p-5">
+        <div className="relative overflow-hidden rounded-4xl border border-line bg-[#eef2f6] p-3 transition-colors duration-300 dark:border-white/10 dark:bg-[#080D17] sm:p-5">
           {/* Top-left floating division indicator */}
-          <div className="glass pointer-events-none absolute top-4 left-4 z-30 flex items-center gap-2 rounded-full border border-white/70 px-3.5 py-1.5 text-xs font-semibold text-ink shadow-sm sm:top-6 sm:left-6">
-            <span className="h-2 w-2 rounded-full bg-bd-green" aria-hidden="true" />
+          <div className="glass pointer-events-none absolute top-4 left-4 z-30 flex items-center gap-2 rounded-full border border-white/70 px-3.5 py-1.5 text-xs font-semibold text-ink shadow-sm transition-colors duration-300 dark:border-white/10 dark:text-slate-100 sm:top-6 sm:left-6">
+            <span className="h-2 w-2 rounded-full bg-bd-green dark:bg-emerald-400" aria-hidden="true" />
             {hoveredDivision ? (
               <span>
                 {hoveredDivision} Division · {divisionCounts[hoveredDivision] ?? 0}{' '}
@@ -242,14 +288,14 @@ export function SpotAtlas() {
             data-map-control
             role="group"
             aria-label="Map zoom controls"
-            className="glass absolute top-4 right-4 z-30 flex items-center gap-1 rounded-full border border-white/70 p-1 shadow-sm sm:top-6 sm:right-6"
+            className="glass absolute top-4 right-4 z-30 flex items-center gap-1 rounded-full border border-white/70 p-1 shadow-sm transition-colors duration-300 dark:border-white/10 sm:top-6 sm:right-6"
           >
             <button
               type="button"
               onClick={zoomIn}
               disabled={zoom >= MAX_ZOOM}
               aria-label="Zoom in"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10"
             >
               <Plus className="h-4 w-4" strokeWidth={2.2} />
             </button>
@@ -258,19 +304,21 @@ export function SpotAtlas() {
               onClick={zoomOut}
               disabled={zoom <= MIN_ZOOM}
               aria-label="Zoom out"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10"
             >
               <Minus className="h-4 w-4" strokeWidth={2.2} />
             </button>
             {zoom > 1 && (
-              <span className="px-1.5 text-[11px] font-bold text-ink-soft tabular-nums">{zoom.toFixed(1)}×</span>
+              <span className="px-1.5 text-[11px] font-bold text-ink-soft tabular-nums dark:text-slate-300">
+                {zoom.toFixed(1)}×
+              </span>
             )}
             <button
               type="button"
               onClick={resetView}
               disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
               aria-label="Reset map zoom"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-100 dark:hover:bg-white/10"
             >
               <RotateCcw className="h-3.5 w-3.5" strokeWidth={2.2} />
             </button>
@@ -294,7 +342,16 @@ export function SpotAtlas() {
             >
               <defs>
                 <filter id="bd-land-shadow" x="-10%" y="-10%" width="120%" height="120%">
-                  <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#1E293B" floodOpacity="0.09" />
+                  <feDropShadow
+                    dx="0"
+                    dy="6"
+                    stdDeviation="8"
+                    floodColor={mapTheme.shadowColor}
+                    floodOpacity={mapTheme.shadowOpacity}
+                  />
+                </filter>
+                <filter id="bd-pin-glow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="3.5" />
                 </filter>
               </defs>
 
@@ -308,7 +365,7 @@ export function SpotAtlas() {
                         y1={y}
                         x2={SVG_W}
                         y2={y}
-                        stroke="#CBD5E1"
+                        stroke={mapTheme.graticuleStroke}
                         strokeWidth={1}
                         strokeDasharray="4 4"
                         vectorEffect="non-scaling-stroke"
@@ -316,7 +373,7 @@ export function SpotAtlas() {
                       <text
                         x={6}
                         y={y - 5}
-                        fill="#94A3B8"
+                        fill={mapTheme.graticuleText}
                         fontSize={10 * invScale}
                         fontWeight={600}
                         className="tabular-nums"
@@ -332,7 +389,7 @@ export function SpotAtlas() {
                         y1={0}
                         x2={x}
                         y2={SVG_H}
-                        stroke="#CBD5E1"
+                        stroke={mapTheme.graticuleStroke}
                         strokeWidth={1}
                         strokeDasharray="4 4"
                         vectorEffect="non-scaling-stroke"
@@ -340,7 +397,7 @@ export function SpotAtlas() {
                       <text
                         x={x + 4}
                         y={SVG_H - 10}
-                        fill="#94A3B8"
+                        fill={mapTheme.graticuleText}
                         fontSize={10 * invScale}
                         fontWeight={600}
                         className="tabular-nums"
@@ -356,8 +413,8 @@ export function SpotAtlas() {
                   x={BAY_LABEL[0]}
                   y={BAY_LABEL[1]}
                   textAnchor="middle"
-                  fill="#94A3B8"
-                  opacity={0.75}
+                  fill={mapTheme.graticuleText}
+                  opacity={isDark ? 0.65 : 0.75}
                   fontSize={11 * invScale}
                   fontWeight={600}
                   letterSpacing="0.28em"
@@ -371,8 +428,8 @@ export function SpotAtlas() {
                     <path
                       key={`outer-${div.name}`}
                       d={div.d}
-                      fill="#FFFFFF"
-                      stroke="#94A3B8"
+                      fill={mapTheme.landFill}
+                      stroke={mapTheme.outerStroke}
                       strokeWidth={2.8}
                       strokeLinejoin="round"
                       vectorEffect="non-scaling-stroke"
@@ -385,14 +442,18 @@ export function SpotAtlas() {
                   {DIVISIONS.map((div) => {
                     const isHovered = hoveredDivision === div.name;
                     const isFocusDiv = focus?.division === div.name;
-                    const fill = isHovered ? '#E2E8F0' : isFocusDiv ? '#F8FAFC' : '#FFFFFF';
+                    const fill = isHovered
+                      ? mapTheme.landHoverFill
+                      : isFocusDiv
+                        ? mapTheme.landFocusFill
+                        : mapTheme.landFill;
                     return (
                       <path
                         key={div.name}
                         data-division-path={div.name}
                         d={div.d}
                         fill={fill}
-                        stroke="#CBD5E1"
+                        stroke={mapTheme.innerStroke}
                         strokeWidth={1}
                         strokeLinejoin="round"
                         vectorEffect="non-scaling-stroke"
@@ -409,7 +470,6 @@ export function SpotAtlas() {
                   {DIVISIONS.map((div) => {
                     const [cx, cy] = div.centroid;
                     const isHovered = hoveredDivision === div.name;
-                    // Nudge Chattogram label slightly inland toward mainland ridge
                     const lx = div.name === 'Chattogram' ? cx + 12 : cx;
                     const ly = div.name === 'Chattogram' ? cy - 22 : cy;
                     return (
@@ -418,7 +478,7 @@ export function SpotAtlas() {
                         x={lx}
                         y={ly}
                         textAnchor="middle"
-                        fill={isHovered ? '#334155' : '#94A3B8'}
+                        fill={isHovered ? mapTheme.labelHoverColor : mapTheme.labelColor}
                         fontSize={8.5 * invScale}
                         fontWeight={700}
                         letterSpacing="0.16em"
@@ -435,11 +495,10 @@ export function SpotAtlas() {
                   {projectedSpots.map(({ spot, px, py }) => {
                     const isFocus = spot.id === focus?.id;
                     const dimmed = Boolean(category && spot.category !== category);
-                    const color = CATEGORY_COLORS[spot.category] ?? '#1E293B';
+                    const color = mapTheme.pins[spot.category] ?? '#1E293B';
                     const dotRadius = (isFocus ? 7.5 : 4.8) * invScale;
                     const strokeW = 2.2 * invScale;
 
-                    // Smart tooltip placement inside viewBox
                     const flipBelow = py < 70;
                     const tipW = Math.min(220, Math.max(88, spot.name.length * 7.2 + 22));
                     const tipH = 26;
@@ -474,8 +533,16 @@ export function SpotAtlas() {
                         opacity={dimmed ? 0.22 : 1}
                         className="cursor-pointer transition-opacity duration-200 focus:outline-none"
                       >
-                        {/* Generous invisible hit target */}
                         <circle r={13 / zoom} fill="transparent" />
+
+                        {isDark && !dimmed && (
+                          <circle
+                            r={dotRadius * 2.1}
+                            fill={color}
+                            opacity={isFocus ? 0.55 : 0.35}
+                            filter="url(#bd-pin-glow)"
+                          />
+                        )}
 
                         {isFocus && (
                           <circle
@@ -490,7 +557,7 @@ export function SpotAtlas() {
                         <circle
                           r={dotRadius}
                           fill={color}
-                          stroke="#FFFFFF"
+                          stroke={isDark ? '#0B111E' : '#FFFFFF'}
                           strokeWidth={strokeW}
                         />
 
@@ -502,13 +569,13 @@ export function SpotAtlas() {
                               width={tipW}
                               height={tipH}
                               rx={tipH / 2}
-                              fill="#1E293B"
+                              fill={mapTheme.tooltipBg}
                             />
                             <text
                               x={tipX + tipW / 2}
                               y={tipY + tipH / 2 + 4}
                               textAnchor="middle"
-                              fill="#FFFFFF"
+                              fill={mapTheme.tooltipText}
                               fontSize={11}
                               fontWeight={600}
                             >

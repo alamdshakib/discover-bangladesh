@@ -146,9 +146,11 @@ function DetailGallery({ spot }) {
 
 function InfoCard({ icon: Icon, title, children, className = '' }) {
   return (
-    <div className={`rounded-3xl border border-line bg-white p-4 sm:p-5 ${className}`}>
+    <div
+      className={`rounded-3xl border border-line bg-white p-4 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-5 ${className}`}
+    >
       <p className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">
-        <Icon className="h-3.5 w-3.5 text-ink" strokeWidth={2.2} aria-hidden="true" />
+        <Icon className="h-3.5 w-3.5 text-ink dark:text-slate-200" strokeWidth={2.2} aria-hidden="true" />
         {title}
       </p>
       <div className="mt-2.5">{children}</div>
@@ -171,18 +173,21 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
 
       <h2
         id={titleId}
-        className="mt-4 font-display leading-[0.95] font-black tracking-[-0.045em] text-ink"
+        className="mt-4 font-display leading-[0.95] font-black tracking-[-0.045em] text-ink dark:text-slate-50"
         style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)' }}
       >
         {spot.name}
       </h2>
-      <p className="mt-3 text-base leading-snug text-ink-soft sm:text-lg">{spot.tagline}</p>
-      <p className="mt-5 text-sm leading-relaxed text-ink-soft sm:text-[15px]">{spot.description}</p>
+      <p className="mt-3 text-base leading-snug text-ink-soft dark:text-slate-300 sm:text-lg">{spot.tagline}</p>
+      <p className="mt-5 text-sm leading-relaxed text-ink-soft dark:text-slate-400 sm:text-[15px]">{spot.description}</p>
 
       <h3 className="mt-8 text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">Highlights</h3>
       <ol className="mt-2">
         {spot.highlights.map((item, i) => (
-          <li key={item} className="flex gap-4 border-t border-line py-3.5 text-sm leading-relaxed text-ink">
+          <li
+            key={item}
+            className="flex gap-4 border-t border-line py-3.5 text-sm leading-relaxed text-ink dark:border-white/10 dark:text-slate-100"
+          >
             <span className="font-display text-sm font-bold text-mist tabular-nums">{String(i + 1).padStart(2, '0')}</span>
             {item}
           </li>
@@ -191,8 +196,10 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <InfoCard icon={CalendarDays} title="Best Time">
-          <p className="text-sm font-semibold text-ink">{getSeasonWindow(spot)}</p>
-          {getSeasonReason(spot) && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{getSeasonReason(spot)}</p>}
+          <p className="text-sm font-semibold text-ink dark:text-slate-50">{getSeasonWindow(spot)}</p>
+          {getSeasonReason(spot) && (
+            <p className="mt-1 text-xs leading-relaxed text-ink-soft dark:text-slate-400">{getSeasonReason(spot)}</p>
+          )}
           <div className="mt-3 flex flex-wrap gap-1">
             {spot.seasons.map((s) => (
               <MetaPill key={s}>{s}</MetaPill>
@@ -201,12 +208,14 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
         </InfoCard>
 
         <InfoCard icon={Navigation} title="Coordinates">
-          <p className="font-display text-sm font-semibold text-ink tabular-nums">{formatCoordinates(spot.coordinates)}</p>
+          <p className="font-display text-sm font-semibold text-ink tabular-nums dark:text-slate-50">
+            {formatCoordinates(spot.coordinates)}
+          </p>
           <a
             href={getMapsUrl(spot.coordinates)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white transition hover:bg-ink-soft active:scale-95"
+            className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white transition-colors hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
           >
             Open in Google Maps
             <ExternalLink className="h-3.5 w-3.5" strokeWidth={2.2} />
@@ -214,14 +223,14 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
         </InfoCard>
 
         <InfoCard icon={Route} title="Route Guide" className="sm:col-span-2">
-          <p className="text-sm leading-relaxed text-ink-soft">{spot.howToGo}</p>
+          <p className="text-sm leading-relaxed text-ink-soft dark:text-slate-400">{spot.howToGo}</p>
         </InfoCard>
       </div>
 
       <button
         type="button"
         onClick={onNext}
-        className="group mt-6 flex w-full items-center justify-between gap-4 rounded-3xl border border-line bg-white p-3 pr-5 text-left transition hover:border-haze active:scale-[0.98]"
+        className="group mt-6 flex w-full items-center justify-between gap-4 rounded-3xl border border-line bg-white p-3 pr-5 text-left transition-colors hover:border-haze active:scale-[0.98] dark:border-white/10 dark:bg-[#131C2E] dark:hover:border-white/25"
       >
         <span className="flex min-w-0 items-center gap-3">
           <img
@@ -231,10 +240,15 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
           />
           <span className="min-w-0">
             <span className="block text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">Next destination</span>
-            <span className="block truncate font-display text-lg font-bold text-ink">{nextSpot.name}</span>
+            <span className="block truncate font-display text-lg font-bold text-ink dark:text-slate-50">
+              {nextSpot.name}
+            </span>
           </span>
         </span>
-        <ArrowRight className="h-5 w-5 shrink-0 text-ink transition group-hover:translate-x-1" strokeWidth={2} />
+        <ArrowRight
+          className="h-5 w-5 shrink-0 text-ink transition group-hover:translate-x-1 dark:text-slate-100"
+          strokeWidth={2}
+        />
       </button>
     </div>
   );
@@ -353,7 +367,12 @@ function DetailDialog() {
 
   return (
     <div className="fixed inset-0 z-[100]">
-      <div ref={backdropRef} onClick={requestClose} aria-hidden="true" className="absolute inset-0 bg-ink/45 backdrop-blur-md" />
+      <div
+        ref={backdropRef}
+        onClick={requestClose}
+        aria-hidden="true"
+        className="absolute inset-0 bg-ink/45 backdrop-blur-md dark:bg-black/70"
+      />
 
       <div className="pointer-events-none absolute inset-0 flex items-end justify-center lg:items-center lg:p-8">
         <div
@@ -361,7 +380,7 @@ function DetailDialog() {
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="pointer-events-auto relative flex h-[92svh] w-full flex-col overflow-hidden rounded-t-4xl bg-canvas shadow-[0_-20px_60px_-20px_rgba(15,23,42,0.5)] lg:h-[min(86vh,860px)] lg:max-w-6xl lg:flex-row lg:rounded-4xl lg:border lg:border-white/70 lg:bg-white/80 lg:shadow-[0_50px_120px_-40px_rgba(15,23,42,0.7)] lg:backdrop-blur-2xl"
+          className="pointer-events-auto relative flex h-[92svh] w-full flex-col overflow-hidden rounded-t-4xl bg-canvas shadow-[0_-20px_60px_-20px_rgba(15,23,42,0.5)] dark:border-t dark:border-white/10 dark:bg-[#0B111E] dark:shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.85)] lg:h-[min(86vh,860px)] lg:max-w-6xl lg:flex-row lg:rounded-4xl lg:border lg:border-white/70 lg:bg-white/80 lg:shadow-[0_50px_120px_-40px_rgba(15,23,42,0.7)] lg:backdrop-blur-2xl dark:lg:border-white/10 dark:lg:bg-[#131C2E]/90 dark:lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.9)]"
         >
           <div
             onPointerDown={onDragStart}
@@ -371,7 +390,7 @@ function DetailDialog() {
             className="flex h-8 shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing lg:hidden"
             aria-hidden="true"
           >
-            <span className="h-1.5 w-12 rounded-full bg-haze" />
+            <span className="h-1.5 w-12 rounded-full bg-haze dark:bg-white/20" />
           </div>
 
           <button
@@ -379,7 +398,7 @@ function DetailDialog() {
             type="button"
             onClick={requestClose}
             aria-label="Close details"
-            className="absolute top-10 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink shadow-md transition hover:bg-canvas active:scale-95 lg:top-5 lg:right-5 lg:h-11 lg:w-11 lg:bg-ink lg:text-white lg:hover:bg-ink-soft"
+            className="absolute top-10 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink shadow-md transition-colors hover:bg-canvas active:scale-95 dark:border dark:border-white/15 dark:bg-[#131C2E] dark:text-slate-100 lg:top-5 lg:right-5 lg:h-11 lg:w-11 lg:bg-ink lg:text-white lg:hover:bg-ink-soft dark:lg:border-transparent dark:lg:bg-white dark:lg:text-[#0B111E] dark:lg:hover:bg-slate-200"
           >
             <X className="h-5 w-5" strokeWidth={2} />
           </button>

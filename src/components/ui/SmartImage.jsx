@@ -28,7 +28,7 @@ function SmartImageInner({
       {status === 'loading' && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 animate-pulse bg-gradient-to-br from-line via-white to-haze/60"
+          className="absolute inset-0 animate-pulse bg-gradient-to-br from-line via-white to-haze/60 dark:from-[#131C2E] dark:via-[#1E293B] dark:to-[#131C2E]"
         />
       )}
 
@@ -36,7 +36,7 @@ function SmartImageInner({
         <div
           role="img"
           aria-label={alt}
-          className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-haze to-mist text-ink-soft"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-haze to-mist text-ink-soft dark:from-[#131C2E] dark:to-[#1E293B] dark:text-slate-300"
         >
           <ImageOff className="h-6 w-6" strokeWidth={1.5} />
           <span className="text-[11px] font-medium tracking-wide uppercase">Photo unavailable</span>

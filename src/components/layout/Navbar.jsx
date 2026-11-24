@@ -5,6 +5,7 @@ import { useShowcase } from '@hooks';
 import { scrollToTarget } from '@animations';
 import { SearchBar } from '../search/SearchBar.jsx';
 import { ExpoSwitch } from '../ui/ExpoSwitch.jsx';
+import { ThemeToggle } from '../ui/ThemeToggle.jsx';
 import { MobileMenu } from './MobileMenu.jsx';
 
 export function Navbar() {
@@ -23,8 +24,10 @@ export function Navbar() {
     <>
       <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
         <div
-          className={`glass mx-auto flex h-14 max-w-[1600px] items-center gap-2 rounded-full border border-white/70 pr-1.5 pl-4 transition-shadow duration-500 sm:gap-3 sm:pl-5 ${
-            scrolled ? 'shadow-[0_18px_40px_-24px_rgba(15,23,42,0.45)]' : 'shadow-none'
+          className={`glass mx-auto flex h-14 max-w-[1600px] items-center gap-2 rounded-full border border-white/70 pr-1.5 pl-4 transition-[background-color,border-color,box-shadow] duration-300 dark:border-white/10 sm:gap-3 sm:pl-5 ${
+            scrolled
+              ? 'shadow-[0_18px_40px_-24px_rgba(15,23,42,0.45)] dark:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.75)]'
+              : 'shadow-none'
           }`}
         >
           <button
@@ -33,10 +36,10 @@ export function Navbar() {
             className="flex shrink-0 items-center gap-1.5 transition active:scale-95"
             aria-label={`${SITE_META.name} — back to top`}
           >
-            <span className="relative font-display text-[1.05rem] font-black tracking-[-0.04em] text-ink">
+            <span className="relative font-display text-[1.05rem] font-black tracking-[-0.04em] text-ink transition-colors duration-300 dark:text-slate-50">
               DISCOVER
             </span>
-            <span className="flex items-center gap-1 rounded-full bg-ink px-2 py-0.5 font-display text-[0.7rem] font-bold tracking-[0.12em] text-white">
+            <span className="flex items-center gap-1 rounded-full bg-ink px-2 py-0.5 font-display text-[0.7rem] font-bold tracking-[0.12em] text-white transition-colors duration-300 dark:bg-white dark:text-[#0B111E]">
               <span className="h-1.5 w-1.5 rounded-full bg-bd-red" aria-hidden="true" />
               BD
             </span>
@@ -44,12 +47,19 @@ export function Navbar() {
 
           <SearchBar className="mx-auto hidden w-full max-w-md md:block" />
 
-          <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-0">
-            <ExpoSwitch checked={expoMode} onChange={setExpoMode} className="hidden hover:bg-white/80 sm:inline-flex" />
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2 md:ml-0">
+            <div className="hidden sm:flex">
+              <ExpoSwitch
+                checked={expoMode}
+                onChange={setExpoMode}
+                className="hover:bg-white/80 dark:hover:bg-white/10"
+              />
+            </div>
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => scrollToTarget(`#${SECTION_IDS.atlas}`)}
-              className="hidden h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-ink-soft active:scale-95 md:inline-flex"
+              className="hidden h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200 md:inline-flex"
             >
               <Map className="h-4 w-4" strokeWidth={2} />
               Explore Map
@@ -60,7 +70,7 @@ export function Navbar() {
               aria-label="Open menu"
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-white transition active:scale-95 md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-white transition-colors duration-300 active:scale-95 dark:bg-white dark:text-[#0B111E] md:hidden"
             >
               <Menu className="h-5 w-5" strokeWidth={2} />
             </button>

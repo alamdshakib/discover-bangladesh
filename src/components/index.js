@@ -18,3 +18,4 @@ export { SpotAtlas } from './atlas/SpotAtlas.jsx';
 export { SmartImage } from './ui/SmartImage.jsx';
 export { ExpoSwitch } from './ui/ExpoSwitch.jsx';
 export { MetaPill } from './ui/MetaPill.jsx';
+export { ThemeToggle } from './ui/ThemeToggle.jsx';

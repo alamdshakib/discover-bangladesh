@@ -4,10 +4,10 @@ import { useShowcase } from '@hooks';
 import { gsap, MEDIA } from '@animations';
 
 const CARD_TONES = [
-  'border-line bg-card text-ink',
-  'border-mist/40 bg-mist/25 text-ink',
-  'border-ink bg-ink text-white',
-  'border-line bg-card text-ink',
+  'border-line bg-card text-ink dark:border-white/10 dark:bg-[#131C2E] dark:text-slate-50',
+  'border-mist/40 bg-mist/25 text-ink dark:border-white/10 dark:bg-[#182338] dark:text-slate-50',
+  'border-ink bg-ink text-white dark:border-white/15 dark:bg-[#1E293B] dark:text-white',
+  'border-line bg-card text-ink dark:border-white/10 dark:bg-[#131C2E] dark:text-slate-50',
 ];
 
 export function StatsStrip() {
@@ -60,11 +60,11 @@ export function StatsStrip() {
           <div
             key={stat.key}
             data-stat-card
-            className={`flex min-h-[148px] flex-col justify-between rounded-3xl border p-5 sm:min-h-[180px] sm:p-7 ${CARD_TONES[index]}`}
+            className={`flex min-h-[148px] flex-col justify-between rounded-3xl border p-5 transition-colors duration-300 sm:min-h-[180px] sm:p-7 ${CARD_TONES[index]}`}
           >
             <span
               className={`text-[10px] font-semibold tracking-[0.22em] uppercase sm:text-[11px] ${
-                index === 2 ? 'text-white/60' : 'text-mist'
+                index === 2 ? 'text-white/60' : 'text-mist dark:text-slate-400'
               }`}
             >
               {String(index + 1).padStart(2, '0')} / {stat.label}
@@ -76,7 +76,11 @@ export function StatsStrip() {
               >
                 <span data-count={stat.value}>{String(stat.value).padStart(2, '0')}</span>
               </p>
-              <p className={`mt-2 text-xs sm:text-sm ${index === 2 ? 'text-white/70' : 'text-ink-soft'}`}>
+              <p
+                className={`mt-2 text-xs sm:text-sm ${
+                  index === 2 ? 'text-white/70' : 'text-ink-soft dark:text-slate-400'
+                }`}
+              >
                 {stat.note}
               </p>
             </div>

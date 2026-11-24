@@ -69,19 +69,22 @@ export function Hero() {
         <div className="flex flex-col gap-4 px-1 sm:px-3 lg:flex-row lg:items-end lg:justify-between">
           <p
             data-hero-reveal
-            className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-ink-soft uppercase"
+            className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-ink-soft uppercase transition-colors duration-300 dark:text-slate-400"
           >
             <span className="h-2 w-2 rounded-full bg-bd-green" aria-hidden="true" />
             {SITE_META.edition}
           </p>
-          <p data-hero-reveal className="max-w-md text-sm leading-relaxed text-ink-soft">
+          <p
+            data-hero-reveal
+            className="max-w-md text-sm leading-relaxed text-ink-soft transition-colors duration-300 dark:text-slate-400"
+          >
             {SITE_META.description}
           </p>
         </div>
 
         <h1
           data-hero-title
-          className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2 px-0.5 font-display text-ink sm:px-2"
+          className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2 px-0.5 font-display text-ink transition-colors duration-300 dark:text-slate-50 sm:px-2"
         >
           <span
             data-hero-reveal
@@ -92,17 +95,17 @@ export function Hero() {
           </span>
           <span
             data-hero-reveal
-            className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.45em] text-mist"
+            className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.45em] text-mist transition-colors duration-300 dark:text-slate-400"
             style={{ fontSize: 'clamp(0.8rem, 1.55vw, 1.5rem)' }}
           >
-            <span className="h-px w-8 bg-mist sm:w-12" aria-hidden="true" />
+            <span className="h-px w-8 bg-mist dark:bg-slate-600 sm:w-12" aria-hidden="true" />
             BANGLADESH
           </span>
         </h1>
 
         <div
           data-hero-frame
-          className="relative mt-6 h-[clamp(460px,72svh,820px)] w-full overflow-hidden rounded-[1.75rem] bg-ink will-change-transform sm:mt-8"
+          className="relative mt-6 h-[clamp(460px,72svh,820px)] w-full overflow-hidden rounded-[1.75rem] bg-ink will-change-transform dark:ring-1 dark:ring-white/10 sm:mt-8"
         >
           <div data-hero-media className="absolute inset-0 will-change-transform">
             <SmartImage
@@ -122,9 +125,9 @@ export function Hero() {
           <button
             type="button"
             onClick={() => openSpot(heroSpot.id)}
-            className="glass absolute top-4 right-4 z-10 flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full border border-white/60 py-1.5 pr-3.5 pl-2 text-xs font-semibold text-ink transition active:scale-95 sm:top-6 sm:right-6"
+            className="glass absolute top-4 right-4 z-10 flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full border border-white/60 py-1.5 pr-3.5 pl-2 text-xs font-semibold text-ink transition-colors duration-300 active:scale-95 dark:border-white/15 dark:text-slate-50 sm:top-6 sm:right-6"
           >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-white">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-300 dark:bg-white dark:text-[#0B111E]">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2.2} />
             </span>
             <span className="truncate">

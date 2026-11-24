@@ -26,7 +26,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
   return (
     <article
       data-spot-card
-      className={`group flex flex-col overflow-hidden rounded-4xl border border-line bg-card transition-shadow duration-500 hover:shadow-[0_40px_80px_-40px_rgba(15,23,42,0.4)] ${
+      className={`group flex flex-col overflow-hidden rounded-4xl border border-line bg-card transition-[background-color,border-color,box-shadow] duration-300 hover:shadow-[0_40px_80px_-40px_rgba(15,23,42,0.4)] dark:border-white/10 dark:bg-[#131C2E] dark:hover:shadow-[0_40px_80px_-40px_rgba(0,0,0,0.8)] ${
         SPAN_CLASS[span] ?? SPAN_CLASS[6]
       }`}
     >
@@ -59,7 +59,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
         <div
           role="group"
           aria-label={`${spot.name} photos`}
-          className="glass absolute bottom-3 left-3 flex gap-1 rounded-full border border-white/60 p-1 sm:bottom-4 sm:left-4"
+          className="glass absolute bottom-3 left-3 flex gap-1 rounded-full border border-white/60 p-1 dark:border-white/15 sm:bottom-4 sm:left-4"
         >
           {images.map((img, i) => (
             <button
@@ -71,7 +71,9 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
               aria-label={`Show photo ${i + 1} of ${spot.name}`}
               aria-pressed={i === active}
               className={`h-9 w-9 overflow-hidden rounded-full transition active:scale-95 sm:h-10 sm:w-10 ${
-                i === active ? 'ring-2 ring-ink ring-offset-1 ring-offset-white' : 'opacity-75 hover:opacity-100'
+                i === active
+                  ? 'ring-2 ring-ink ring-offset-1 ring-offset-white dark:ring-white dark:ring-offset-[#131C2E]'
+                  : 'opacity-75 hover:opacity-100'
               }`}
             >
               <img
@@ -93,12 +95,14 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
             <MetaPill icon={MapPin}>{spot.division}</MetaPill>
             <MetaPill>{spot.district}</MetaPill>
           </div>
-          <h3 className="mt-3 font-display text-[1.6rem] leading-[1.08] font-bold tracking-[-0.03em] text-ink sm:text-[1.8rem]">
-            <button type="button" onClick={open} className="text-left transition hover:text-ink-soft">
+          <h3 className="mt-3 font-display text-[1.6rem] leading-[1.08] font-bold tracking-[-0.03em] text-ink transition-colors duration-300 dark:text-slate-50 sm:text-[1.8rem]">
+            <button type="button" onClick={open} className="text-left transition hover:text-ink-soft dark:hover:text-slate-300">
               {spot.name}
             </button>
           </h3>
-          <p className="mt-2 text-sm leading-relaxed text-ink-soft">{spot.tagline}</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft transition-colors duration-300 dark:text-slate-400">
+            {spot.tagline}
+          </p>
         </div>
 
         <div className={`mt-auto pt-5 ${wide ? 'lg:mt-0 lg:w-[44%] lg:pt-0' : ''}`}>
@@ -107,7 +111,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
               type="button"
               onClick={() => setNotesOpen((v) => !v)}
               aria-expanded={notesOpen}
-              className="inline-flex items-center gap-2 rounded-full border border-line bg-canvas py-2 pr-2.5 pl-3.5 text-xs font-semibold text-ink transition hover:border-haze active:scale-95"
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-canvas py-2 pr-2.5 pl-3.5 text-xs font-semibold text-ink transition-colors duration-300 hover:border-haze active:scale-95 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-100 dark:hover:border-white/25"
             >
               Travel Notes
               <span className="font-display text-mist">[1] [2]</span>
@@ -120,7 +124,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
               type="button"
               onClick={open}
               aria-label={`Explore ${spot.name}`}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white transition group-hover:rotate-45 active:scale-95"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-[transform,background-color,color] duration-300 group-hover:rotate-45 active:scale-95 dark:bg-white dark:text-[#0B111E]"
             >
               <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
             </button>

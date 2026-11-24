@@ -81,7 +81,7 @@ export function Showcase() {
           <div>
             <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">The Collection</p>
             <h2
-              className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink"
+              className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"
               style={{ fontSize: 'clamp(2.4rem, 6vw, 5.5rem)' }}
             >
               24 places, four chapters.
@@ -91,7 +91,7 @@ export function Showcase() {
           <div
             role="radiogroup"
             aria-label="Showcase view"
-            className="flex w-full shrink-0 rounded-full border border-line bg-white p-1 sm:w-auto"
+            className="flex w-full shrink-0 rounded-full border border-line bg-white p-1 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:w-auto"
           >
             {[
               { mode: false, label: 'Editorial', icon: BookOpen },
@@ -105,8 +105,10 @@ export function Showcase() {
                   role="radio"
                   aria-checked={selected}
                   onClick={() => setExpoMode(mode)}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition active:scale-95 sm:flex-none ${
-                    selected ? 'bg-ink text-white' : 'text-ink-soft hover:text-ink'
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors duration-300 active:scale-95 sm:flex-none ${
+                    selected
+                      ? 'bg-ink text-white dark:bg-white dark:text-[#0B111E]'
+                      : 'text-ink-soft hover:text-ink dark:text-slate-400 dark:hover:text-slate-100'
                   }`}
                 >
                   <Icon className="h-4 w-4" strokeWidth={2} />
