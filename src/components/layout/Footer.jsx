@@ -179,10 +179,10 @@ export function Footer() {
           <div
             data-footer-mask
             onPointerLeave={() => setHoveredIdx(null)}
-            className="overflow-hidden pt-3 pb-1"
+            className="overflow-hidden pt-4 pb-3"
           >
             <div
-              className="flex w-full items-end justify-between font-display leading-[0.85] font-extrabold tracking-tighter select-none"
+              className="flex w-full items-end justify-between font-display leading-[1.08] font-extrabold tracking-tighter select-none"
               style={{ fontSize: 'clamp(2.05rem, 14.2cqw, 14.5rem)' }}
             >
               {WORDMARK_LETTERS.map((char, index) => {
@@ -199,14 +199,14 @@ export function Footer() {
                       style={{ transform: `translateY(${liftY})` }}
                     >
                       <span
-                        className="block bg-clip-text text-transparent"
+                        className="block bg-clip-text pb-1 text-transparent"
                         style={{ backgroundImage: BASE_GRADIENT }}
                       >
                         {char}
                       </span>
                       <span
                         data-footer-letter-sheen={index}
-                        className="pointer-events-none absolute inset-0 block bg-clip-text text-transparent transition-opacity duration-300 ease-out"
+                        className="pointer-events-none absolute inset-0 block bg-clip-text pb-1 text-transparent transition-opacity duration-300 ease-out"
                         style={{
                           backgroundImage: SHEEN_GRADIENT,
                           opacity: sheenOpacity,
