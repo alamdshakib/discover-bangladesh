@@ -28,30 +28,31 @@ export function Hero() {
         stagger: 0.08,
         ease: 'expo.out',
       });
-      gsap.from('[data-hero-frame]', { y: 70, opacity: 0, duration: 1.3, delay: 0.15, ease: 'expo.out' });
+      gsap.from('[data-hero-frame]', { opacity: 0, duration: 1.05, delay: 0.12, ease: 'expo.out' });
       gsap.from('[data-hero-copy] > *', { y: 24, opacity: 0, duration: 0.9, delay: 0.55, stagger: 0.08 });
 
       if (isDesktop) {
-        // Scrubbed zoom-expansion: the framed hero opens to full bleed as you scroll.
-        const scrub = { trigger: scopeRef.current, start: 'top top', end: 'bottom 35%', scrub: 0.6 };
+        // Reverse scrubbed hero: starts large & full width, smoothly shrinks and rounds inward on scroll.
+        const scrub = { trigger: scopeRef.current, start: 'top top', end: 'bottom 25%', scrub: 0.6 };
         gsap.fromTo(
           '[data-hero-frame]',
-          { clipPath: 'inset(0% 5% 0% 5% round 2.5rem)' },
-          { clipPath: 'inset(0% 0% 0% 0% round 1.5rem)', ease: 'none', scrollTrigger: scrub }
+          { scale: 1, borderRadius: '1.75rem', transformOrigin: 'center top' },
+          { scale: 0.89, borderRadius: '2.75rem', ease: 'none', scrollTrigger: scrub }
         );
         gsap.fromTo(
           '[data-hero-media]',
-          { scale: 1.22, yPercent: -4 },
-          { scale: 1, yPercent: 6, ease: 'none', scrollTrigger: scrub }
+          { scale: 1.04, yPercent: -3 },
+          { scale: 1.12, yPercent: 5, ease: 'none', scrollTrigger: scrub }
         );
-        gsap.to('[data-hero-title]', { yPercent: -18, opacity: 0.35, ease: 'none', scrollTrigger: scrub });
+        gsap.to('[data-hero-title]', { y: -12, opacity: 0.55, ease: 'none', scrollTrigger: scrub });
       } else {
         // Light parallax only — no pinning, natural touch scrolling.
         gsap.fromTo(
           '[data-hero-media]',
-          { yPercent: -3 },
+          { scale: 1.04, yPercent: -2 },
           {
-            yPercent: 5,
+            scale: 1.08,
+            yPercent: 4,
             ease: 'none',
             scrollTrigger: { trigger: '[data-hero-frame]', start: 'top bottom', end: 'bottom top', scrub: true },
           }
@@ -63,7 +64,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section id={SECTION_IDS.top} ref={scopeRef} className="relative px-3 pt-24 sm:px-5 sm:pt-28">
+    <section id={SECTION_IDS.top} ref={scopeRef} className="relative px-3 pt-28 sm:px-5 sm:pt-32">
       <div className="mx-auto max-w-[1600px]">
         <div className="flex flex-col gap-4 px-1 sm:px-3 lg:flex-row lg:items-end lg:justify-between">
           <p
@@ -80,18 +81,18 @@ export function Hero() {
 
         <h1
           data-hero-title
-          className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-1 px-0.5 font-display text-ink sm:px-2"
+          className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2 px-0.5 font-display text-ink sm:px-2"
         >
           <span
             data-hero-reveal
-            className="block leading-[0.8] font-black tracking-[-0.065em]"
-            style={{ fontSize: 'clamp(3.6rem, 15.2vw, 15.5rem)' }}
+            className="block leading-[0.88] font-black tracking-[-0.06em]"
+            style={{ fontSize: 'clamp(3.4rem, 14.5vw, 14.5rem)' }}
           >
             DISCOVER
           </span>
           <span
             data-hero-reveal
-            className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.5em] text-mist"
+            className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.45em] text-mist"
             style={{ fontSize: 'clamp(0.8rem, 1.55vw, 1.5rem)' }}
           >
             <span className="h-px w-8 bg-mist sm:w-12" aria-hidden="true" />
@@ -101,7 +102,7 @@ export function Hero() {
 
         <div
           data-hero-frame
-          className="relative mt-6 h-[clamp(460px,72svh,820px)] overflow-hidden rounded-4xl bg-ink sm:mt-8"
+          className="relative mt-6 h-[clamp(460px,72svh,820px)] w-full overflow-hidden rounded-[1.75rem] bg-ink will-change-transform sm:mt-8"
         >
           <div data-hero-media className="absolute inset-0 will-change-transform">
             <SmartImage
@@ -121,12 +122,14 @@ export function Hero() {
           <button
             type="button"
             onClick={() => openSpot(heroSpot.id)}
-            className="glass absolute top-4 right-4 flex items-center gap-2 rounded-full border border-white/60 py-1.5 pr-3 pl-2 text-xs font-semibold text-ink transition active:scale-95 sm:top-6 sm:right-6"
+            className="glass absolute top-4 right-4 z-10 flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full border border-white/60 py-1.5 pr-3.5 pl-2 text-xs font-semibold text-ink transition active:scale-95 sm:top-6 sm:right-6"
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-white">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-white">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2.2} />
             </span>
-            {heroSpot.name}, {heroSpot.district}
+            <span className="truncate">
+              {heroSpot.name}, {heroSpot.district}
+            </span>
           </button>
 
           <div
