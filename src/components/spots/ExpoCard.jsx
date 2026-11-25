@@ -32,7 +32,7 @@ export function ExpoCard({ spot, tileClass, onOpen }) {
         className="pointer-events-none absolute inset-0 -z-10 block overflow-hidden rounded-3xl"
       >
         <span data-card-media className="absolute inset-x-0 -top-[10%] -bottom-[10%] block will-change-transform">
-          <span data-card-shutter-img className="block h-full w-full scale-[1.12] will-change-transform">
+          <span data-card-shutter-img className="block h-full w-full scale-[1.14] will-change-transform">
             <SmartImage
               src={getImageSrc(spot.images.cover, 'card')}
               fallbackSrc={spot.images.cover}

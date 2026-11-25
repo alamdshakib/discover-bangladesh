@@ -15,6 +15,7 @@ export const MOTION = {
 export const MEDIA = {
   desktop: '(min-width: 1024px)',
   mobile: '(max-width: 1023.98px)',
+  motion: '(prefers-reduced-motion: no-preference)',
   reduceMotion: '(prefers-reduced-motion: reduce)',
 };
 

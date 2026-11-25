@@ -35,7 +35,16 @@ export function useLenis({ duration = 1.15 } = {}) {
     gsap.ticker.add(onTick);
     gsap.ticker.lagSmoothing(0);
 
+    // Ensure ScrollTrigger positions stay synchronized once layout & web fonts settle
+    const rafRefresh = window.requestAnimationFrame(() => ScrollTrigger.refresh());
+    let fontsCancelled = false;
+    document.fonts?.ready?.then(() => {
+      if (!fontsCancelled) ScrollTrigger.refresh();
+    });
+
     return () => {
+      fontsCancelled = true;
+      window.cancelAnimationFrame(rafRefresh);
       gsap.ticker.remove(onTick);
       lenis.destroy();
       setLenis(null);

@@ -2,23 +2,25 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, LayoutGrid } from 'lucide-react';
 import { CHAPTERS, SECTION_IDS, SPOT_CATEGORIES } from '@data';
 import { useActiveSection, useShowcase } from '@hooks';
-import { gsap, ScrollTrigger, scrollToTarget } from '@animations';
+import { gsap, MEDIA, ScrollTrigger, scrollToTarget } from '@animations';
 import { countByCategory, groupByCategory } from '@utils';
 import { ChapterDock } from '../chapters/ChapterDock.jsx';
 import { ChapterSection } from '../chapters/ChapterSection.jsx';
 import { ExpoMatrix } from '../spots/ExpoMatrix.jsx';
 
 const CHAPTER_IDS = CHAPTERS.map((c) => c.id);
+const SHOWCASE_TITLE_WORDS = ['24', 'places,', 'four', 'chapters.'];
 
 /**
  * Dual-view showcase: Editorial scrollytelling (default) ⇄ Expo bento matrix.
- * Switching views triggers a choreographed staggered 3D wave morph
- * (scale: 0.9, rotateX: 10deg, y: 30 → 1, 0, 0, stagger: 0.025, power3.out).
+ * Includes bidirectional masked word reveals, scrubbed horizontal opposition
+ * on the Collection header, sticky frosted ChapterDock, and level morphing transitions.
  */
 export function Showcase() {
   const { spots, expoMode, setExpoMode, openSpot } = useShowcase();
   const requestedMode = expoMode ? 'expo' : 'editorial';
   const [displayMode, setDisplayMode] = useState(requestedMode);
+  const headerRef = useRef(null);
   const viewRef = useRef(null);
   const pendingTarget = useRef(null);
   const isFirstRender = useRef(true);
@@ -26,6 +28,64 @@ export function Showcase() {
   const grouped = useMemo(() => groupByCategory(spots, SPOT_CATEGORIES), [spots]);
   const counts = useMemo(() => countByCategory(spots), [spots]);
   const activeChapter = useActiveSection(CHAPTER_IDS, { enabled: displayMode === 'editorial' });
+
+  // Bidirectional masked word reveal + continuous scrubbed horizontal & tracking parallax
+  useLayoutEffect(() => {
+    const mm = gsap.matchMedia(headerRef);
+
+    mm.add(MEDIA.motion, () => {
+      const headerEl = headerRef.current;
+      if (!headerEl) return;
+
+      const words = headerEl.querySelectorAll('[data-showcase-word]');
+      const eyebrow = headerEl.querySelector('[data-showcase-eyebrow]');
+      const title = headerEl.querySelector('[data-showcase-title]');
+
+      if (words.length > 0) {
+        gsap.fromTo(
+          words,
+          { yPercent: 105, opacity: 0 },
+          {
+            yPercent: 0,
+            opacity: 1,
+            duration: 0.78,
+            stagger: 0.06,
+            ease: 'power4.out',
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: headerEl,
+              start: 'top 88%',
+              toggleActions: 'play none none reverse',
+            },
+          }
+        );
+      }
+
+      const scrubTl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: headerEl,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.8,
+        },
+      });
+
+      if (eyebrow) {
+        scrubTl.fromTo(eyebrow, { x: 0 }, { x: 24, immediateRender: false }, 0);
+      }
+      if (title) {
+        scrubTl.fromTo(
+          title,
+          { x: 18, letterSpacing: '-0.055em' },
+          { x: 0, letterSpacing: '-0.025em', immediateRender: false },
+          0
+        );
+      }
+    });
+
+    return () => mm.revert();
+  }, []);
 
   // Morph out current view cleanly, then swap.
   useEffect(() => {
@@ -58,7 +118,7 @@ export function Showcase() {
     return () => tween.kill();
   }, [requestedMode, displayMode]);
 
-  // After a swap: recompute triggers and run the rapid staggered 3D wave morph across cards.
+  // After a swap: recompute triggers and run the staggered level wave across cards.
   useLayoutEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -96,7 +156,7 @@ export function Showcase() {
     pendingTarget.current = null;
     const element = document.querySelector(target);
     const alreadyPast = element ? element.getBoundingClientRect().top < 0 : false;
-    scrollToTarget(target, { offset: isChapter ? -140 : -88, immediate: alreadyPast });
+    scrollToTarget(target, { offset: isChapter ? -148 : -88, immediate: alreadyPast });
   }, [displayMode]);
 
   const jumpToChapter = (chapter) => {
@@ -105,20 +165,36 @@ export function Showcase() {
       setExpoMode(false);
       return;
     }
-    scrollToTarget(`#${chapter.id}`, { offset: -140 });
+    scrollToTarget(`#${chapter.id}`, { offset: -148 });
   };
 
   return (
     <section id={SECTION_IDS.showcase} aria-label="Destinations" className="relative mt-6 scroll-mt-24 sm:mt-10">
       <div className="mx-auto max-w-[1600px] px-3 sm:px-5">
-        <div className="flex flex-col gap-5 px-1 pb-6 sm:px-3 lg:flex-row lg:items-end lg:justify-between lg:pb-8">
-          <div>
-            <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">The Collection</p>
+        <div
+          ref={headerRef}
+          className="flex flex-col gap-5 px-1 pb-6 sm:px-3 lg:flex-row lg:items-end lg:justify-between lg:pb-8"
+        >
+          <div className="px-1">
+            <p
+              data-showcase-eyebrow
+              className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase will-change-transform"
+            >
+              The Collection
+            </p>
             <h2
-              className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"
+              data-showcase-title
+              className="mt-2 font-display leading-[0.94] font-black tracking-[-0.055em] text-ink transition-colors duration-300 will-change-transform dark:text-slate-50"
               style={{ fontSize: 'clamp(2.4rem, 6vw, 5.5rem)' }}
             >
-              24 places, four chapters.
+              {SHOWCASE_TITLE_WORDS.map((word, idx) => (
+                <span key={word} className="inline-block overflow-hidden py-0.5 align-bottom">
+                  <span data-showcase-word className="inline-block will-change-transform">
+                    {word}
+                    {idx < SHOWCASE_TITLE_WORDS.length - 1 ? '\u00A0' : ''}
+                  </span>
+                </span>
+              ))}
             </h2>
           </div>
 
@@ -164,7 +240,7 @@ export function Showcase() {
         onTop={() => scrollToTarget(0, { offset: 0 })}
       />
 
-      <div ref={viewRef} className="mx-auto mt-4 max-w-[1600px] px-3 sm:mt-6 sm:px-5">
+      <div ref={viewRef} className="mx-auto mt-6 max-w-[1600px] px-3 sm:mt-8 sm:px-5">
         {displayMode === 'editorial' ? (
           <div className="flex flex-col gap-16 sm:gap-20 lg:gap-28">
             {CHAPTERS.map((chapter) => (

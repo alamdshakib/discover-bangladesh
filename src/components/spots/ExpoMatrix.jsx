@@ -53,7 +53,7 @@ export function ExpoMatrix({ spots, onOpen }) {
     setSelection(emptySelection());
   };
 
-  // Cinematic Shutter Unmask via ScrollTrigger.batch() + scrubbed window parallax on mount.
+  // Bidirectional level card entrance + continuous scrubbed window parallax on mount.
   useLayoutEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const grid = gridRef.current;
@@ -63,71 +63,53 @@ export function ExpoMatrix({ spots, onOpen }) {
       if (reduce) return;
       const cards = grid.querySelectorAll('[data-expo-card]');
 
-      ScrollTrigger.batch(cards, {
-        start: 'top 92%',
-        once: true,
-        onEnter: (batch) => {
-          const shutters = batch.map((c) => c.querySelector('[data-card-shutter]')).filter(Boolean);
-          const shutterImgs = batch.map((c) => c.querySelector('[data-card-shutter-img]')).filter(Boolean);
-
-          gsap.fromTo(
-            batch,
-            {
-              opacity: 0,
-              y: 26,
-              scale: 0.96,
-            },
-            {
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              duration: 0.58,
-              stagger: 0.025,
-              ease: 'power3.out',
-              overwrite: 'auto',
-              clearProps: 'transform,opacity',
-            }
-          );
-
-          if (shutters.length > 0) {
-            gsap.fromTo(
-              shutters,
-              { clipPath: 'inset(100% 0% 0% 0%)' },
-              {
-                clipPath: 'inset(0% 0% 0% 0%)',
-                duration: 0.95,
-                stagger: 0.035,
-                ease: 'power4.out',
-                overwrite: 'auto',
-                clearProps: 'clipPath',
-              }
-            );
-          }
-
-          if (shutterImgs.length > 0) {
-            gsap.fromTo(
-              shutterImgs,
-              { scale: 1.25 },
-              {
-                scale: 1.12,
-                duration: 1.05,
-                stagger: 0.035,
-                ease: 'power4.out',
-                overwrite: 'auto',
-              }
-            );
-          }
-        },
-      });
-
       cards.forEach((card) => {
+        const shutter = card.querySelector('[data-card-shutter]');
         const media = card.querySelector('[data-card-media]');
+
+        const cardTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 92%',
+            toggleActions: 'play none none reverse',
+          },
+        });
+
+        cardTl.fromTo(
+          card,
+          { y: 50, opacity: 0, scale: 0.97 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.65,
+            ease: 'power3.out',
+            immediateRender: false,
+            clearProps: 'transform',
+          },
+          0
+        );
+
+        if (shutter) {
+          cardTl.fromTo(
+            shutter,
+            { clipPath: 'inset(12% 0% 0% 0% round 1.5rem)' },
+            {
+              clipPath: 'inset(0% 0% 0% 0% round 1.5rem)',
+              duration: 0.7,
+              ease: 'power3.out',
+              immediateRender: false,
+            },
+            0
+          );
+        }
+
         if (media) {
           gsap.fromTo(
             media,
-            { yPercent: -8 },
+            { yPercent: -7 },
             {
-              yPercent: 8,
+              yPercent: 7,
               ease: 'none',
               immediateRender: false,
               scrollTrigger: { trigger: card, start: 'top bottom', end: 'bottom top', scrub: true },

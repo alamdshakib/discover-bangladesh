@@ -65,7 +65,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
               className="absolute inset-0 block h-full w-full cursor-zoom-in"
             >
               <div data-card-media className="absolute inset-x-0 -top-[10%] -bottom-[10%] will-change-transform">
-                <div data-card-shutter-img className="h-full w-full scale-[1.12] will-change-transform">
+                <div data-card-shutter-img className="h-full w-full scale-[1.14] will-change-transform">
                   <div ref={photoStageRef} className="h-full w-full will-change-transform">
                     <SmartImage
                       src={getImageSrc(images[active], 'card')}

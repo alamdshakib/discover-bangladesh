@@ -126,8 +126,7 @@ export function Footer() {
   useLayoutEffect(() => {
     const mm = gsap.matchMedia(footerRef);
 
-    mm.add({ reduce: MEDIA.reduceMotion }, (ctx) => {
-      if (ctx.conditions.reduce) return;
+    mm.add(MEDIA.motion, () => {
       const scope = footerRef.current;
 
       // 1. Dark rounded footer card entrance

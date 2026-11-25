@@ -280,11 +280,11 @@ export function Hero() {
       {
         isDesktop: MEDIA.desktop,
         finePointer: '(pointer: fine)',
-        reduce: MEDIA.reduceMotion,
+        motion: MEDIA.motion,
       },
       (ctx) => {
-        const { isDesktop, finePointer, reduce } = ctx.conditions;
-        if (reduce) return undefined;
+        const { isDesktop, finePointer, motion } = ctx.conditions;
+        if (!motion) return undefined;
 
         const scope = scopeRef.current;
         const frame = frameRef.current;
@@ -454,40 +454,38 @@ export function Hero() {
           }
         );
 
-        // 3. Scroll-Scrubbed Kinetic Split (ScrollTrigger, scrub: 1)
-        const maxSpreadPx = isDesktop ? 22 : 8;
+        // 3. Hero -> Stats Continuous Bidirectional Scrubbed Depth (scrub: 0.8)
+        const maxSpreadPx = isDesktop ? 20 : 7;
         const scrubTl = gsap.timeline({
           defaults: { ease: 'none' },
           scrollTrigger: {
             trigger: frame,
-            start: 'top 18%',
+            start: 'top 14%',
             end: 'bottom top',
-            scrub: 1,
+            scrub: 0.8,
           },
         });
 
-        if (isDesktop) {
-          scrubTl.fromTo(
-            frame,
-            { scale: 1, transformOrigin: 'center top' },
-            { scale: 0.92, immediateRender: false },
-            0
-          );
-        }
+        scrubTl.fromTo(
+          frame,
+          { scale: 1, borderRadius: '28px', transformOrigin: 'center top' },
+          { scale: 0.94, borderRadius: '36px', immediateRender: false },
+          0
+        );
 
-        // Background real photograph counter-pan
+        // Background real photograph shifts gently for crisp parallax depth
         scrubTl.fromTo(
           scope.querySelector('[data-hero-scroll-photo]'),
-          { yPercent: -5 },
+          { yPercent: -6 },
           { yPercent: 12, immediateRender: false },
           0
         );
 
-        // Giant DISCOVER + BANGLADESH sinks softly and fades while letters expand outward in spacing
+        // Giant DISCOVER BANGLADESH glides softly upward & fades while letters expand outward
         scrubTl.fromTo(
           scope.querySelector('[data-hero-scroll-type]'),
           { yPercent: 0, opacity: 1 },
-          { yPercent: 35, opacity: 0.15, immediateRender: false },
+          { yPercent: -24, opacity: 0.14, immediateRender: false },
           0
         );
 
@@ -501,7 +499,7 @@ export function Hero() {
           );
         });
 
-        // 4. Live 3-Plane Mouse Camera Depth on Desktop (gsap.quickTo)
+        // 4. Live 3-Plane Level Mouse Camera Depth on Desktop (gsap.quickTo, zero tilt wobble)
         let cleanupMouse = null;
         if (isDesktop && finePointer && frame) {
           const photoEl = photoPlaneRef.current;
@@ -509,15 +507,11 @@ export function Hero() {
           const hudTopEl = hudTopPlaneRef.current;
           const hudBottomEl = hudBottomPlaneRef.current;
 
-          if (typeEl) gsap.set(typeEl, { transformPerspective: 1000 });
-
           const photoX = photoEl ? gsap.quickTo(photoEl, 'x', { duration: 0.9, ease: 'power3.out' }) : null;
           const photoY = photoEl ? gsap.quickTo(photoEl, 'y', { duration: 0.9, ease: 'power3.out' }) : null;
 
           const typeX = typeEl ? gsap.quickTo(typeEl, 'x', { duration: 0.75, ease: 'power3.out' }) : null;
           const typeY = typeEl ? gsap.quickTo(typeEl, 'y', { duration: 0.75, ease: 'power3.out' }) : null;
-          const typeRotX = typeEl ? gsap.quickTo(typeEl, 'rotationX', { duration: 0.8, ease: 'power3.out' }) : null;
-          const typeRotY = typeEl ? gsap.quickTo(typeEl, 'rotationY', { duration: 0.8, ease: 'power3.out' }) : null;
 
           const hudTopX = hudTopEl ? gsap.quickTo(hudTopEl, 'x', { duration: 0.65, ease: 'power3.out' }) : null;
           const hudTopY = hudTopEl ? gsap.quickTo(hudTopEl, 'y', { duration: 0.65, ease: 'power3.out' }) : null;
@@ -534,11 +528,9 @@ export function Hero() {
             photoX?.(-nx * 14);
             photoY?.(-ny * 14);
 
-            // Plane 2: Monumental Typography opposite drift (±8px) + subtle 3D tilt
+            // Plane 2: Monumental Typography opposite drift (±8px, completely level)
             typeX?.(-nx * 8);
             typeY?.(-ny * 8);
-            typeRotY?.(nx * 3.5);
-            typeRotX?.(-ny * 3.5);
 
             // Plane 3: Foreground Pills & Bottom Controls (±4px)
             hudTopX?.(nx * 4);
@@ -552,8 +544,6 @@ export function Hero() {
             photoY?.(0);
             typeX?.(0);
             typeY?.(0);
-            typeRotY?.(0);
-            typeRotX?.(0);
             hudTopX?.(0);
             hudTopY?.(0);
             hudBotX?.(0);
