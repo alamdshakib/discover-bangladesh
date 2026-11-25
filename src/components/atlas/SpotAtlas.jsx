@@ -155,6 +155,7 @@ export function SpotAtlas() {
   const stageRef = useRef(null);
   const previewCardRef = useRef(null);
   const coordTextRef = useRef(null);
+  const arcGlowRef = useRef(null);
   const arcActiveRef = useRef(null);
   const arcDottedRef = useRef(null);
   const cometRef = useRef(null);
@@ -208,18 +209,19 @@ export function SpotAtlas() {
     });
   }, []);
 
-  // Animate 2D Flat ⇄ 3D Relief architectural tilt transition & mouse parallax
+  // Animate 2D Flat ⇄ 3D Relief architectural tilt transition (perspective 1300px, rotateX 34deg, rotateZ -4deg)
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (!stage) return undefined;
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+    tiltQuickRef.current = null;
 
     const ctx = gsap.context(() => {
       gsap.to(stage, {
         transformPerspective: 1300,
-        rotateX: is3D ? 32 : 0,
-        rotateY: 0,
-        rotateZ: is3D ? -4 : 0,
+        rotationX: is3D ? 34 : 0,
+        rotationY: 0,
+        rotationZ: is3D ? -4 : 0,
         scale: is3D ? 0.94 : 1,
         y: is3D ? -6 : 0,
         duration: reduce ? 0 : 0.78,
@@ -228,24 +230,30 @@ export function SpotAtlas() {
       });
     });
 
-    if (is3D && !reduce && window.matchMedia('(pointer: fine)').matches) {
-      tiltQuickRef.current = {
-        rx: gsap.quickTo(stage, 'rotationX', { duration: 0.45, ease: 'power3.out' }),
-        ry: gsap.quickTo(stage, 'rotationY', { duration: 0.45, ease: 'power3.out' }),
-      };
-    } else {
-      tiltQuickRef.current = null;
-    }
-
     return () => {
       tiltQuickRef.current = null;
       ctx.revert();
     };
   }, [is3D]);
 
-  // Animate curved flight-arc draw + traveling glowing comet dot between pins
+  const ensureStageTilt = () => {
+    if (tiltQuickRef.current) return tiltQuickRef.current;
+    const stage = stageRef.current;
+    if (!stage || !is3D) return null;
+    if (!window.matchMedia('(pointer: fine)').matches || window.matchMedia(MEDIA.reduceMotion).matches) {
+      return null;
+    }
+    tiltQuickRef.current = {
+      rx: gsap.quickTo(stage, 'rotationX', { duration: 0.45, ease: 'power3.out' }),
+      ry: gsap.quickTo(stage, 'rotationY', { duration: 0.45, ease: 'power3.out' }),
+    };
+    return tiltQuickRef.current;
+  };
+
+  // Animate glowing curved flight-arc draw + traveling light comet between pins
   useLayoutEffect(() => {
     if (!flightArc) return undefined;
+    const glowPath = arcGlowRef.current;
     const activePath = arcActiveRef.current;
     const dottedPath = arcDottedRef.current;
     const comet = cometRef.current;
@@ -253,8 +261,9 @@ export function SpotAtlas() {
 
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
     if (reduce) {
+      if (glowPath) gsap.set(glowPath, { opacity: 0 });
       gsap.set(activePath, { opacity: 0 });
-      gsap.set(dottedPath, { opacity: 0.75 });
+      gsap.set(dottedPath, { opacity: 0.78 });
       gsap.set(comet, { opacity: 0 });
       return undefined;
     }
@@ -264,16 +273,17 @@ export function SpotAtlas() {
       const { p0, p1, p2 } = flightArc;
       const progress = { t: 0 };
 
-      gsap.set(activePath, { strokeDasharray: length, strokeDashoffset: length, opacity: 0.95 });
+      if (glowPath) gsap.set(glowPath, { strokeDasharray: length, strokeDashoffset: length, opacity: 0.65 });
+      gsap.set(activePath, { strokeDasharray: length, strokeDashoffset: length, opacity: 1 });
       gsap.set(dottedPath, { opacity: 0 });
       gsap.set(comet, { opacity: 1, attr: { transform: `translate(${p0.x}, ${p0.y})` } });
 
       const tl = gsap.timeline();
       tl.to(
-        activePath,
+        glowPath ? [glowPath, activePath] : activePath,
         {
           strokeDashoffset: 0,
-          duration: 0.72,
+          duration: 0.76,
           ease: 'power2.inOut',
         },
         0
@@ -282,7 +292,7 @@ export function SpotAtlas() {
         progress,
         {
           t: 1,
-          duration: 0.72,
+          duration: 0.76,
           ease: 'power2.inOut',
           onUpdate: () => {
             const t = progress.t;
@@ -294,15 +304,15 @@ export function SpotAtlas() {
         },
         0
       );
-      tl.to(dottedPath, { opacity: 0.75, duration: 0.35, ease: 'power2.out' }, 0.56);
-      tl.to(activePath, { opacity: 0, duration: 0.45, ease: 'power2.out' }, 0.65);
-      tl.to(comet, { opacity: 0, duration: 0.3, ease: 'power2.out' }, 0.7);
+      tl.to(dottedPath, { opacity: 0.78, duration: 0.35, ease: 'power2.out' }, 0.58);
+      tl.to(glowPath ? [glowPath, activePath] : activePath, { opacity: 0, duration: 0.45, ease: 'power2.out' }, 0.68);
+      tl.to(comet, { opacity: 0, duration: 0.32, ease: 'power2.out' }, 0.72);
     });
 
     return () => ctx.revert();
   }, [flightArc, flightKey]);
 
-  // Animate preview card directional slide + rapid coordinate odometer tick on spot change
+  // Animate left preview card with crisp 3D flip/slide transition + live rolling coordinate odometer
   useEffect(() => {
     if (!focus) return undefined;
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
@@ -319,8 +329,17 @@ export function SpotAtlas() {
       if (previewCardRef.current) {
         gsap.fromTo(
           previewCardRef.current,
-          { y: 12, opacity: 0.55 },
-          { y: 0, opacity: 1, duration: 0.42, ease: 'power3.out', overwrite: 'auto' }
+          { rotationX: -12, y: 18, scale: 0.97, opacity: 0.35, transformOrigin: '50% 0%' },
+          {
+            rotationX: 0,
+            y: 0,
+            scale: 1,
+            opacity: 1,
+            duration: 0.48,
+            ease: 'power3.out',
+            overwrite: 'auto',
+            clearProps: 'transform,opacity',
+          }
         );
       }
       if (coordTextRef.current) {
@@ -328,7 +347,7 @@ export function SpotAtlas() {
         gsap.to(ticker, {
           lat: toCoords.lat,
           lng: toCoords.lng,
-          duration: 0.48,
+          duration: 0.52,
           ease: 'power2.out',
           overwrite: 'auto',
           onUpdate: () => {
@@ -375,18 +394,20 @@ export function SpotAtlas() {
       return;
     }
 
-    if (is3D && zoom === 1 && tiltQuickRef.current && stageRef.current && e.pointerType === 'mouse') {
+    if (is3D && zoom === 1 && stageRef.current && e.pointerType === 'mouse') {
+      const tilt = ensureStageTilt();
+      if (!tilt) return;
       const rect = stageRef.current.getBoundingClientRect();
       const nx = (e.clientX - rect.left) / Math.max(rect.width, 1) - 0.5;
       const ny = (e.clientY - rect.top) / Math.max(rect.height, 1) - 0.5;
-      tiltQuickRef.current.rx(32 - ny * 7.5);
-      tiltQuickRef.current.ry(nx * 8.5);
+      tilt.rx(34 - ny * 8);
+      tilt.ry(nx * 9);
     }
   };
 
   const onStageLeave = () => {
     if (is3D && tiltQuickRef.current) {
-      tiltQuickRef.current.rx(32);
+      tiltQuickRef.current.rx(34);
       tiltQuickRef.current.ry(0);
     }
   };
@@ -506,40 +527,42 @@ export function SpotAtlas() {
           </div>
 
           {focus && (
-            <div
-              ref={previewCardRef}
-              data-atlas-preview
-              className="mt-6 overflow-hidden rounded-3xl border border-line bg-canvas transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#0B111E]/75 lg:mt-auto"
-            >
-              <SmartImage
-                src={getImageSrc(focus.images.cover, 'card')}
-                fallbackSrc={focus.images.cover}
-                alt={focus.name}
-                className="h-44 w-full sm:h-56"
-                imgClassName="h-full w-full object-cover"
-              />
-              <div className="flex items-end justify-between gap-4 p-4 sm:p-5">
-                <div className="min-w-0">
-                  <p className="text-[11px] font-semibold tracking-[0.18em] text-mist uppercase">
-                    {chapterByCategory[focus.category]?.number} · {focus.category} · {focus.division}
-                  </p>
-                  <p className="mt-1 truncate font-display text-xl font-bold text-ink dark:text-slate-50 sm:text-2xl">
-                    {focus.name}
-                  </p>
-                  <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-ink-soft tabular-nums dark:text-slate-400">
-                    <Crosshair className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
-                    <span ref={coordTextRef}>{formatCoordinates(focus.coordinates)}</span>
-                  </p>
+            <div className="mt-6 [perspective:1000px] lg:mt-auto">
+              <div
+                ref={previewCardRef}
+                data-atlas-preview
+                className="overflow-hidden rounded-3xl border border-line bg-canvas transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#0B111E]/75"
+              >
+                <SmartImage
+                  src={getImageSrc(focus.images.cover, 'card')}
+                  fallbackSrc={focus.images.cover}
+                  alt={focus.name}
+                  className="h-44 w-full sm:h-56"
+                  imgClassName="h-full w-full object-cover"
+                />
+                <div className="flex items-end justify-between gap-4 p-4 sm:p-5">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold tracking-[0.18em] text-mist uppercase">
+                      {chapterByCategory[focus.category]?.number} · {focus.category} · {focus.division}
+                    </p>
+                    <p className="mt-1 truncate font-display text-xl font-bold text-ink dark:text-slate-50 sm:text-2xl">
+                      {focus.name}
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-ink-soft tabular-nums dark:text-slate-400">
+                      <Crosshair className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+                      <span ref={coordTextRef}>{formatCoordinates(focus.coordinates)}</span>
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    data-cursor="magnetic"
+                    onClick={() => openSpot(focus.id)}
+                    className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
+                  >
+                    Open
+                    <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  data-cursor="magnetic"
-                  onClick={() => openSpot(focus.id)}
-                  className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
-                >
-                  Open
-                  <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
-                </button>
               </div>
             </div>
           )}
@@ -708,17 +731,22 @@ export function SpotAtlas() {
                   {/* 3. Multi-step 3D Relief Extruded Slab Layers beneath landmass */}
                   {is3D && (
                     <g pointerEvents="none" aria-hidden="true">
-                      <g transform="translate(3, 12)" opacity={isDark ? 0.75 : 0.45}>
+                      <g transform="translate(4, 16)" opacity={isDark ? 0.62 : 0.32}>
+                        {DIVISIONS.map((div) => (
+                          <path key={`slab-4-${div.name}`} d={div.d} fill={mapTheme.extrusionBase} />
+                        ))}
+                      </g>
+                      <g transform="translate(3, 12)" opacity={isDark ? 0.78 : 0.48}>
                         {DIVISIONS.map((div) => (
                           <path key={`slab-3-${div.name}`} d={div.d} fill={mapTheme.extrusionBase} />
                         ))}
                       </g>
-                      <g transform="translate(2, 8)" opacity={isDark ? 0.85 : 0.65}>
+                      <g transform="translate(2, 8)" opacity={isDark ? 0.88 : 0.66}>
                         {DIVISIONS.map((div) => (
                           <path key={`slab-2-${div.name}`} d={div.d} fill={mapTheme.extrusionMid} />
                         ))}
                       </g>
-                      <g transform="translate(1, 4)" opacity={isDark ? 0.9 : 0.8}>
+                      <g transform="translate(1, 4)" opacity={isDark ? 0.94 : 0.82}>
                         {DIVISIONS.map((div) => (
                           <path key={`slab-1-${div.name}`} d={div.d} fill={mapTheme.outerStroke} />
                         ))}
@@ -795,7 +823,7 @@ export function SpotAtlas() {
                     })}
                   </g>
 
-                  {/* 7. Animated Curved Flight-Arc & Traveling Light Comet */}
+                  {/* 7. Glowing Curved Flight-Arc & Traveling Light Comet */}
                   {flightArc && (
                     <g data-flight-arc pointerEvents="none" aria-hidden="true">
                       {/* Soft persistent dotted trajectory after comet arrives */}
@@ -809,12 +837,23 @@ export function SpotAtlas() {
                         strokeLinecap="round"
                         opacity={0}
                       />
-                      {/* Active animated draw stroke */}
+                      {/* Luminous atmospheric glow halo under active flight arc */}
+                      <path
+                        ref={arcGlowRef}
+                        d={flightArc.d}
+                        fill="none"
+                        stroke={focusColor}
+                        strokeWidth={5.5 * invScale}
+                        strokeLinecap="round"
+                        filter="url(#bd-pin-glow)"
+                        opacity={0}
+                      />
+                      {/* Crisp active animated draw stroke */}
                       <path
                         ref={arcActiveRef}
                         d={flightArc.d}
                         fill="none"
-                        stroke={focusColor}
+                        stroke={isDark ? '#FFFFFF' : focusColor}
                         strokeWidth={2.4 * invScale}
                         strokeLinecap="round"
                         opacity={0}
@@ -822,16 +861,16 @@ export function SpotAtlas() {
                       {/* Glowing traveling comet head */}
                       <g ref={cometRef} opacity={0}>
                         <circle
-                          r={8.5 * invScale}
+                          r={10 * invScale}
                           fill={focusColor}
-                          opacity={0.55}
+                          opacity={0.68}
                           filter="url(#bd-pin-glow)"
                         />
                         <circle
-                          r={3.8 * invScale}
-                          fill={isDark ? '#FFFFFF' : focusColor}
-                          stroke={isDark ? focusColor : '#FFFFFF'}
-                          strokeWidth={1.5 * invScale}
+                          r={4.2 * invScale}
+                          fill="#FFFFFF"
+                          stroke={focusColor}
+                          strokeWidth={1.8 * invScale}
                         />
                       </g>
                     </g>
@@ -892,9 +931,9 @@ export function SpotAtlas() {
                             />
                           )}
 
-                          {/* Layered expanding sonar radar pulses around the active destination pin */}
+                          {/* Multi-ring staggered expanding sonar radar ripples around active pin */}
                           {isFocus && (
-                            <g pointerEvents="none">
+                            <g data-sonar-rings pointerEvents="none">
                               <circle
                                 r={11 * invScale}
                                 fill="none"
@@ -908,6 +947,13 @@ export function SpotAtlas() {
                                 stroke={color}
                                 strokeWidth={1.4 * invScale}
                                 className="atlas-sonar-ring-delayed"
+                              />
+                              <circle
+                                r={11 * invScale}
+                                fill="none"
+                                stroke={color}
+                                strokeWidth={1.1 * invScale}
+                                className="atlas-sonar-ring-third"
                               />
                             </g>
                           )}
