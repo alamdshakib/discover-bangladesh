@@ -1,9 +1,9 @@
 import {
   ChapterAtmosphere,
+  CinematicIntro,
   CustomCursor,
   Footer,
   Navbar,
-  Preloader,
   ScrollCompassHUD,
   SpotDetail,
 } from '@components';
@@ -16,7 +16,7 @@ export default function App() {
 
   return (
     <ShowcaseProvider>
-      <Preloader />
+      <CinematicIntro />
       <CustomCursor />
       <ChapterAtmosphere />
       <Navbar />

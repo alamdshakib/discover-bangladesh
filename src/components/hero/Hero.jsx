@@ -50,19 +50,19 @@ export function Hero() {
         tl.to(copyItems, { y: 0, opacity: 1, duration: 0.85, stagger: 0.08, ease: 'power3.out', clearProps: 'transform' }, 0.42);
       };
 
-      // Hand off smoothly from the session preloader if it is currently playing.
-      const preloaderActive = Boolean(document.querySelector('[data-preloader]'));
-      if (preloaderActive) {
+      // Hand off smoothly from the cinematic intro at the exact millisecond curtains split.
+      const introActive = Boolean(document.querySelector('[data-cinematic-intro]'));
+      if (introActive) {
         let played = false;
         const trigger = () => {
           if (played) return;
           played = true;
           playEntrance();
         };
-        window.addEventListener('db:preloader-done', trigger, { once: true });
-        const fallbackId = window.setTimeout(trigger, 1400);
+        window.addEventListener('db:intro-done', trigger, { once: true });
+        const fallbackId = window.setTimeout(trigger, 4200);
         cleanupWait = () => {
-          window.removeEventListener('db:preloader-done', trigger);
+          window.removeEventListener('db:intro-done', trigger);
           window.clearTimeout(fallbackId);
         };
       } else {
