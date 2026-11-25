@@ -259,7 +259,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-2 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-2 flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between lg:pr-20">
           <span>© 2026 {SITE_META.name}</span>
           <nav aria-label="Footer chapters" className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {CHAPTERS.map((chapter, index) => (
