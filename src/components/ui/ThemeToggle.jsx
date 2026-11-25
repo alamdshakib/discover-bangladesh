@@ -15,7 +15,7 @@ export function ThemeToggle({ className = '', showLabel = false }) {
       type="button"
       data-theme-toggle
       data-cursor="magnetic"
-      onClick={toggleTheme}
+      onClick={(e) => toggleTheme(e)}
       aria-pressed={isDark}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

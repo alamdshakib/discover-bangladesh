@@ -12,7 +12,8 @@ const CHAPTER_IDS = CHAPTERS.map((c) => c.id);
 
 /**
  * Dual-view showcase: Editorial scrollytelling (default) ⇄ Expo bento matrix.
- * Switching views triggers a choreographed staggered grid wave morph.
+ * Switching views triggers a choreographed staggered 3D wave morph
+ * (scale: 0.9, rotateX: 10deg, y: 30 → 1, 0, 0, stagger: 0.025, power3.out).
  */
 export function Showcase() {
   const { spots, expoMode, setExpoMode, openSpot } = useShowcase();
@@ -37,7 +38,7 @@ export function Showcase() {
         opacity: 1,
         y: 0,
         scale: 1,
-        duration: reduce ? 0 : 0.45,
+        duration: reduce ? 0 : 0.4,
         ease: 'power3.out',
         clearProps: 'transform',
         overwrite: true,
@@ -49,7 +50,7 @@ export function Showcase() {
       opacity: 0,
       y: 22,
       scale: 0.985,
-      duration: reduce ? 0 : 0.28,
+      duration: reduce ? 0 : 0.24,
       ease: 'power2.in',
       overwrite: true,
       onComplete: () => setDisplayMode(requestedMode),
@@ -57,7 +58,7 @@ export function Showcase() {
     return () => tween.kill();
   }, [requestedMode, displayMode]);
 
-  // After a swap: recompute triggers, trigger wave morph on editorial cards, and bring view into position.
+  // After a swap: recompute triggers and run the rapid staggered 3D wave morph across cards.
   useLayoutEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -65,19 +66,29 @@ export function Showcase() {
     }
     ScrollTrigger.refresh();
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!reduce && displayMode === 'editorial' && viewRef.current) {
-      const cards = viewRef.current.querySelectorAll('[data-spot-card-wrap]');
+    if (!reduce && viewRef.current) {
+      const selector = displayMode === 'editorial' ? '[data-spot-card-wrap]' : '[data-expo-card]';
+      const cards = viewRef.current.querySelectorAll(selector);
       if (cards.length > 0) {
         gsap.fromTo(
           cards,
-          { scale: 0.92, y: 26, opacity: 0 },
+          {
+            scale: 0.9,
+            rotationX: 10,
+            y: 30,
+            opacity: 0,
+            transformPerspective: 1000,
+            transformOrigin: '50% 0%',
+          },
           {
             scale: 1,
+            rotationX: 0,
             y: 0,
             opacity: 1,
-            duration: 0.65,
-            stagger: 0.03,
+            duration: 0.62,
+            stagger: 0.025,
             ease: 'power3.out',
+            overwrite: 'auto',
             clearProps: 'transform,opacity',
           }
         );
@@ -157,7 +168,7 @@ export function Showcase() {
         onTop={() => scrollToTarget(0, { offset: 0 })}
       />
 
-      <div ref={viewRef} className="mx-auto mt-4 max-w-[1600px] px-3 sm:mt-6 sm:px-5">
+      <div ref={viewRef} className="mx-auto mt-4 max-w-[1600px] px-3 [perspective:1200px] sm:mt-6 sm:px-5">
         {displayMode === 'editorial' ? (
           <div className="flex flex-col gap-16 sm:gap-20 lg:gap-28">
             {CHAPTERS.map((chapter) => (

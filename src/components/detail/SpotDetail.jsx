@@ -29,40 +29,79 @@ import { MetaPill } from '../ui/MetaPill.jsx';
 const chapterByCategory = Object.fromEntries(CHAPTERS.map((c) => [c.category, c]));
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-/** Swipeable / button-driven photo gallery built on native scroll-snap. */
+/**
+ * Swipeable & button-driven photo gallery with directional slide + circular iris mask reveal.
+ */
 function DetailGallery({ spot }) {
   const images = getSpotImages(spot);
   const [index, setIndex] = useState(0);
   const stripRef = useRef(null);
+  const indexRef = useRef(0);
 
   const goTo = useCallback(
     (i) => {
       const strip = stripRef.current;
       if (!strip) return;
+      const prev = indexRef.current;
       const next = (i + images.length) % images.length;
-      strip.scrollTo({ left: next * strip.clientWidth, behavior: 'smooth' });
+      if (next === prev) return;
+
+      const dir = i >= prev ? 1 : -1;
+      indexRef.current = next;
+      setIndex(next);
+
+      const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+      if (reduce) {
+        strip.scrollTo({ left: next * strip.clientWidth, behavior: 'auto' });
+        return;
+      }
+
+      // Snap strip immediately to target slide and unveil with directional slide + circular iris mask
+      strip.scrollTo({ left: next * strip.clientWidth, behavior: 'auto' });
+      const slideStage = strip.querySelector(`[data-gallery-stage="${next}"]`);
+      if (slideStage) {
+        gsap.fromTo(
+          slideStage,
+          {
+            clipPath: 'circle(14% at 50% 50%)',
+            x: dir * 32,
+            scale: 1.07,
+          },
+          {
+            clipPath: 'circle(100% at 50% 50%)',
+            x: 0,
+            scale: 1,
+            duration: 0.58,
+            ease: 'power3.out',
+            overwrite: 'auto',
+            clearProps: 'clipPath,transform',
+          }
+        );
+      }
     },
     [images.length]
   );
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'ArrowRight') goTo(index + 1);
-      if (e.key === 'ArrowLeft') goTo(index - 1);
+      if (e.key === 'ArrowRight') goTo(indexRef.current + 1);
+      if (e.key === 'ArrowLeft') goTo(indexRef.current - 1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [goTo, index]);
+  }, [goTo]);
 
   const credit = getCommonsPage(images[index]);
 
   return (
-    <div className="relative h-[44svh] shrink-0 bg-ink sm:h-[50svh] lg:h-full lg:w-[56%]">
+    <div className="relative h-[44svh] shrink-0 overflow-hidden bg-ink sm:h-[50svh] lg:h-full lg:w-[56%]">
       <div
         ref={stripRef}
         onScroll={(e) => {
           const el = e.currentTarget;
-          setIndex(Math.round(el.scrollLeft / Math.max(el.clientWidth, 1)));
+          const nextIdx = Math.round(el.scrollLeft / Math.max(el.clientWidth, 1));
+          indexRef.current = nextIdx;
+          setIndex(nextIdx);
         }}
         className="no-scrollbar flex h-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
         aria-roledescription="carousel"
@@ -71,22 +110,27 @@ function DetailGallery({ spot }) {
         {images.map((url, i) => (
           <div
             key={url}
-            className="relative h-full w-full shrink-0 snap-center"
+            className="relative h-full w-full shrink-0 snap-center overflow-hidden bg-ink"
             aria-roledescription="slide"
             aria-label={`${i + 1} of ${images.length}`}
           >
-            <SmartImage
-              src={getImageSrc(url, 'full')}
-              alt={`${spot.name} — photo ${i + 1} of ${images.length}`}
-              loading={i === 0 ? 'eager' : 'lazy'}
-              className="h-full w-full bg-ink"
-              imgClassName="h-full w-full object-cover"
-            />
+            <div data-gallery-stage={i} className="h-full w-full will-change-transform">
+              <SmartImage
+                src={getImageSrc(url, 'full')}
+                alt={`${spot.name} — photo ${i + 1} of ${images.length}`}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                className="h-full w-full bg-ink"
+                imgClassName="h-full w-full object-cover"
+              />
+            </div>
           </div>
         ))}
       </div>
 
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"
+      />
 
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5">
         <div className="flex items-center gap-1.5" role="group" aria-label="Choose photo">
@@ -100,7 +144,9 @@ function DetailGallery({ spot }) {
               aria-label={`Show photo ${i + 1}`}
               aria-current={i === index ? 'true' : undefined}
               className={`overflow-hidden rounded-xl transition active:scale-95 ${
-                i === index ? 'h-12 w-16 ring-2 ring-white sm:h-14 sm:w-20' : 'h-10 w-12 opacity-70 hover:opacity-100 sm:h-12 sm:w-14'
+                i === index
+                  ? 'h-12 w-16 ring-2 ring-white sm:h-14 sm:w-20'
+                  : 'h-10 w-12 opacity-70 hover:opacity-100 sm:h-12 sm:w-14'
               }`}
             >
               <img src={getImageSrc(url, 'thumb')} alt="" className="h-full w-full bg-ink-soft object-cover" />
@@ -168,7 +214,10 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
   const chapter = chapterByCategory[spot.category];
 
   return (
-    <div className="p-5 pb-10 sm:p-8 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-10" data-lenis-prevent>
+    <div
+      className="p-5 pb-10 sm:p-8 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-10"
+      data-lenis-prevent
+    >
       <div data-detail-stagger className="flex flex-wrap gap-1.5 pr-12">
         <MetaPill tone="ink">
           {chapter?.number} · {spot.category}
@@ -202,7 +251,9 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
             data-detail-stagger
             className="flex gap-4 border-t border-line py-3.5 text-sm leading-relaxed text-ink dark:border-white/10 dark:text-slate-100"
           >
-            <span className="font-display text-sm font-bold text-mist tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+            <span className="font-display text-sm font-bold text-mist tabular-nums">
+              {String(i + 1).padStart(2, '0')}
+            </span>
             {item}
           </li>
         ))}
@@ -256,7 +307,9 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
             className="h-14 w-14 shrink-0 rounded-2xl bg-line object-cover"
           />
           <span className="min-w-0">
-            <span className="block text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">Next destination</span>
+            <span className="block text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">
+              Next destination
+            </span>
             <span className="block truncate font-display text-lg font-bold text-ink dark:text-slate-50">
               {nextSpot.name}
             </span>
@@ -287,17 +340,21 @@ function DetailDialog() {
   const currentIndex = spots.findIndex((s) => s.id === spot.id);
   const nextSpot = spots[(currentIndex + 1) % spots.length];
 
-  // Spring-physics panel entrance (modal on desktop, slide-up sheet on mobile).
+  // Backdrop blur bloom + spring scale pop (`back.out(1.25)`) entrance.
   useLayoutEffect(() => {
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
     const d = reduce ? 0 : 1;
     const ctx = gsap.context(() => {
-      gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4 * d, ease: 'power2.out' });
+      gsap.fromTo(
+        backdropRef.current,
+        { opacity: 0, backdropFilter: 'blur(0px)' },
+        { opacity: 1, backdropFilter: 'blur(14px)', duration: 0.45 * d, ease: 'power2.out' }
+      );
       if (isDesktop) {
         gsap.fromTo(
           panelRef.current,
-          { opacity: 0, y: 36, scale: 0.94 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.68 * d, ease: 'back.out(1.2)', clearProps: 'transform' }
+          { opacity: 0, y: 38, scale: 0.92 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.68 * d, ease: 'back.out(1.25)', clearProps: 'transform' }
         );
       } else {
         gsap.fromTo(
@@ -310,7 +367,7 @@ function DetailDialog() {
     return () => ctx.revert();
   }, [isDesktop]);
 
-  // Staggered motion-graphics entrance for interior content on open & spot switch.
+  // Staggered kinetic entrances for metadata badges, description, highlights, and travel cards.
   useLayoutEffect(() => {
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
     if (reduce || !contentRef.current) return undefined;
@@ -320,13 +377,13 @@ function DetailDialog() {
       const thumbs = contentRef.current.querySelectorAll('[data-detail-thumb]');
       gsap.fromTo(
         items,
-        { y: 18, opacity: 0 },
+        { y: 20, opacity: 0 },
         {
           y: 0,
           opacity: 1,
           duration: 0.52,
           stagger: 0.04,
-          delay: 0.14,
+          delay: 0.12,
           ease: 'power3.out',
           clearProps: 'transform,opacity',
         }
@@ -340,8 +397,8 @@ function DetailDialog() {
             opacity: 1,
             duration: 0.45,
             stagger: 0.05,
-            delay: 0.18,
-            ease: 'back.out(1.4)',
+            delay: 0.16,
+            ease: 'back.out(1.35)',
             clearProps: 'transform,opacity',
           }
         );
@@ -360,11 +417,11 @@ function DetailDialog() {
       return;
     }
     const tl = gsap.timeline({ onComplete: closeSpot });
-    tl.to(backdropRef.current, { opacity: 0, duration: 0.28 }, 0);
+    tl.to(backdropRef.current, { opacity: 0, backdropFilter: 'blur(0px)', duration: 0.28 }, 0);
     tl.to(
       panelRef.current,
       isDesktop
-        ? { opacity: 0, y: 28, scale: 0.96, duration: 0.28, ease: 'power2.in' }
+        ? { opacity: 0, y: 28, scale: 0.95, duration: 0.28, ease: 'power2.in' }
         : { yPercent: 100, duration: 0.36, ease: 'power3.in' },
       0
     );

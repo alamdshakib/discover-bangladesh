@@ -72,13 +72,21 @@ export function ExpoMatrix({ spots, onOpen }) {
 
           gsap.fromTo(
             batch,
-            { opacity: 0, y: 26, scale: 0.94 },
+            {
+              opacity: 0,
+              y: 30,
+              scale: 0.9,
+              rotationX: 10,
+              transformPerspective: 1000,
+              transformOrigin: '50% 0%',
+            },
             {
               opacity: 1,
               y: 0,
               scale: 1,
-              duration: 0.65,
-              stagger: 0.035,
+              rotationX: 0,
+              duration: 0.62,
+              stagger: 0.025,
               ease: 'power3.out',
               overwrite: 'auto',
               clearProps: 'transform,opacity',

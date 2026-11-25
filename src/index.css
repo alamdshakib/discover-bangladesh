@@ -111,6 +111,28 @@
   animation: cinema-flare 3.2s ease-in-out infinite;
 }
 
+/* Circular expanding View Transition shockwave for Light / Dark theme toggle */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition-duration: 0s !important;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
 @layer base {
   html {
     background-color: var(--color-canvas);
