@@ -1,4 +1,4 @@
-import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowUp, Crosshair } from 'lucide-react';
 import { CHAPTERS, SITE_META } from '@data';
 import { useMagnetic, useShowcase } from '@hooks';
@@ -6,13 +6,15 @@ import { gsap, MEDIA, scrollToTarget } from '@animations';
 
 const WORDMARK_LETTERS = 'BANGLADESH'.split('');
 
-const BASE_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 100%)';
-const SHEEN_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.22) 100%)';
+const BASE_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 100%)';
+const GLOW_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(226, 232, 240, 0.62) 100%)';
 
 export function Footer() {
   const { spots, expoMode, setExpoMode } = useShowcase();
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const footerRef = useRef(null);
+  const arrowRef = useRef(null);
+  const letterNodesRef = useRef([]);
   const backBtnRef = useMagnetic({ strengthX: 14, strengthY: 9 });
 
   useLayoutEffect(() => {
@@ -65,10 +67,10 @@ export function Footer() {
         },
       });
 
-      // 4. Subtle scroll-scrubbed vertical parallax on the giant wordmark
+      // 4. Scroll-scrubbed vertical parallax reveal on the giant wordmark
       gsap.fromTo(
         scope.querySelector('[data-footer-wordmark]'),
-        { y: 22 },
+        { y: 34 },
         {
           y: 0,
           ease: 'none',
@@ -85,6 +87,58 @@ export function Footer() {
 
     return () => mm.revert();
   }, []);
+
+  // 3D Elastic Wave across BANGLADESH letters (y: -14, scale: 1.06 + neighboring ripple falloff)
+  useEffect(() => {
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+    if (reduce) return;
+
+    letterNodesRef.current.forEach((node, idx) => {
+      if (!node) return;
+      if (hoveredIdx === null) {
+        gsap.to(node, {
+          y: 0,
+          scale: 1,
+          rotationX: 0,
+          duration: 0.68,
+          ease: 'elastic.out(1, 0.42)',
+          overwrite: 'auto',
+        });
+        return;
+      }
+
+      const dist = Math.abs(hoveredIdx - idx);
+      const liftY = dist === 0 ? -14 : dist === 1 ? -8 : dist === 2 ? -3.5 : 0;
+      const scaleVal = dist === 0 ? 1.06 : dist === 1 ? 1.032 : dist === 2 ? 1.012 : 1;
+      const rotX = dist === 0 ? 8 : dist === 1 ? 4 : dist === 2 ? 1.5 : 0;
+
+      gsap.to(node, {
+        y: liftY,
+        scale: scaleVal,
+        rotationX: rotX,
+        transformPerspective: 800,
+        duration: 0.56,
+        ease: 'elastic.out(1, 0.45)',
+        overwrite: 'auto',
+      });
+    });
+  }, [hoveredIdx]);
+
+  // Spring-loaded upward arrow shoot-out & bottom loop-in on hover
+  const handleBackBtnEnter = () => {
+    const arrow = arrowRef.current;
+    if (!arrow || window.matchMedia(MEDIA.reduceMotion).matches) return;
+    const tl = gsap.timeline({ defaults: { overwrite: 'auto' } });
+    tl.to(arrow, { yPercent: -145, opacity: 0, duration: 0.18, ease: 'power2.in' });
+    tl.set(arrow, { yPercent: 145 });
+    tl.to(arrow, {
+      yPercent: 0,
+      opacity: 1,
+      duration: 0.44,
+      ease: 'back.out(2.1)',
+      clearProps: 'transform,opacity',
+    });
+  };
 
   const handleChapterJump = (chapter) => {
     if (expoMode) {
@@ -132,20 +186,21 @@ export function Footer() {
             <button
               ref={backBtnRef}
               type="button"
+              data-footer-back-top
               data-cursor="magnetic"
+              onPointerEnter={handleBackBtnEnter}
               onClick={() => scrollToTarget(0, { offset: 0 })}
               className="group inline-flex h-12 w-fit items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-ink transition-colors hover:bg-canvas active:scale-95"
             >
-              <ArrowUp
-                className="h-4 w-4 transition-transform duration-300 ease-out group-hover:-translate-y-1"
-                strokeWidth={2.2}
-              />
+              <span className="relative inline-flex h-4 w-4 items-center justify-center overflow-hidden">
+                <ArrowUp ref={arrowRef} data-back-arrow className="h-4 w-4 will-change-transform" strokeWidth={2.2} />
+              </span>
               Back to top
             </button>
           </div>
         </div>
 
-        {/* Architectural solid-fill BANGLADESH display wordmark with masked letter rise & soft metallic hover */}
+        {/* Smooth unclipped Inter/Plus Jakarta Sans BANGLADESH wordmark with 3D Elastic Wave hover */}
         <div
           data-footer-wordmark
           aria-hidden="true"
@@ -154,10 +209,10 @@ export function Footer() {
           <div
             data-footer-mask
             onPointerLeave={() => setHoveredIdx(null)}
-            className="overflow-visible px-1 pt-4"
+            className="overflow-visible px-1 pt-6"
           >
             <div
-              className="flex w-full items-end justify-between pb-6 leading-[1.15] font-black tracking-tight select-none"
+              className="flex w-full items-end justify-between pb-6 leading-[1.15] font-black tracking-tight select-none [perspective:800px]"
               style={{
                 fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
                 fontSize: 'clamp(1.5rem, 12.5cqw, 12.5rem)',
@@ -165,16 +220,18 @@ export function Footer() {
             >
               {WORDMARK_LETTERS.map((char, index) => {
                 const dist = hoveredIdx === null ? null : Math.abs(hoveredIdx - index);
-                const liftY = dist === 0 ? '-4px' : dist === 1 ? '-1.5px' : '0px';
-                const sheenOpacity = dist === 0 ? 1 : dist === 1 ? 0.48 : 0;
+                const sheenOpacity =
+                  dist === 0 ? 1 : dist === 1 ? 0.62 : dist === 2 ? 0.28 : 0;
 
                 return (
                   <span key={index} data-footer-letter className="inline-block tracking-normal will-change-transform">
                     <span
+                      ref={(el) => {
+                        letterNodesRef.current[index] = el;
+                      }}
                       data-footer-hover-letter={index}
                       onPointerEnter={() => setHoveredIdx(index)}
-                      className="relative inline-block transition-transform duration-300 ease-out"
-                      style={{ transform: `translateY(${liftY})` }}
+                      className="relative inline-block origin-bottom will-change-transform"
                     >
                       <span
                         className="-mx-[0.06em] block bg-clip-text px-[0.06em] pb-3 text-transparent"
@@ -184,11 +241,12 @@ export function Footer() {
                       </span>
                       <span
                         data-footer-letter-sheen={index}
-                        className="pointer-events-none absolute inset-y-0 -inset-x-[0.06em] block bg-clip-text px-[0.06em] pb-3 text-transparent transition-opacity duration-300 ease-out"
+                        className="pointer-events-none absolute inset-y-0 -inset-x-[0.06em] block bg-clip-text px-[0.06em] pb-3 text-transparent transition-[opacity,filter] duration-300 ease-out"
                         style={{
-                          backgroundImage: SHEEN_GRADIENT,
+                          backgroundImage: GLOW_GRADIENT,
                           WebkitBackgroundClip: 'text',
                           opacity: sheenOpacity,
+                          filter: dist === 0 ? 'drop-shadow(0 6px 20px rgba(255,255,255,0.28))' : 'none',
                         }}
                       >
                         {char}
