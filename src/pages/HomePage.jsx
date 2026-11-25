@@ -7,6 +7,7 @@ export function HomePage() {
       <StatsStrip />
       <KineticMarquee />
       <Showcase />
+      <KineticMarquee className="mt-20 sm:mt-28" />
       <SpotAtlas />
     </>
   );

@@ -3,15 +3,15 @@ import { ArrowUp } from 'lucide-react';
 import { gsap, MEDIA } from '@animations';
 
 /**
- * Sticky glassmorphic chapter index (01–04) with a smoothly gliding active pill indicator.
- * Horizontally scrollable with snap on small screens.
+ * Sticky glassmorphic chapter index (01–04) with a gliding liquid glass pill
+ * that physically slides, stretches, and morphs width to track the active chapter.
  */
 export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTop }) {
   const trackRef = useRef(null);
   const indicatorRef = useRef(null);
   const hasPositionedRef = useRef(false);
 
-  // Keep the active pill visible inside the horizontally scrollable track.
+  // Keep the active pill centered inside the horizontally scrollable track on mobile.
   useEffect(() => {
     const track = trackRef.current;
     if (!track || !activeId) return;
@@ -21,7 +21,7 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
     track.scrollTo({ left, behavior: 'smooth' });
   }, [activeId]);
 
-  // Smoothly glide the active indicator pill across chapters.
+  // Smoothly glide & liquid-morph the active glass pill across chapters.
   useLayoutEffect(() => {
     const track = trackRef.current;
     const indicator = indicatorRef.current;
@@ -46,17 +46,28 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
 
       if (!hasPositionedRef.current || reduce || instant) {
         hasPositionedRef.current = true;
-        gsap.set(indicator, { x, width, height, opacity: 1 });
+        gsap.set(indicator, { x, width, height, scaleX: 1, opacity: 1 });
       } else {
-        gsap.to(indicator, {
-          x,
-          width,
-          height,
-          opacity: 1,
-          duration: 0.45,
-          ease: 'power3.out',
-          overwrite: 'auto',
-        });
+        const tl = gsap.timeline({ defaults: { overwrite: 'auto' } });
+        tl.to(
+          indicator,
+          {
+            x,
+            width,
+            height,
+            opacity: 1,
+            duration: 0.48,
+            ease: 'power3.out',
+          },
+          0
+        );
+        // Subtle liquid stretch pulse during glide
+        tl.fromTo(
+          indicator,
+          { scaleX: 1 },
+          { scaleX: 1.07, duration: 0.16, ease: 'power2.out', yoyo: true, repeat: 1 },
+          0
+        );
       }
     };
 
@@ -74,11 +85,12 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
         className="glass pointer-events-auto max-w-full rounded-full border border-white/70 p-1.5 shadow-[0_18px_40px_-22px_rgba(15,23,42,0.45)] transition-colors duration-300 dark:border-white/10 dark:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.8)]"
       >
         <div ref={trackRef} className="no-scrollbar relative flex snap-x snap-mandatory items-center gap-1 overflow-x-auto">
-          {/* Smoothly gliding active chapter pill */}
+          {/* Gliding liquid glass active chapter pill */}
           <span
             ref={indicatorRef}
+            data-chapter-liquid-pill
             aria-hidden="true"
-            className="pointer-events-none absolute top-0 left-0 z-0 rounded-full bg-ink opacity-0 transition-colors duration-300 dark:bg-white"
+            className="pointer-events-none absolute top-0 left-0 z-0 rounded-full border border-white/20 bg-ink/95 shadow-[0_8px_22px_-8px_rgba(15,23,42,0.55)] backdrop-blur-md opacity-0 will-change-transform transition-colors duration-300 dark:border-white/40 dark:bg-white/95 dark:shadow-[0_8px_22px_-8px_rgba(255,255,255,0.35)]"
           />
 
           {expoMode && (
