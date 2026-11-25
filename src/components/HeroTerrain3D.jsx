@@ -381,10 +381,10 @@ export function HeroTerrain3D({ sectionRef }) {
       ref={containerRef}
       data-hero-terrain
       aria-hidden="true"
-      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] overflow-hidden opacity-90 sm:h-[680px] lg:h-[780px]"
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-90"
     >
       {/* Subtle architectural gradient fade so the 3D terrain melts seamlessly into the canvas */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-canvas via-canvas/70 to-transparent transition-colors duration-300 dark:from-[#0B111E] dark:via-[#0B111E]/75" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-canvas via-canvas/75 to-transparent transition-colors duration-300 dark:from-[#0B111E] dark:via-[#0B111E]/80" />
     </div>
   );
 }

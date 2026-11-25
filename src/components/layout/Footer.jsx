@@ -31,8 +31,9 @@ export function Footer() {
           opacity: 1,
           duration: 0.9,
           ease: 'power3.out',
-          clearProps: 'transform',
-          scrollTrigger: { trigger: scope, start: 'top 92%', once: true },
+          immediateRender: false,
+          clearProps: 'transform,opacity',
+          scrollTrigger: { trigger: scope, start: 'top 94%', once: true },
         }
       );
 
@@ -43,8 +44,9 @@ export function Footer() {
         duration: 0.85,
         stagger: 0.08,
         ease: 'power3.out',
-        clearProps: 'transform',
-        scrollTrigger: { trigger: scope, start: 'top 88%', once: true },
+        immediateRender: false,
+        clearProps: 'transform,opacity',
+        scrollTrigger: { trigger: scope, start: 'top 90%', once: true },
       });
 
       // 3. Staggered letter-by-letter rise without bottom overflow clipping
@@ -54,10 +56,11 @@ export function Footer() {
         duration: 0.9,
         stagger: 0.045,
         ease: 'power4.out',
+        immediateRender: false,
         clearProps: 'transform,opacity',
         scrollTrigger: {
           trigger: scope.querySelector('[data-footer-mask]'),
-          start: 'top 95%',
+          start: 'top 96%',
           once: true,
         },
       });
@@ -69,6 +72,7 @@ export function Footer() {
         {
           y: 0,
           ease: 'none',
+          immediateRender: false,
           scrollTrigger: {
             trigger: scope,
             start: 'top bottom',

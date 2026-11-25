@@ -26,27 +26,28 @@ export function StatsStrip() {
       if (ctx.conditions.reduce) return;
 
       gsap.from('[data-stat-card]', {
-        y: 40,
+        y: 36,
         opacity: 0,
-        duration: 0.9,
+        duration: 0.85,
         stagger: 0.08,
         ease: 'expo.out',
-        scrollTrigger: { trigger: scopeRef.current, start: 'top 88%', once: true },
+        immediateRender: false,
+        clearProps: 'transform,opacity',
+        scrollTrigger: { trigger: scopeRef.current, start: 'top 92%', once: true },
       });
 
       scopeRef.current.querySelectorAll('[data-count]').forEach((el) => {
         const target = Number(el.dataset.count);
         const counter = { value: 0 };
-        el.textContent = '0';
         gsap.to(counter, {
           value: target,
-          duration: 1.6,
+          duration: 1.4,
           ease: 'power2.out',
           snap: { value: 1 },
           onUpdate: () => {
             el.textContent = String(Math.round(counter.value)).padStart(2, '0');
           },
-          scrollTrigger: { trigger: el, start: 'top 92%', once: true },
+          scrollTrigger: { trigger: el, start: 'top 95%', once: true },
         });
       });
     });

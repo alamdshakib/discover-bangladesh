@@ -19,17 +19,20 @@ export function ChapterSection({ chapter, spots, onOpen }) {
 
       // 1. Custom SVG topographic contour lines draw themselves on scroll entry
       const contours = scope.querySelectorAll('[data-chapter-contour]');
-      contours.forEach((path) => {
-        const len = typeof path.getTotalLength === 'function' ? path.getTotalLength() : 1400;
-        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
-      });
       if (contours.length > 0) {
-        gsap.to(contours, {
-          strokeDashoffset: 0,
-          duration: 1.5,
-          stagger: 0.14,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: scope, start: 'top 84%', once: true },
+        contours.forEach((path) => {
+          const len = typeof path.getTotalLength === 'function' ? path.getTotalLength() : 1400;
+          gsap.fromTo(
+            path,
+            { strokeDasharray: len, strokeDashoffset: len },
+            {
+              strokeDashoffset: 0,
+              duration: 1.5,
+              ease: 'power2.out',
+              immediateRender: false,
+              scrollTrigger: { trigger: scope, start: 'top 86%', once: true },
+            }
+          );
         });
       }
 
@@ -44,52 +47,67 @@ export function ChapterSection({ chapter, spots, onOpen }) {
             duration: 1.1,
             ease: 'power3.out',
             transformOrigin: 'left center',
-            scrollTrigger: { trigger: scope, start: 'top 84%', once: true },
+            immediateRender: false,
+            scrollTrigger: { trigger: scope, start: 'top 86%', once: true },
           }
         );
       }
 
-      // 3. Masked word-by-word & display headline entrance
+      // 3. Masked word-by-word & display headline entrance (immediateRender: false prevents stuck opacity: 0)
       gsap.from(scope.querySelectorAll('[data-chapter-number], [data-chapter-title], [data-chapter-word]'), {
-        yPercent: 105,
+        yPercent: 90,
         opacity: 0,
-        duration: 1.0,
-        stagger: 0.055,
+        duration: 0.95,
+        stagger: 0.05,
         ease: 'power4.out',
-        clearProps: 'transform',
-        scrollTrigger: { trigger: scope, start: 'top 82%', once: true },
+        immediateRender: false,
+        clearProps: 'transform,opacity',
+        scrollTrigger: { trigger: scope, start: 'top 86%', once: true },
       });
 
-      // 4. Scroll-batched wave entrance across visible card rows
+      // 4. Scroll-batched wave entrance — never pre-hides cards at opacity: 0 on mount
       const cardWraps = scope.querySelectorAll('[data-spot-card-wrap]');
-      gsap.set(cardWraps, { y: 54, scale: 0.95, opacity: 0 });
       ScrollTrigger.batch(cardWraps, {
-        start: 'top 88%',
+        start: 'top 92%',
         once: true,
         onEnter: (batch) =>
-          gsap.to(batch, {
-            y: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 0.9,
-            stagger: 0.08,
-            ease: 'power3.out',
-            clearProps: 'transform,opacity',
-          }),
+          gsap.fromTo(
+            batch,
+            { y: 44, scale: 0.96, opacity: 0 },
+            {
+              y: 0,
+              scale: 1,
+              opacity: 1,
+              duration: 0.85,
+              stagger: 0.08,
+              ease: 'power3.out',
+              overwrite: 'auto',
+              clearProps: 'transform,opacity',
+            }
+          ),
       });
 
       if (!isDesktop) return;
 
       // 5. Kinetic chapter header parallax
       const headerScrub = { trigger: scope, start: 'top bottom', end: 'top top', scrub: 0.8 };
-      gsap.fromTo(scope.querySelector('[data-chapter-title]'), { x: 48 }, { x: -16, ease: 'none', scrollTrigger: headerScrub });
-      gsap.fromTo(scope.querySelector('[data-chapter-number]'), { x: -24 }, { x: 8, ease: 'none', scrollTrigger: headerScrub });
+      gsap.fromTo(
+        scope.querySelector('[data-chapter-title]'),
+        { x: 48 },
+        { x: -16, ease: 'none', immediateRender: false, scrollTrigger: headerScrub }
+      );
+      gsap.fromTo(
+        scope.querySelector('[data-chapter-number]'),
+        { x: -24 },
+        { x: 8, ease: 'none', immediateRender: false, scrollTrigger: headerScrub }
+      );
       gsap.fromTo(
         scope.querySelector('[data-chapter-bg]'),
         { yPercent: -8 },
         {
           yPercent: 8,
           ease: 'none',
+          immediateRender: false,
           scrollTrigger: { trigger: scope.querySelector('header'), start: 'top bottom', end: 'bottom top', scrub: true },
         }
       );
@@ -105,6 +123,7 @@ export function ChapterSection({ chapter, spots, onOpen }) {
               scale: 1.15,
               yPercent: 6,
               ease: 'none',
+              immediateRender: false,
               scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
             }
           );

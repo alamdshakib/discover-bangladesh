@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { spotsData } from '@data';
-import { gsap, MEDIA, pauseScroll, resumeScroll } from '@animations';
+import { gsap, MEDIA, pauseScroll, resumeScroll, ScrollTrigger } from '@animations';
 import { getImageSrc } from '@utils';
 
 const MONTAGE_IDS = [
@@ -43,6 +43,7 @@ export function CinematicIntro() {
     handoffFiredRef.current = true;
     resumeScroll();
     window.dispatchEvent(new CustomEvent('db:intro-done'));
+    window.requestAnimationFrame(() => ScrollTrigger.refresh());
   }, []);
 
   const finishIntro = useCallback(() => {
@@ -50,32 +51,34 @@ export function CinematicIntro() {
     exitedRef.current = true;
     fireHandoff();
     setVisible(false);
+    window.requestAnimationFrame(() => ScrollTrigger.refresh());
   }, [fireHandoff]);
 
-  // Lock native body + html + Lenis scroll while the cinema intro is mounted
+  // Lock native body + Lenis scroll while the cinema intro is mounted (without mutating html overflow)
   useEffect(() => {
     if (!visible) return undefined;
 
-    const { body, documentElement } = document;
+    const { body } = document;
     const prevBodyOverflow = body.style.overflow;
-    const prevHtmlOverflow = documentElement.style.overflow;
 
     body.style.overflow = 'hidden';
-    documentElement.style.overflow = 'hidden';
     pauseScroll();
 
     // Ensure Lenis is also paused if its effect initialized a tick after mount
     const rafId = window.requestAnimationFrame(() => pauseScroll());
     const timerId = window.setTimeout(() => pauseScroll(), 80);
+    // Hard wall-clock failsafe so backgrounded tabs never stay covered by the intro
+    const failsafeId = window.setTimeout(finishIntro, 4400);
 
     return () => {
       window.cancelAnimationFrame(rafId);
       window.clearTimeout(timerId);
+      window.clearTimeout(failsafeId);
       body.style.overflow = prevBodyOverflow;
-      documentElement.style.overflow = prevHtmlOverflow;
       resumeScroll();
+      window.requestAnimationFrame(() => ScrollTrigger.refresh());
     };
-  }, [visible]);
+  }, [visible, finishIntro]);
 
   // Theatrical fast skip transition (button click or Escape key)
   const handleSkip = useCallback(() => {

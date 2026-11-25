@@ -27,30 +27,55 @@ export function Hero() {
       const frame = scope.querySelector('[data-hero-frame]');
       const copyItems = scope.querySelectorAll('[data-hero-copy] > *');
 
-      gsap.set(lines, { yPercent: 115, rotateX: 12, opacity: 0, transformOrigin: 'bottom center' });
-      gsap.set(frame, { opacity: 0, y: 18 });
-      gsap.set(copyItems, { y: 24, opacity: 0 });
-
+      // Never lock Hero elements at opacity: 0 on mount; animate cleanly via ctx.add when triggered
+      // and always restore clean props so content is 100% visible under every lifecycle path.
       const playEntrance = () => {
-        const tl = gsap.timeline();
-        tl.to(
-          lines,
-          {
-            yPercent: 0,
-            rotateX: 0,
-            opacity: 1,
-            duration: 1.05,
-            stagger: 0.08,
-            ease: 'power4.out',
-            clearProps: 'transform',
-          },
-          0
-        );
-        tl.to(frame, { opacity: 1, y: 0, duration: 1.0, ease: 'expo.out', clearProps: 'transform' }, 0.14);
-        tl.to(copyItems, { y: 0, opacity: 1, duration: 0.85, stagger: 0.08, ease: 'power3.out', clearProps: 'transform' }, 0.42);
+        ctx.add(() => {
+          const tl = gsap.timeline({
+            defaults: { overwrite: 'auto' },
+          });
+          tl.fromTo(
+            lines,
+            { yPercent: 85, rotateX: 10, opacity: 0, transformOrigin: 'bottom center' },
+            {
+              yPercent: 0,
+              rotateX: 0,
+              opacity: 1,
+              duration: 0.95,
+              stagger: 0.07,
+              ease: 'power4.out',
+              clearProps: 'transform,opacity',
+            },
+            0
+          );
+          tl.fromTo(
+            frame,
+            { opacity: 0, y: 18 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.9,
+              ease: 'expo.out',
+              clearProps: 'opacity,y',
+            },
+            0.1
+          );
+          tl.fromTo(
+            copyItems,
+            { y: 20, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              stagger: 0.07,
+              ease: 'power3.out',
+              clearProps: 'transform,opacity',
+            },
+            0.28
+          );
+        });
       };
 
-      // Hand off smoothly from the cinematic intro at the exact millisecond curtains split.
       const introActive = Boolean(document.querySelector('[data-cinematic-intro]'));
       if (introActive) {
         let played = false;
@@ -60,7 +85,7 @@ export function Hero() {
           playEntrance();
         };
         window.addEventListener('db:intro-done', trigger, { once: true });
-        const fallbackId = window.setTimeout(trigger, 4200);
+        const fallbackId = window.setTimeout(trigger, 3900);
         cleanupWait = () => {
           window.removeEventListener('db:intro-done', trigger);
           window.clearTimeout(fallbackId);
@@ -83,16 +108,28 @@ export function Hero() {
         gsap.fromTo(
           '[data-hero-frame]',
           { scale: 1, borderRadius: '1.75rem', transformOrigin: 'center top' },
-          { scale: 0.9, borderRadius: '2.75rem', ease: 'none', scrollTrigger: scrub }
+          {
+            scale: 0.9,
+            borderRadius: '2.75rem',
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: scrub,
+          }
         );
         gsap.fromTo(
           '[data-hero-media]',
           { scale: 1.08, yPercent: -6 },
-          { scale: 1.14, yPercent: 12, ease: 'none', scrollTrigger: scrub }
+          {
+            scale: 1.14,
+            yPercent: 12,
+            ease: 'none',
+            immediateRender: false,
+            scrollTrigger: scrub,
+          }
         );
         gsap.to('[data-hero-pill]', { y: -26, ease: 'none', scrollTrigger: scrub });
         gsap.to('[data-hero-copy]', { y: 22, ease: 'none', scrollTrigger: scrub });
-        gsap.to('[data-hero-title]', { y: -16, opacity: 0.5, ease: 'none', scrollTrigger: scrub });
+        gsap.to('[data-hero-title]', { y: -16, opacity: 0.55, ease: 'none', scrollTrigger: scrub });
       } else {
         // Light touch-friendly parallax — no pinning, zero clipping.
         gsap.fromTo(
@@ -102,6 +139,7 @@ export function Hero() {
             scale: 1.1,
             yPercent: 6,
             ease: 'none',
+            immediateRender: false,
             scrollTrigger: { trigger: '[data-hero-frame]', start: 'top bottom', end: 'bottom top', scrub: true },
           }
         );
@@ -118,12 +156,13 @@ export function Hero() {
     <section
       id={SECTION_IDS.top}
       ref={scopeRef}
-      className="relative isolate overflow-x-clip px-3 pt-28 sm:px-5 sm:pt-32"
+      className="relative overflow-x-clip px-3 pt-28 sm:px-5 sm:pt-32"
     >
-      {/* WebGL 3D procedural topographic terrain & atmospheric mist */}
+      {/* WebGL 3D procedural topographic terrain strictly in z-0 background */}
       <HeroTerrain3D sectionRef={scopeRef} />
 
-      <div className="mx-auto max-w-[1600px]">
+      {/* All Hero typography, badges, buttons, and showcase card sit strictly above at z-10 */}
+      <div className="relative z-10 mx-auto max-w-[1600px]">
         <div className="flex flex-col gap-4 px-1 sm:px-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="overflow-hidden [perspective:900px]">
             <p
@@ -208,7 +247,7 @@ export function Hero() {
 
           <div
             data-hero-copy
-            className="absolute inset-x-0 bottom-0 flex flex-col gap-6 p-5 text-white will-change-transform sm:p-10 lg:flex-row lg:items-end lg:justify-between lg:p-14"
+            className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-6 p-5 text-white will-change-transform sm:p-10 lg:flex-row lg:items-end lg:justify-between lg:p-14"
           >
             <div className="max-w-2xl">
               <p className="text-[11px] font-semibold tracking-[0.24em] text-white/70 uppercase">
