@@ -53,7 +53,7 @@ export function ChapterSection({ chapter, spots, onOpen }) {
         );
       }
 
-      // 3. Masked word-by-word & display headline entrance (immediateRender: false prevents stuck opacity: 0)
+      // 3. Masked word-by-word & display headline entrance
       gsap.from(scope.querySelectorAll('[data-chapter-number], [data-chapter-title], [data-chapter-word]'), {
         yPercent: 90,
         opacity: 0,
@@ -65,18 +65,21 @@ export function ChapterSection({ chapter, spots, onOpen }) {
         scrollTrigger: { trigger: scope, start: 'top 86%', once: true },
       });
 
-      // 4. Scroll-batched wave entrance — never pre-hides cards at opacity: 0 on mount
+      // 4. Cinematic Shutter Unmask Entrance via ScrollTrigger.batch()
+      // Never pre-hides cards at opacity: 0 on mount; unveils cleanly on enter.
       const cardWraps = scope.querySelectorAll('[data-spot-card-wrap]');
       ScrollTrigger.batch(cardWraps, {
-        start: 'top 92%',
+        start: 'top 90%',
         once: true,
-        onEnter: (batch) =>
+        onEnter: (batch) => {
+          const shutters = batch.map((w) => w.querySelector('[data-card-shutter]')).filter(Boolean);
+          const shutterImgs = batch.map((w) => w.querySelector('[data-card-shutter-img]')).filter(Boolean);
+
           gsap.fromTo(
             batch,
-            { y: 44, scale: 0.96, opacity: 0 },
+            { y: 40, opacity: 0 },
             {
               y: 0,
-              scale: 1,
               opacity: 1,
               duration: 0.85,
               stagger: 0.08,
@@ -84,12 +87,59 @@ export function ChapterSection({ chapter, spots, onOpen }) {
               overwrite: 'auto',
               clearProps: 'transform,opacity',
             }
-          ),
+          );
+
+          if (shutters.length > 0) {
+            gsap.fromTo(
+              shutters,
+              { clipPath: 'inset(100% 0% 0% 0%)' },
+              {
+                clipPath: 'inset(0% 0% 0% 0%)',
+                duration: 1.05,
+                stagger: 0.08,
+                ease: 'power4.out',
+                overwrite: 'auto',
+                clearProps: 'clipPath',
+              }
+            );
+          }
+
+          if (shutterImgs.length > 0) {
+            gsap.fromTo(
+              shutterImgs,
+              { scale: 1.25 },
+              {
+                scale: 1.12,
+                duration: 1.15,
+                stagger: 0.08,
+                ease: 'power4.out',
+                overwrite: 'auto',
+              }
+            );
+          }
+        },
+      });
+
+      // 5. Scroll-scrubbed inner window parallax (yPercent: -8 → 8) on every card cover photo
+      scope.querySelectorAll('[data-spot-card-wrap]').forEach((wrap) => {
+        const media = wrap.querySelector('[data-card-media]');
+        if (media) {
+          gsap.fromTo(
+            media,
+            { yPercent: -8 },
+            {
+              yPercent: 8,
+              ease: 'none',
+              immediateRender: false,
+              scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
+            }
+          );
+        }
       });
 
       if (!isDesktop) return;
 
-      // 5. Kinetic chapter header parallax
+      // 6. Kinetic chapter header parallax (desktop)
       const headerScrub = { trigger: scope, start: 'top bottom', end: 'top top', scrub: 0.8 };
       gsap.fromTo(
         scope.querySelector('[data-chapter-title]'),
@@ -111,24 +161,6 @@ export function ChapterSection({ chapter, spots, onOpen }) {
           scrollTrigger: { trigger: scope.querySelector('header'), start: 'top bottom', end: 'bottom top', scrub: true },
         }
       );
-
-      // 6. Scroll-scrubbed living editorial window parallax on every card cover photo
-      scope.querySelectorAll('[data-spot-card-wrap]').forEach((wrap) => {
-        const media = wrap.querySelector('[data-card-media]');
-        if (media) {
-          gsap.fromTo(
-            media,
-            { scale: 1.15, yPercent: -6 },
-            {
-              scale: 1.15,
-              yPercent: 6,
-              ease: 'none',
-              immediateRender: false,
-              scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
-            }
-          );
-        }
-      });
     });
 
     return () => mm.revert();

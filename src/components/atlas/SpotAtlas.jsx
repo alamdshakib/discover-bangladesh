@@ -230,8 +230,8 @@ export function SpotAtlas() {
 
     if (is3D && !reduce && window.matchMedia('(pointer: fine)').matches) {
       tiltQuickRef.current = {
-        rx: gsap.quickTo(stage, 'rotateX', { duration: 0.45, ease: 'power3.out' }),
-        ry: gsap.quickTo(stage, 'rotateY', { duration: 0.45, ease: 'power3.out' }),
+        rx: gsap.quickTo(stage, 'rotationX', { duration: 0.45, ease: 'power3.out' }),
+        ry: gsap.quickTo(stage, 'rotationY', { duration: 0.45, ease: 'power3.out' }),
       };
     } else {
       tiltQuickRef.current = null;

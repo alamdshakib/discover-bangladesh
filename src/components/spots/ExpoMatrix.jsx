@@ -18,7 +18,7 @@ function countTags(spots, field) {
   }, {});
 }
 
-/** Expo Mode: high-density bento matrix of every spot with instant multi-tag filters & choreographed wave morph. */
+/** Expo Mode: high-density 3D bento matrix with shutter unmask, window parallax, and FLIP filters. */
 export function ExpoMatrix({ spots, onOpen }) {
   const [selection, setSelection] = useState(emptySelection);
   const gridRef = useRef(null);
@@ -53,27 +53,86 @@ export function ExpoMatrix({ spots, onOpen }) {
     setSelection(emptySelection());
   };
 
-  // Choreographed staggered wave entrance on view morph.
+  // Cinematic Shutter Unmask via ScrollTrigger.batch() + scrubbed window parallax on mount.
   useLayoutEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const cards = gridRef.current.querySelectorAll('[data-expo-card]');
+    const grid = gridRef.current;
+    if (!grid) return undefined;
+
     const ctx = gsap.context(() => {
-      if (!reduce) {
-        gsap.fromTo(
-          cards,
-          { opacity: 0, y: 26, scale: 0.92 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.65,
-            stagger: 0.03,
-            ease: 'power3.out',
-            clearProps: 'transform,opacity',
+      if (reduce) return;
+      const cards = grid.querySelectorAll('[data-expo-card]');
+
+      ScrollTrigger.batch(cards, {
+        start: 'top 92%',
+        once: true,
+        onEnter: (batch) => {
+          const shutters = batch.map((c) => c.querySelector('[data-card-shutter]')).filter(Boolean);
+          const shutterImgs = batch.map((c) => c.querySelector('[data-card-shutter-img]')).filter(Boolean);
+
+          gsap.fromTo(
+            batch,
+            { opacity: 0, y: 26, scale: 0.94 },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.65,
+              stagger: 0.035,
+              ease: 'power3.out',
+              overwrite: 'auto',
+              clearProps: 'transform,opacity',
+            }
+          );
+
+          if (shutters.length > 0) {
+            gsap.fromTo(
+              shutters,
+              { clipPath: 'inset(100% 0% 0% 0%)' },
+              {
+                clipPath: 'inset(0% 0% 0% 0%)',
+                duration: 0.95,
+                stagger: 0.035,
+                ease: 'power4.out',
+                overwrite: 'auto',
+                clearProps: 'clipPath',
+              }
+            );
           }
-        );
-      }
+
+          if (shutterImgs.length > 0) {
+            gsap.fromTo(
+              shutterImgs,
+              { scale: 1.25 },
+              {
+                scale: 1.12,
+                duration: 1.05,
+                stagger: 0.035,
+                ease: 'power4.out',
+                overwrite: 'auto',
+              }
+            );
+          }
+        },
+      });
+
+      cards.forEach((card) => {
+        const media = card.querySelector('[data-card-media]');
+        if (media) {
+          gsap.fromTo(
+            media,
+            { yPercent: -8 },
+            {
+              yPercent: 8,
+              ease: 'none',
+              immediateRender: false,
+              scrollTrigger: { trigger: card, start: 'top bottom', end: 'bottom top', scrub: true },
+            }
+          );
+        }
+      });
     }, gridRef);
+
     hasMounted.current = true;
     return () => ctx.revert();
   }, []);

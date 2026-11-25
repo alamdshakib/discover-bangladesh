@@ -17,8 +17,9 @@ const SPAN_CLASS = {
 };
 
 /**
- * Spatial 3D editorial destination card with true perspective tilt, Z-axis floating
- * UI layers, live cursor specular sheen, smooth photo switcher, and magnetic action button.
+ * Spatial 3D editorial destination card with heavy perspective(1000px) tilt (±8deg),
+ * translateZ(28px) floating layers, live holographic specular sheen, shutter unmask,
+ * scrubbed inner window parallax, and snappy thumbnail crossfade.
  */
 export function SpotCard({ spot, span = 6, label, onOpen }) {
   const images = getSpotImages(spot);
@@ -35,27 +36,30 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
 
   const open = () => onOpen(spot.id);
 
-  // Set up gsap.quickTo trackers for desktop 3D perspective tilt.
-  useEffect(() => {
-    const finePointer = window.matchMedia('(pointer: fine)').matches;
-    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
-    if (!finePointer || reduce) return undefined;
-
+  // Lazily initialize gsap.quickTo trackers so entrance/clearProps tweens never kill them.
+  const ensureTilt = () => {
+    if (tiltRef.current) return tiltRef.current;
     const card = cardRef.current;
-    if (!card) return undefined;
-
+    if (!card) return null;
+    if (!window.matchMedia('(pointer: fine)').matches || window.matchMedia(MEDIA.reduceMotion).matches) {
+      return null;
+    }
     tiltRef.current = {
-      rx: gsap.quickTo(card, 'rotateX', { duration: 0.35, ease: 'power3.out' }),
-      ry: gsap.quickTo(card, 'rotateY', { duration: 0.35, ease: 'power3.out' }),
+      rx: gsap.quickTo(card, 'rotationX', { duration: 0.35, ease: 'power3.out' }),
+      ry: gsap.quickTo(card, 'rotationY', { duration: 0.35, ease: 'power3.out' }),
     };
+    return tiltRef.current;
+  };
 
+  useEffect(() => {
+    const card = cardRef.current;
     return () => {
       tiltRef.current = null;
-      gsap.killTweensOf(card);
+      if (card) gsap.killTweensOf(card);
     };
   }, []);
 
-  // Subtle crossfade & scale settle when switching gallery thumbnails.
+  // Snappy thumbnail crossfade + subtle zoom-settle animation.
   useEffect(() => {
     if (!hasSwitchedRef.current) {
       hasSwitchedRef.current = true;
@@ -65,20 +69,22 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
     if (!stage || window.matchMedia(MEDIA.reduceMotion).matches) return;
     gsap.fromTo(
       stage,
-      { opacity: 0.72, scale: 1.04 },
-      { opacity: 1, scale: 1, duration: 0.45, ease: 'power3.out', overwrite: 'auto' }
+      { opacity: 0.45, scale: 1.07 },
+      { opacity: 1, scale: 1, duration: 0.42, ease: 'power3.out', overwrite: 'auto' }
     );
   }, [active]);
 
   const handleCardMove = (e) => {
-    if (e.pointerType !== 'mouse' || !tiltRef.current || !cardRef.current) return;
+    if (e.pointerType !== 'mouse' || !cardRef.current) return;
     if (!window.matchMedia(MEDIA.desktop).matches) return;
+    const tilt = ensureTilt();
+    if (!tilt) return;
     const rect = cardRef.current.getBoundingClientRect();
     const px = (e.clientX - rect.left) / Math.max(rect.width, 1);
     const py = (e.clientY - rect.top) / Math.max(rect.height, 1);
 
-    tiltRef.current.rx((0.5 - py) * 13); // ±6.5 deg
-    tiltRef.current.ry((px - 0.5) * 13); // ±6.5 deg
+    tilt.rx((0.5 - py) * 16); // ±8 deg
+    tilt.ry((px - 0.5) * 16); // ±8 deg
 
     if (sheenRef.current) {
       sheenRef.current.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`);
@@ -88,15 +94,9 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
   };
 
   const handleCardLeave = () => {
-    const card = cardRef.current;
-    if (card && tiltRef.current) {
-      gsap.to(card, {
-        rotateX: 0,
-        rotateY: 0,
-        duration: 0.75,
-        ease: 'elastic.out(1, 0.5)',
-        overwrite: 'auto',
-      });
+    if (tiltRef.current) {
+      tiltRef.current.rx(0);
+      tiltRef.current.ry(0);
     }
     if (sheenRef.current) {
       sheenRef.current.style.opacity = '0';
@@ -106,33 +106,33 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
   return (
     <div
       data-spot-card-wrap
-      className={`[perspective:1100px] ${SPAN_CLASS[span] ?? SPAN_CLASS[6]}`}
+      className={`[perspective:1000px] ${SPAN_CLASS[span] ?? SPAN_CLASS[6]}`}
     >
       <article
         ref={cardRef}
         data-spot-card
         onPointerMove={handleCardMove}
         onPointerLeave={handleCardLeave}
-        className="group relative flex h-full flex-col rounded-4xl border border-line bg-card transition-[background-color,border-color,box-shadow] duration-300 will-change-transform hover:shadow-[0_40px_80px_-40px_rgba(15,23,42,0.42)] dark:border-white/10 dark:bg-[#131C2E] dark:hover:shadow-[0_40px_80px_-36px_rgba(0,0,0,0.85)] lg:[transform-style:preserve-3d]"
+        className="group relative flex h-full flex-col rounded-4xl border border-line bg-card transition-[background-color,border-color,box-shadow] duration-300 will-change-transform hover:shadow-[0_44px_88px_-38px_rgba(15,23,42,0.46)] dark:border-white/10 dark:bg-[#131C2E] dark:hover:shadow-[0_44px_88px_-34px_rgba(0,0,0,0.88)] lg:[transform-style:preserve-3d]"
       >
-        {/* Live cursor specular light sheen overlay */}
+        {/* Live holographic cursor-following specular sheen */}
         <div
           ref={sheenRef}
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-20 overflow-hidden rounded-4xl opacity-0 transition-opacity duration-300"
           style={{
             background:
-              'radial-gradient(520px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.2), transparent 56%)',
+              'radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.28) 0%, rgba(16, 185, 129, 0.12) 28%, rgba(56, 189, 248, 0.1) 48%, transparent 66%)',
           }}
         />
 
-        {/* Media region — image clipped inside rounded-t-4xl while floating UI sits in 3D Z-space */}
+        {/* Media region — photo clipped inside rounded-t-4xl while floating UI sits in 3D Z-space */}
         <div
           className={`relative lg:[transform-style:preserve-3d] ${
             wide ? 'h-64 sm:h-80 lg:h-[420px]' : 'h-64 sm:h-72 lg:h-[340px]'
           }`}
         >
-          <div className="absolute inset-0 overflow-hidden rounded-t-4xl bg-line">
+          <div data-card-shutter className="absolute inset-0 overflow-hidden rounded-t-4xl bg-line">
             <button
               type="button"
               data-cursor="explore"
@@ -140,15 +140,17 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
               aria-label={`Open ${spot.name} details`}
               className="absolute inset-0 block h-full w-full cursor-zoom-in"
             >
-              <div data-card-media className="absolute inset-x-0 -top-[8%] -bottom-[8%] will-change-transform">
-                <div ref={photoStageRef} className="h-full w-full will-change-transform">
-                  <SmartImage
-                    src={getImageSrc(images[active], 'card')}
-                    fallbackSrc={images[active]}
-                    alt={`${spot.name} — photo ${active + 1} of ${images.length}`}
-                    className="h-full w-full"
-                    imgClassName="h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.05]"
-                  />
+              <div data-card-media className="absolute inset-x-0 -top-[10%] -bottom-[10%] will-change-transform">
+                <div data-card-shutter-img className="h-full w-full scale-[1.12] will-change-transform">
+                  <div ref={photoStageRef} className="h-full w-full will-change-transform">
+                    <SmartImage
+                      src={getImageSrc(images[active], 'card')}
+                      fallbackSrc={images[active]}
+                      alt={`${spot.name} — photo ${active + 1} of ${images.length}`}
+                      className="h-full w-full"
+                      imgClassName="h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.05]"
+                    />
+                  </div>
                 </div>
               </div>
               <span
@@ -158,7 +160,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
             </button>
           </div>
 
-          {/* Z-axis lifted top metadata pills */}
+          {/* translateZ(28px) lifted top metadata pills */}
           <div className="pointer-events-none absolute top-3 right-3 left-3 z-10 flex items-start justify-between gap-2 sm:top-4 sm:right-4 sm:left-4 lg:[transform:translateZ(28px)]">
             <MetaPill tone="glass">{label}</MetaPill>
             <MetaPill tone="dark" icon={CalendarDays} className="shrink-0">
@@ -166,11 +168,11 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
             </MetaPill>
           </div>
 
-          {/* Z-axis lifted thumbnail dock */}
+          {/* translateZ(28px) lifted circular thumbnail dock */}
           <div
             role="group"
             aria-label={`${spot.name} photos`}
-            className="glass absolute bottom-3 left-3 z-10 flex gap-1 rounded-full border border-white/60 p-1 shadow-sm dark:border-white/15 sm:bottom-4 sm:left-4 lg:[transform:translateZ(32px)]"
+            className="glass absolute bottom-3 left-3 z-10 flex gap-1 rounded-full border border-white/60 p-1 shadow-sm dark:border-white/15 sm:bottom-4 sm:left-4 lg:[transform:translateZ(28px)]"
           >
             {images.map((img, i) => (
               <button
@@ -251,7 +253,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
                 />
               </button>
 
-              <div className="lg:[transform:translateZ(34px)]">
+              <div className="lg:[transform:translateZ(28px)]">
                 <button
                   ref={actionBtnRef}
                   type="button"
