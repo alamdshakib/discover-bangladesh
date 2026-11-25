@@ -1,5 +1,5 @@
 import { Moon, Sun } from 'lucide-react';
-import { useTheme } from '@hooks';
+import { useMagnetic, useTheme } from '@hooks';
 
 /**
  * Sleek pill-shaped Sun/Moon theme toggle button.
@@ -7,9 +7,11 @@ import { useTheme } from '@hooks';
  */
 export function ThemeToggle({ className = '', showLabel = false }) {
   const { isDark, toggleTheme } = useTheme();
+  const toggleRef = useMagnetic({ strengthX: 10, strengthY: 8 });
 
   return (
     <button
+      ref={toggleRef}
       type="button"
       data-theme-toggle
       data-cursor="magnetic"

@@ -1,7 +1,7 @@
 import { Fragment, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowUp, Crosshair } from 'lucide-react';
 import { CHAPTERS, SITE_META } from '@data';
-import { useShowcase } from '@hooks';
+import { useMagnetic, useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
 
 const WORDMARK_LETTERS = 'BANGLADESH'.split('');
@@ -13,7 +13,7 @@ export function Footer() {
   const { spots, expoMode, setExpoMode } = useShowcase();
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const footerRef = useRef(null);
-  const backBtnRef = useRef(null);
+  const backBtnRef = useMagnetic({ strengthX: 14, strengthY: 9 });
 
   useLayoutEffect(() => {
     const mm = gsap.matchMedia(footerRef);
@@ -86,35 +86,6 @@ export function Footer() {
     return () => mm.revert();
   }, []);
 
-  // Magnetic hover pull on the Back to top pill
-  const handleMagneticMove = (e) => {
-    if (e.pointerType !== 'mouse') return;
-    const btn = backBtnRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    const relX = (e.clientX - rect.left) / rect.width - 0.5;
-    const relY = (e.clientY - rect.top) / rect.height - 0.5;
-    gsap.to(btn, {
-      x: relX * 14,
-      y: relY * 8,
-      duration: 0.35,
-      ease: 'power3.out',
-      overwrite: 'auto',
-    });
-  };
-
-  const handleMagneticLeave = () => {
-    const btn = backBtnRef.current;
-    if (!btn) return;
-    gsap.to(btn, {
-      x: 0,
-      y: 0,
-      duration: 0.55,
-      ease: 'elastic.out(1, 0.5)',
-      overwrite: 'auto',
-    });
-  };
-
   const handleChapterJump = (chapter) => {
     if (expoMode) {
       setExpoMode(false);
@@ -163,8 +134,6 @@ export function Footer() {
               type="button"
               data-cursor="magnetic"
               onClick={() => scrollToTarget(0, { offset: 0 })}
-              onPointerMove={handleMagneticMove}
-              onPointerLeave={handleMagneticLeave}
               className="group inline-flex h-12 w-fit items-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-ink transition-colors hover:bg-canvas active:scale-95"
             >
               <ArrowUp

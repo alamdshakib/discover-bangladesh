@@ -1,11 +1,14 @@
 import { LayoutGrid } from 'lucide-react';
+import { useMagnetic } from '@hooks';
 
 /** Accessible Expo Mode toggle switch (role="switch"). */
 export function ExpoSwitch({ checked, onChange, className = '', tone = 'light' }) {
+  const switchRef = useMagnetic({ strengthX: 10, strengthY: 8 });
   const labelColor = tone === 'dark' ? 'text-white' : 'text-ink dark:text-slate-100';
 
   return (
     <button
+      ref={switchRef}
       type="button"
       role="switch"
       data-cursor="magnetic"

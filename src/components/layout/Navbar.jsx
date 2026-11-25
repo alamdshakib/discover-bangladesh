@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Map, Menu } from 'lucide-react';
 import { SITE_META, SECTION_IDS } from '@data';
-import { useShowcase } from '@hooks';
+import { useMagnetic, useShowcase } from '@hooks';
 import { scrollToTarget } from '@animations';
 import { SearchBar } from '../search/SearchBar.jsx';
 import { ExpoSwitch } from '../ui/ExpoSwitch.jsx';
@@ -12,6 +12,8 @@ export function Navbar() {
   const { expoMode, setExpoMode } = useShowcase();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const logoRef = useMagnetic({ strengthX: 10, strengthY: 8 });
+  const mapBtnRef = useMagnetic({ strengthX: 12, strengthY: 9 });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -31,6 +33,7 @@ export function Navbar() {
           }`}
         >
           <button
+            ref={logoRef}
             type="button"
             data-cursor="magnetic"
             onClick={() => scrollToTarget(0, { offset: 0 })}
@@ -56,6 +59,7 @@ export function Navbar() {
             />
             <ThemeToggle />
             <button
+              ref={mapBtnRef}
               type="button"
               data-cursor="magnetic"
               onClick={() => scrollToTarget(`#${SECTION_IDS.atlas}`)}

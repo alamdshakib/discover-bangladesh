@@ -56,7 +56,7 @@ export function StatsStrip() {
 
   return (
     <section ref={scopeRef} aria-label="Bangladesh at a glance" className="px-3 pt-3 sm:px-5 sm:pt-4">
-      <div className="mx-auto grid max-w-[1600px] grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+      <div data-velocity-skew className="mx-auto grid max-w-[1600px] grid-cols-2 gap-2.5 will-change-transform sm:gap-3 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <div
             key={stat.key}

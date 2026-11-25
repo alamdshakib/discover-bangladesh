@@ -161,7 +161,8 @@ export function ExpoMatrix({ spots, onOpen }) {
 
       <div
         ref={gridRef}
-        className="mt-3 grid grid-flow-dense auto-rows-[170px] grid-cols-2 gap-2.5 sm:mt-4 sm:auto-rows-[190px] sm:grid-cols-3 sm:gap-3 lg:auto-rows-[200px] lg:grid-cols-4 xl:grid-cols-6"
+        data-velocity-skew
+        className="mt-3 grid grid-flow-dense auto-rows-[170px] grid-cols-2 gap-2.5 will-change-transform sm:mt-4 sm:auto-rows-[190px] sm:grid-cols-3 sm:gap-3 lg:auto-rows-[200px] lg:grid-cols-4 xl:grid-cols-6"
       >
         {filtered.map((spot, index) => (
           <ExpoCard key={spot.id} spot={spot} tileClass={getExpoTileClass(index)} onOpen={onOpen} />

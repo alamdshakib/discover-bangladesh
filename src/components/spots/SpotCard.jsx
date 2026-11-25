@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, CalendarDays, ChevronDown, MapPin } from 'lucide-react';
 import { gsap, MEDIA } from '@animations';
+import { useMagnetic } from '@hooks';
 import { getImageSrc, getSeasonShort, getSpotImages } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 import { MetaPill } from '../ui/MetaPill.jsx';
@@ -28,21 +29,19 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
   const cardRef = useRef(null);
   const sheenRef = useRef(null);
   const photoStageRef = useRef(null);
-  const actionBtnRef = useRef(null);
+  const actionBtnRef = useMagnetic({ strengthX: 11, strengthY: 11 });
   const tiltRef = useRef(null);
-  const magRef = useRef(null);
   const hasSwitchedRef = useRef(false);
 
   const open = () => onOpen(spot.id);
 
-  // Set up gsap.quickTo trackers for desktop 3D perspective tilt & magnetic button pull.
+  // Set up gsap.quickTo trackers for desktop 3D perspective tilt.
   useEffect(() => {
     const finePointer = window.matchMedia('(pointer: fine)').matches;
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
     if (!finePointer || reduce) return undefined;
 
     const card = cardRef.current;
-    const actionBtn = actionBtnRef.current;
     if (!card) return undefined;
 
     tiltRef.current = {
@@ -50,17 +49,9 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
       ry: gsap.quickTo(card, 'rotateY', { duration: 0.35, ease: 'power3.out' }),
     };
 
-    if (actionBtn) {
-      magRef.current = {
-        x: gsap.quickTo(actionBtn, 'x', { duration: 0.3, ease: 'power3.out' }),
-        y: gsap.quickTo(actionBtn, 'y', { duration: 0.3, ease: 'power3.out' }),
-      };
-    }
-
     return () => {
       tiltRef.current = null;
-      magRef.current = null;
-      gsap.killTweensOf([card, actionBtn]);
+      gsap.killTweensOf(card);
     };
   }, []);
 
@@ -110,26 +101,6 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
     if (sheenRef.current) {
       sheenRef.current.style.opacity = '0';
     }
-  };
-
-  const handleMagMove = (e) => {
-    if (e.pointerType !== 'mouse' || !magRef.current || !actionBtnRef.current) return;
-    const rect = actionBtnRef.current.getBoundingClientRect();
-    const rx = (e.clientX - rect.left) / rect.width - 0.5;
-    const ry = (e.clientY - rect.top) / rect.height - 0.5;
-    magRef.current.x(rx * 14);
-    magRef.current.y(ry * 14);
-  };
-
-  const handleMagLeave = () => {
-    if (!actionBtnRef.current || !magRef.current) return;
-    gsap.to(actionBtnRef.current, {
-      x: 0,
-      y: 0,
-      duration: 0.55,
-      ease: 'elastic.out(1, 0.5)',
-      overwrite: 'auto',
-    });
   };
 
   return (
@@ -285,8 +256,6 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
                   ref={actionBtnRef}
                   type="button"
                   data-cursor="magnetic"
-                  onPointerMove={handleMagMove}
-                  onPointerLeave={handleMagLeave}
                   onClick={open}
                   aria-label={`Explore ${spot.name}`}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white shadow-md transition-[background-color,color] duration-300 active:scale-95 dark:bg-white dark:text-[#0B111E]"

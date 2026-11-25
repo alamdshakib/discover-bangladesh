@@ -1,8 +1,8 @@
 import {
   ChapterAtmosphere,
   CinematicIntro,
-  CustomCursor,
   Footer,
+  GlobalMotion,
   Navbar,
   ScrollCompassHUD,
   SpotDetail,
@@ -17,7 +17,7 @@ export default function App() {
   return (
     <ShowcaseProvider>
       <CinematicIntro />
-      <CustomCursor />
+      <GlobalMotion />
       <ChapterAtmosphere />
       <Navbar />
       <main className="relative z-0">

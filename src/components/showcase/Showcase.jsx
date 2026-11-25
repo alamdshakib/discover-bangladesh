@@ -105,7 +105,7 @@ export function Showcase() {
     <section id={SECTION_IDS.showcase} aria-label="Destinations" className="relative mt-6 scroll-mt-24 sm:mt-10">
       <div className="mx-auto max-w-[1600px] px-3 sm:px-5">
         <div className="flex flex-col gap-5 px-1 pb-6 sm:px-3 lg:flex-row lg:items-end lg:justify-between lg:pb-8">
-          <div>
+          <div data-velocity-skew className="will-change-transform">
             <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">The Collection</p>
             <h2
               className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"

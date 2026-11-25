@@ -20,7 +20,7 @@ export { ExpoSwitch } from './ui/ExpoSwitch.jsx';
 export { MetaPill } from './ui/MetaPill.jsx';
 export { ThemeToggle } from './ui/ThemeToggle.jsx';
 export { CinematicIntro } from './CinematicIntro.jsx';
-export { CustomCursor } from './CustomCursor.jsx';
+export { GlobalMotion } from './GlobalMotion.jsx';
 export { ScrollCompassHUD } from './ScrollCompassHUD.jsx';
 export { HeroTerrain3D } from './HeroTerrain3D.jsx';
 export { KineticMarquee } from './KineticMarquee.jsx';
