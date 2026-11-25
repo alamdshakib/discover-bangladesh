@@ -12,7 +12,7 @@ const CHAPTER_IDS = CHAPTERS.map((c) => c.id);
 
 /**
  * Dual-view showcase: Editorial scrollytelling (default) ⇄ Expo bento matrix.
- * The visible view (`displayMode`) trails the requested mode so the swap can fade out/in.
+ * Switching views triggers a choreographed staggered grid wave morph.
  */
 export function Showcase() {
   const { spots, expoMode, setExpoMode, openSpot } = useShowcase();
@@ -26,21 +26,30 @@ export function Showcase() {
   const counts = useMemo(() => countByCategory(spots), [spots]);
   const activeChapter = useActiveSection(CHAPTER_IDS, { enabled: displayMode === 'editorial' });
 
-  // Fade the current view out, then swap.
+  // Morph out current view cleanly, then swap.
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return undefined;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (requestedMode === displayMode) {
-      gsap.to(view, { opacity: 1, y: 0, duration: reduce ? 0 : 0.45, ease: 'power3.out', overwrite: true });
+      gsap.to(view, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: reduce ? 0 : 0.45,
+        ease: 'power3.out',
+        clearProps: 'transform',
+        overwrite: true,
+      });
       return undefined;
     }
 
     const tween = gsap.to(view, {
       opacity: 0,
-      y: 24,
-      duration: reduce ? 0 : 0.3,
+      y: 22,
+      scale: 0.985,
+      duration: reduce ? 0 : 0.28,
       ease: 'power2.in',
       overwrite: true,
       onComplete: () => setDisplayMode(requestedMode),
@@ -48,19 +57,37 @@ export function Showcase() {
     return () => tween.kill();
   }, [requestedMode, displayMode]);
 
-  // After a swap: recompute triggers and bring the new view into position.
+  // After a swap: recompute triggers, trigger wave morph on editorial cards, and bring view into position.
   useLayoutEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
     ScrollTrigger.refresh();
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && displayMode === 'editorial' && viewRef.current) {
+      const cards = viewRef.current.querySelectorAll('[data-spot-card-wrap]');
+      if (cards.length > 0) {
+        gsap.fromTo(
+          cards,
+          { scale: 0.92, y: 26, opacity: 0 },
+          {
+            scale: 1,
+            y: 0,
+            opacity: 1,
+            duration: 0.65,
+            stagger: 0.03,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+          }
+        );
+      }
+    }
+
     const target = pendingTarget.current ?? `#${SECTION_IDS.showcase}`;
     const isChapter = Boolean(pendingTarget.current);
     pendingTarget.current = null;
     const element = document.querySelector(target);
-    // Jump instantly while the view is faded out if we're already inside the showcase;
-    // otherwise glide down to it.
     const alreadyPast = element ? element.getBoundingClientRect().top < 0 : false;
     scrollToTarget(target, { offset: isChapter ? -140 : -88, immediate: alreadyPast });
   }, [displayMode]);
@@ -75,7 +102,7 @@ export function Showcase() {
   };
 
   return (
-    <section id={SECTION_IDS.showcase} aria-label="Destinations" className="relative mt-16 scroll-mt-24 sm:mt-24">
+    <section id={SECTION_IDS.showcase} aria-label="Destinations" className="relative mt-6 scroll-mt-24 sm:mt-10">
       <div className="mx-auto max-w-[1600px] px-3 sm:px-5">
         <div className="flex flex-col gap-5 px-1 pb-6 sm:px-3 lg:flex-row lg:items-end lg:justify-between lg:pb-8">
           <div>
@@ -103,6 +130,7 @@ export function Showcase() {
                   key={label}
                   type="button"
                   role="radio"
+                  data-cursor="magnetic"
                   aria-checked={selected}
                   onClick={() => setExpoMode(mode)}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors duration-300 active:scale-95 sm:flex-none ${

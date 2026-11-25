@@ -2,6 +2,8 @@ export { gsap, ScrollTrigger, Flip, MOTION, MEDIA, registerGsap } from './gsapCo
 export {
   setLenis,
   getLenis,
+  getScrollState,
+  updateScrollState,
   scrollToTarget,
   pauseScroll,
   resumeScroll,

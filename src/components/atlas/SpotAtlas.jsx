@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { geoMercator, geoPath } from 'd3-geo';
-import { ArrowUpRight, Crosshair, Minus, Plus, RotateCcw } from 'lucide-react';
+import { ArrowUpRight, Box, Crosshair, Layers, Minus, Plus, RotateCcw } from 'lucide-react';
 import { CHAPTERS, SECTION_IDS } from '@data';
 import bangladeshDivisions from '@data/bangladeshDivisions.json';
 import { useShowcase, useTheme } from '@hooks';
+import { gsap, MEDIA } from '@animations';
 import { countByCategory, formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 
@@ -22,14 +23,17 @@ const LIGHT_MAP = {
   landFill: '#FFFFFF',
   landFocusFill: '#F8FAFC',
   landHoverFill: '#E2E8F0',
+  extrusionBase: '#94A3B8',
+  extrusionMid: '#CBD5E1',
   outerStroke: '#94A3B8',
   innerStroke: '#CBD5E1',
   labelColor: '#94A3B8',
   labelHoverColor: '#334155',
   shadowColor: '#1E293B',
-  shadowOpacity: 0.09,
+  shadowOpacity: 0.12,
   tooltipBg: '#1E293B',
   tooltipText: '#FFFFFF',
+  arcTrail: 'rgba(15, 23, 42, 0.35)',
   pins: {
     Hills: '#059669',
     Sea: '#0284c7',
@@ -44,14 +48,17 @@ const DARK_MAP = {
   landFill: '#1E293B',
   landFocusFill: '#243247',
   landHoverFill: '#2D3F59',
+  extrusionBase: '#050811',
+  extrusionMid: '#0F172A',
   outerStroke: '#475569',
   innerStroke: '#334155',
   labelColor: '#64748B',
   labelHoverColor: '#E2E8F0',
   shadowColor: '#000000',
-  shadowOpacity: 0.55,
+  shadowOpacity: 0.62,
   tooltipBg: '#F8FAFC',
   tooltipText: '#0B111E',
+  arcTrail: 'rgba(226, 232, 240, 0.35)',
   pins: {
     Hills: '#10b981',
     Sea: '#38bdf8',
@@ -100,19 +107,60 @@ function clampPan(nextPan, nextZoom) {
   };
 }
 
-/** Interactive coordinate atlas: Bangladesh 8-division vector map aligned with all 24 GPS pins. */
+/** Computes a graceful elevated quadratic Bézier curve between two projected points. */
+function computeFlightArc(fromPt, toPt) {
+  const dx = toPt.px - fromPt.px;
+  const dy = toPt.py - fromPt.py;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 2) return null;
+
+  const midX = (fromPt.px + toPt.px) / 2;
+  const midY = (fromPt.py + toPt.py) / 2;
+  const lift = Math.min(135, dist * 0.34 + 28);
+  const cx = midX + (dy / dist) * (lift * 0.22);
+  const cy = midY - lift;
+
+  return {
+    d: `M ${fromPt.px.toFixed(1)} ${fromPt.py.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${toPt.px.toFixed(1)} ${toPt.py.toFixed(1)}`,
+    p0: { x: fromPt.px, y: fromPt.py },
+    p1: { x: cx, y: cy },
+    p2: { x: toPt.px, y: toPt.py },
+  };
+}
+
+function getDefaultReliefMode() {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(MEDIA.desktop).matches && !window.matchMedia(MEDIA.reduceMotion).matches;
+}
+
+/**
+ * Interactive 2D / 3D-Elevated Coordinate Atlas of Bangladesh.
+ * Features isometric relief toggle, extruded landmass slab, animated curved flight arcs
+ * with traveling light comet, layered radar sonar pulses, and coordinate odometer preview.
+ */
 export function SpotAtlas() {
   const { spots, openSpot } = useShowcase();
   const { isDark } = useTheme();
   const [focusId, setFocusId] = useState(spots[0]?.id);
+  const [prevFocusId, setPrevFocusId] = useState(null);
+  const [flightKey, setFlightKey] = useState(0);
   const [category, setCategory] = useState(null);
   const [hoveredDivision, setHoveredDivision] = useState(null);
+  const [is3D, setIs3D] = useState(getDefaultReliefMode);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
 
   const svgRef = useRef(null);
+  const stageRef = useRef(null);
+  const previewCardRef = useRef(null);
+  const coordTextRef = useRef(null);
+  const arcActiveRef = useRef(null);
+  const arcDottedRef = useRef(null);
+  const cometRef = useRef(null);
   const dragRef = useRef(null);
+  const prevCoordsRef = useRef(spots[0]?.coordinates ?? { lat: 23.685, lng: 90.3563 });
+  const tiltQuickRef = useRef(null);
 
   const mapTheme = isDark ? DARK_MAP : LIGHT_MAP;
 
@@ -128,14 +176,172 @@ export function SpotAtlas() {
     [spots]
   );
 
-  const projectedSpots = useMemo(() => {
-    const items = spots.map((spot) => {
+  const pointById = useMemo(() => {
+    const map = {};
+    spots.forEach((spot) => {
       const [px, py] = projection([spot.coordinates.lng, spot.coordinates.lat]);
-      return { spot, px, py };
+      map[spot.id] = { spot, px, py };
     });
+    return map;
+  }, [spots]);
+
+  const projectedSpots = useMemo(() => {
+    const items = spots.map((spot) => pointById[spot.id]);
     // Render focused pin last so its marker and tooltip stay on top.
     return items.sort((a, b) => (a.spot.id === focus?.id ? 1 : b.spot.id === focus?.id ? -1 : 0));
-  }, [spots, focus?.id]);
+  }, [spots, pointById, focus?.id]);
+
+  const flightArc = useMemo(() => {
+    if (!prevFocusId || !focusId || prevFocusId === focusId) return null;
+    const fromPt = pointById[prevFocusId];
+    const toPt = pointById[focusId];
+    if (!fromPt || !toPt) return null;
+    return computeFlightArc(fromPt, toPt);
+  }, [prevFocusId, focusId, pointById]);
+
+  const selectSpot = useCallback((nextId) => {
+    setFocusId((current) => {
+      if (current === nextId) return current;
+      setPrevFocusId(current);
+      setFlightKey((k) => k + 1);
+      return nextId;
+    });
+  }, []);
+
+  // Animate 2D Flat ⇄ 3D Relief architectural tilt transition & mouse parallax
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return undefined;
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+
+    const ctx = gsap.context(() => {
+      gsap.to(stage, {
+        transformPerspective: 1300,
+        rotateX: is3D ? 32 : 0,
+        rotateY: 0,
+        rotateZ: is3D ? -4 : 0,
+        scale: is3D ? 0.94 : 1,
+        y: is3D ? -6 : 0,
+        duration: reduce ? 0 : 0.78,
+        ease: 'power3.out',
+        overwrite: 'auto',
+      });
+    });
+
+    if (is3D && !reduce && window.matchMedia('(pointer: fine)').matches) {
+      tiltQuickRef.current = {
+        rx: gsap.quickTo(stage, 'rotateX', { duration: 0.45, ease: 'power3.out' }),
+        ry: gsap.quickTo(stage, 'rotateY', { duration: 0.45, ease: 'power3.out' }),
+      };
+    } else {
+      tiltQuickRef.current = null;
+    }
+
+    return () => {
+      tiltQuickRef.current = null;
+      ctx.revert();
+    };
+  }, [is3D]);
+
+  // Animate curved flight-arc draw + traveling glowing comet dot between pins
+  useLayoutEffect(() => {
+    if (!flightArc) return undefined;
+    const activePath = arcActiveRef.current;
+    const dottedPath = arcDottedRef.current;
+    const comet = cometRef.current;
+    if (!activePath || !dottedPath || !comet) return undefined;
+
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+    if (reduce) {
+      gsap.set(activePath, { opacity: 0 });
+      gsap.set(dottedPath, { opacity: 0.75 });
+      gsap.set(comet, { opacity: 0 });
+      return undefined;
+    }
+
+    const ctx = gsap.context(() => {
+      const length = typeof activePath.getTotalLength === 'function' ? activePath.getTotalLength() : 280;
+      const { p0, p1, p2 } = flightArc;
+      const progress = { t: 0 };
+
+      gsap.set(activePath, { strokeDasharray: length, strokeDashoffset: length, opacity: 0.95 });
+      gsap.set(dottedPath, { opacity: 0 });
+      gsap.set(comet, { opacity: 1, attr: { transform: `translate(${p0.x}, ${p0.y})` } });
+
+      const tl = gsap.timeline();
+      tl.to(
+        activePath,
+        {
+          strokeDashoffset: 0,
+          duration: 0.72,
+          ease: 'power2.inOut',
+        },
+        0
+      );
+      tl.to(
+        progress,
+        {
+          t: 1,
+          duration: 0.72,
+          ease: 'power2.inOut',
+          onUpdate: () => {
+            const t = progress.t;
+            const omt = 1 - t;
+            const x = omt * omt * p0.x + 2 * omt * t * p1.x + t * t * p2.x;
+            const y = omt * omt * p0.y + 2 * omt * t * p1.y + t * t * p2.y;
+            comet.setAttribute('transform', `translate(${x.toFixed(2)}, ${y.toFixed(2)})`);
+          },
+        },
+        0
+      );
+      tl.to(dottedPath, { opacity: 0.75, duration: 0.35, ease: 'power2.out' }, 0.56);
+      tl.to(activePath, { opacity: 0, duration: 0.45, ease: 'power2.out' }, 0.65);
+      tl.to(comet, { opacity: 0, duration: 0.3, ease: 'power2.out' }, 0.7);
+    });
+
+    return () => ctx.revert();
+  }, [flightArc, flightKey]);
+
+  // Animate preview card directional slide + rapid coordinate odometer tick on spot change
+  useEffect(() => {
+    if (!focus) return undefined;
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+    const fromCoords = prevCoordsRef.current;
+    const toCoords = focus.coordinates;
+    prevCoordsRef.current = toCoords;
+
+    if (reduce) {
+      if (coordTextRef.current) coordTextRef.current.textContent = formatCoordinates(toCoords);
+      return undefined;
+    }
+
+    const ctx = gsap.context(() => {
+      if (previewCardRef.current) {
+        gsap.fromTo(
+          previewCardRef.current,
+          { y: 12, opacity: 0.55 },
+          { y: 0, opacity: 1, duration: 0.42, ease: 'power3.out', overwrite: 'auto' }
+        );
+      }
+      if (coordTextRef.current) {
+        const ticker = { lat: fromCoords.lat, lng: fromCoords.lng };
+        gsap.to(ticker, {
+          lat: toCoords.lat,
+          lng: toCoords.lng,
+          duration: 0.48,
+          ease: 'power2.out',
+          overwrite: 'auto',
+          onUpdate: () => {
+            if (coordTextRef.current) {
+              coordTextRef.current.textContent = formatCoordinates({ lat: ticker.lat, lng: ticker.lng });
+            }
+          },
+        });
+      }
+    });
+
+    return () => ctx.revert();
+  }, [focus]);
 
   const zoomIn = () => {
     setZoom((prev) => {
@@ -158,6 +364,33 @@ export function SpotAtlas() {
     setPan({ x: 0, y: 0 });
   };
 
+  const onStageMove = (e) => {
+    if (dragRef.current) {
+      const drag = dragRef.current;
+      const scaleX = SVG_W / Math.max(drag.rect.width, 1);
+      const scaleY = SVG_H / Math.max(drag.rect.height, 1);
+      const dx = (e.clientX - drag.startX) * scaleX;
+      const dy = (e.clientY - drag.startY) * scaleY;
+      setPan(clampPan({ x: drag.origPan.x + dx, y: drag.origPan.y + dy }, zoom));
+      return;
+    }
+
+    if (is3D && zoom === 1 && tiltQuickRef.current && stageRef.current && e.pointerType === 'mouse') {
+      const rect = stageRef.current.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / Math.max(rect.width, 1) - 0.5;
+      const ny = (e.clientY - rect.top) / Math.max(rect.height, 1) - 0.5;
+      tiltQuickRef.current.rx(32 - ny * 7.5);
+      tiltQuickRef.current.ry(nx * 8.5);
+    }
+  };
+
+  const onStageLeave = () => {
+    if (is3D && tiltQuickRef.current) {
+      tiltQuickRef.current.rx(32);
+      tiltQuickRef.current.ry(0);
+    }
+  };
+
   const onPointerDown = (e) => {
     if (zoom <= 1) return;
     if (e.target.closest?.('[data-map-pin]')) return;
@@ -173,16 +406,6 @@ export function SpotAtlas() {
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
-  const onPointerMove = (e) => {
-    const drag = dragRef.current;
-    if (!drag) return;
-    const scaleX = SVG_W / Math.max(drag.rect.width, 1);
-    const scaleY = SVG_H / Math.max(drag.rect.height, 1);
-    const dx = (e.clientX - drag.startX) * scaleX;
-    const dy = (e.clientY - drag.startY) * scaleY;
-    setPan(clampPan({ x: drag.origPan.x + dx, y: drag.origPan.y + dy }, zoom));
-  };
-
   const onPointerEnd = () => {
     if (!dragRef.current) return;
     dragRef.current = null;
@@ -191,16 +414,58 @@ export function SpotAtlas() {
 
   const mapTransform = `translate(${SVG_W / 2 + pan.x}, ${SVG_H / 2 + pan.y}) scale(${zoom}) translate(${-SVG_W / 2}, ${-SVG_H / 2})`;
   const invScale = 1 / Math.sqrt(zoom);
+  const focusColor = mapTheme.pins[focus?.category] ?? (isDark ? '#10b981' : '#059669');
 
   return (
     <section
       id={SECTION_IDS.atlas}
       aria-labelledby="atlas-title"
-      className="relative z-0 mt-24 scroll-mt-24 px-3 sm:mt-32 sm:px-5"
+      className="relative z-0 mt-20 scroll-mt-24 px-3 sm:mt-28 sm:px-5"
     >
       <div className="mx-auto grid max-w-[1600px] gap-3 lg:grid-cols-[1fr_1.15fr] lg:gap-4">
+        {/* Left info & live telemetry preview column */}
         <div className="flex min-w-0 flex-col rounded-4xl border border-line bg-card p-5 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-8 lg:p-10">
-          <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">Interactive Map</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">Interactive Map</p>
+
+            {/* 2D Flat / 3D Relief architectural toggle */}
+            <div
+              role="group"
+              aria-label="Map projection perspective"
+              data-atlas-relief-toggle
+              className="inline-flex rounded-full border border-line bg-canvas p-0.5 transition-colors duration-300 dark:border-white/10 dark:bg-[#0B111E]"
+            >
+              <button
+                type="button"
+                data-cursor="magnetic"
+                aria-pressed={!is3D}
+                onClick={() => setIs3D(false)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors duration-200 ${
+                  !is3D
+                    ? 'bg-ink text-white dark:bg-white dark:text-[#0B111E]'
+                    : 'text-ink-soft hover:text-ink dark:text-slate-400 dark:hover:text-slate-100'
+                }`}
+              >
+                <Layers className="h-3 w-3" strokeWidth={2.2} />
+                2D Flat
+              </button>
+              <button
+                type="button"
+                data-cursor="magnetic"
+                aria-pressed={is3D}
+                onClick={() => setIs3D(true)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors duration-200 ${
+                  is3D
+                    ? 'bg-ink text-white dark:bg-white dark:text-[#0B111E]'
+                    : 'text-ink-soft hover:text-ink dark:text-slate-400 dark:hover:text-slate-100'
+                }`}
+              >
+                <Box className="h-3 w-3" strokeWidth={2.2} />
+                3D Relief
+              </button>
+            </div>
+          </div>
+
           <h2
             id="atlas-title"
             className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"
@@ -209,8 +474,8 @@ export function SpotAtlas() {
             Coordinate Atlas
           </h2>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft transition-colors duration-300 dark:text-slate-400">
-            Every destination plotted by its verified GPS coordinates. Hover or tap a point to preview, then open the full
-            travel story.
+            Every destination plotted by its verified GPS coordinates. Select any pin to trace a flight arc across
+            Bangladesh&apos;s eight divisions and open its travel story.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-1.5" role="group" aria-label="Highlight a landscape">
@@ -220,6 +485,7 @@ export function SpotAtlas() {
                 <button
                   key={chapter.id}
                   type="button"
+                  data-cursor="magnetic"
                   aria-pressed={on}
                   onClick={() => setCategory(on ? null : chapter.category)}
                   className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors duration-200 active:scale-95 ${
@@ -239,7 +505,11 @@ export function SpotAtlas() {
           </div>
 
           {focus && (
-            <div className="mt-6 overflow-hidden rounded-3xl border border-line bg-canvas transition-colors duration-300 dark:border-white/10 dark:bg-[#0B111E]/75 lg:mt-auto">
+            <div
+              ref={previewCardRef}
+              data-atlas-preview
+              className="mt-6 overflow-hidden rounded-3xl border border-line bg-canvas transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#0B111E]/75 lg:mt-auto"
+            >
               <SmartImage
                 src={getImageSrc(focus.images.cover, 'card')}
                 fallbackSrc={focus.images.cover}
@@ -255,13 +525,14 @@ export function SpotAtlas() {
                   <p className="mt-1 truncate font-display text-xl font-bold text-ink dark:text-slate-50 sm:text-2xl">
                     {focus.name}
                   </p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-soft tabular-nums dark:text-slate-400">
-                    <Crosshair className="h-3.5 w-3.5" strokeWidth={2} />
-                    {formatCoordinates(focus.coordinates)}
+                  <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-ink-soft tabular-nums dark:text-slate-400">
+                    <Crosshair className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+                    <span ref={coordTextRef}>{formatCoordinates(focus.coordinates)}</span>
                   </p>
                 </div>
                 <button
                   type="button"
+                  data-cursor="magnetic"
                   onClick={() => openSpot(focus.id)}
                   className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
                 >
@@ -273,8 +544,9 @@ export function SpotAtlas() {
           )}
         </div>
 
+        {/* Right interactive 2D / 3D Relief map canvas */}
         <div className="relative min-w-0 overflow-hidden rounded-4xl border border-line bg-[#eef2f6] p-3 transition-colors duration-300 dark:border-white/10 dark:bg-[#080D17] sm:p-5">
-          {/* Non-overlapping top floating bar: division badge + zoom controls */}
+          {/* Non-overlapping top floating bar: division badge + zoom controls (z-20, strictly below Navbar z-50) */}
           <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex items-center justify-between gap-2 sm:inset-x-5 sm:top-5">
             <div className="glass flex min-w-0 items-center gap-2 rounded-full border border-white/70 px-2.5 py-1.5 text-[11px] font-semibold text-ink shadow-sm transition-colors duration-300 dark:border-white/10 dark:text-slate-100 sm:px-3.5 sm:text-xs">
               <span className="h-2 w-2 shrink-0 rounded-full bg-bd-green dark:bg-emerald-400" aria-hidden="true" />
@@ -296,6 +568,7 @@ export function SpotAtlas() {
             >
               <button
                 type="button"
+                data-cursor="magnetic"
                 onClick={zoomIn}
                 disabled={zoom >= MAX_ZOOM}
                 aria-label="Zoom in"
@@ -305,6 +578,7 @@ export function SpotAtlas() {
               </button>
               <button
                 type="button"
+                data-cursor="magnetic"
                 onClick={zoomOut}
                 disabled={zoom <= MIN_ZOOM}
                 aria-label="Zoom out"
@@ -319,6 +593,7 @@ export function SpotAtlas() {
               )}
               <button
                 type="button"
+                data-cursor="magnetic"
                 onClick={resetView}
                 disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
                 aria-label="Reset map zoom"
@@ -331,269 +606,347 @@ export function SpotAtlas() {
 
           <div
             onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
+            onPointerMove={onStageMove}
             onPointerUp={onPointerEnd}
             onPointerCancel={onPointerEnd}
-            className={`relative mx-auto aspect-[600/740] w-full max-w-[640px] select-none ${
+            onPointerLeave={onStageLeave}
+            className={`relative mx-auto aspect-[600/740] w-full max-w-[640px] select-none [perspective:1300px] ${
               zoom > 1 ? (isDragging ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : ''
             }`}
           >
-            <svg
-              ref={svgRef}
-              viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-              role="img"
-              aria-label="Interactive vector map of Bangladesh showing 8 divisions and 24 tourist destinations"
-              className="h-full w-full overflow-hidden"
-            >
-              <defs>
-                <filter id="bd-land-shadow" x="-10%" y="-10%" width="120%" height="120%">
-                  <feDropShadow
-                    dx="0"
-                    dy="6"
-                    stdDeviation="8"
-                    floodColor={mapTheme.shadowColor}
-                    floodOpacity={mapTheme.shadowOpacity}
-                  />
-                </filter>
-                <filter id="bd-pin-glow" x="-100%" y="-100%" width="300%" height="300%">
-                  <feGaussianBlur stdDeviation="3.5" />
-                </filter>
-              </defs>
-
-              <g transform={mapTransform}>
-                {/* 1. Latitude / Longitude Graticule */}
-                <g aria-hidden="true">
-                  {GRATICULE_LAT.map(({ lat, y }) => (
-                    <g key={lat}>
-                      <line
-                        x1={0}
-                        y1={y}
-                        x2={SVG_W}
-                        y2={y}
-                        stroke={mapTheme.graticuleStroke}
-                        strokeWidth={1}
-                        strokeDasharray="4 4"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                      <text
-                        x={6}
-                        y={y - 5}
-                        fill={mapTheme.graticuleText}
-                        fontSize={10 * invScale}
-                        fontWeight={600}
-                        className="tabular-nums"
-                      >
-                        {lat}°N
-                      </text>
-                    </g>
-                  ))}
-                  {GRATICULE_LNG.map(({ lng, x }) => (
-                    <g key={lng}>
-                      <line
-                        x1={x}
-                        y1={0}
-                        x2={x}
-                        y2={SVG_H}
-                        stroke={mapTheme.graticuleStroke}
-                        strokeWidth={1}
-                        strokeDasharray="4 4"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                      <text
-                        x={x + 4}
-                        y={SVG_H - 10}
-                        fill={mapTheme.graticuleText}
-                        fontSize={10 * invScale}
-                        fontWeight={600}
-                        className="tabular-nums"
-                      >
-                        {lng}°E
-                      </text>
-                    </g>
-                  ))}
-                </g>
-
-                {/* 2. Ocean label */}
-                <text
-                  x={BAY_LABEL[0]}
-                  y={BAY_LABEL[1]}
-                  textAnchor="middle"
-                  fill={mapTheme.graticuleText}
-                  opacity={isDark ? 0.65 : 0.75}
-                  fontSize={11 * invScale}
-                  fontWeight={600}
-                  letterSpacing="0.28em"
-                >
-                  BAY OF BENGAL
-                </text>
-
-                {/* 3. Outer National Silhouette & Soft Shadow */}
-                <g filter="url(#bd-land-shadow)" pointerEvents="none">
-                  {DIVISIONS.map((div) => (
-                    <path
-                      key={`outer-${div.name}`}
-                      d={div.d}
-                      fill={mapTheme.landFill}
-                      stroke={mapTheme.outerStroke}
-                      strokeWidth={2.8}
-                      strokeLinejoin="round"
-                      vectorEffect="non-scaling-stroke"
+            <div ref={stageRef} data-atlas-stage className="h-full w-full will-change-transform">
+              <svg
+                ref={svgRef}
+                viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+                role="img"
+                aria-label="Interactive vector map of Bangladesh showing 8 divisions and 24 tourist destinations"
+                className="h-full w-full overflow-visible"
+              >
+                <defs>
+                  <filter id="bd-land-shadow" x="-15%" y="-15%" width="130%" height="135%">
+                    <feDropShadow
+                      dx={is3D ? '4' : '0'}
+                      dy={is3D ? '16' : '6'}
+                      stdDeviation={is3D ? '14' : '8'}
+                      floodColor={mapTheme.shadowColor}
+                      floodOpacity={is3D ? Math.min(0.75, mapTheme.shadowOpacity + 0.14) : mapTheme.shadowOpacity}
                     />
-                  ))}
-                </g>
+                  </filter>
+                  <filter id="bd-pin-glow" x="-120%" y="-120%" width="340%" height="340%">
+                    <feGaussianBlur stdDeviation="3.5" />
+                  </filter>
+                </defs>
 
-                {/* 4. Interactive 8-Division Fills & Crisp Internal Borders */}
-                <g>
-                  {DIVISIONS.map((div) => {
-                    const isHovered = hoveredDivision === div.name;
-                    const isFocusDiv = focus?.division === div.name;
-                    const fill = isHovered
-                      ? mapTheme.landHoverFill
-                      : isFocusDiv
-                        ? mapTheme.landFocusFill
-                        : mapTheme.landFill;
-                    return (
+                <g transform={mapTransform}>
+                  {/* 1. Latitude / Longitude Graticule */}
+                  <g aria-hidden="true">
+                    {GRATICULE_LAT.map(({ lat, y }) => (
+                      <g key={lat}>
+                        <line
+                          x1={0}
+                          y1={y}
+                          x2={SVG_W}
+                          y2={y}
+                          stroke={mapTheme.graticuleStroke}
+                          strokeWidth={1}
+                          strokeDasharray="4 4"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <text
+                          x={6}
+                          y={y - 5}
+                          fill={mapTheme.graticuleText}
+                          fontSize={10 * invScale}
+                          fontWeight={600}
+                          className="tabular-nums"
+                        >
+                          {lat}°N
+                        </text>
+                      </g>
+                    ))}
+                    {GRATICULE_LNG.map(({ lng, x }) => (
+                      <g key={lng}>
+                        <line
+                          x1={x}
+                          y1={0}
+                          x2={x}
+                          y2={SVG_H}
+                          stroke={mapTheme.graticuleStroke}
+                          strokeWidth={1}
+                          strokeDasharray="4 4"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <text
+                          x={x + 4}
+                          y={SVG_H - 10}
+                          fill={mapTheme.graticuleText}
+                          fontSize={10 * invScale}
+                          fontWeight={600}
+                          className="tabular-nums"
+                        >
+                          {lng}°E
+                        </text>
+                      </g>
+                    ))}
+                  </g>
+
+                  {/* 2. Ocean label */}
+                  <text
+                    x={BAY_LABEL[0]}
+                    y={BAY_LABEL[1]}
+                    textAnchor="middle"
+                    fill={mapTheme.graticuleText}
+                    opacity={isDark ? 0.65 : 0.75}
+                    fontSize={11 * invScale}
+                    fontWeight={600}
+                    letterSpacing="0.28em"
+                  >
+                    BAY OF BENGAL
+                  </text>
+
+                  {/* 3. Multi-step 3D Relief Extruded Slab Layers beneath landmass */}
+                  {is3D && (
+                    <g pointerEvents="none" aria-hidden="true">
+                      <g transform="translate(3, 12)" opacity={isDark ? 0.75 : 0.45}>
+                        {DIVISIONS.map((div) => (
+                          <path key={`slab-3-${div.name}`} d={div.d} fill={mapTheme.extrusionBase} />
+                        ))}
+                      </g>
+                      <g transform="translate(2, 8)" opacity={isDark ? 0.85 : 0.65}>
+                        {DIVISIONS.map((div) => (
+                          <path key={`slab-2-${div.name}`} d={div.d} fill={mapTheme.extrusionMid} />
+                        ))}
+                      </g>
+                      <g transform="translate(1, 4)" opacity={isDark ? 0.9 : 0.8}>
+                        {DIVISIONS.map((div) => (
+                          <path key={`slab-1-${div.name}`} d={div.d} fill={mapTheme.outerStroke} />
+                        ))}
+                      </g>
+                    </g>
+                  )}
+
+                  {/* 4. Outer National Silhouette & Soft Shadow */}
+                  <g filter="url(#bd-land-shadow)" pointerEvents="none">
+                    {DIVISIONS.map((div) => (
                       <path
-                        key={div.name}
-                        data-division-path={div.name}
+                        key={`outer-${div.name}`}
                         d={div.d}
-                        fill={fill}
-                        stroke={mapTheme.innerStroke}
-                        strokeWidth={1}
+                        fill={mapTheme.landFill}
+                        stroke={mapTheme.outerStroke}
+                        strokeWidth={2.8}
                         strokeLinejoin="round"
                         vectorEffect="non-scaling-stroke"
-                        onMouseEnter={() => setHoveredDivision(div.name)}
-                        onMouseLeave={() => setHoveredDivision((prev) => (prev === div.name ? null : prev))}
-                        className="transition-colors duration-200"
                       />
-                    );
-                  })}
-                </g>
+                    ))}
+                  </g>
 
-                {/* 5. Subtle Division Micro-Labels */}
-                <g pointerEvents="none">
-                  {DIVISIONS.map((div) => {
-                    const [cx, cy] = div.centroid;
-                    const isHovered = hoveredDivision === div.name;
-                    const lx = div.name === 'Chattogram' ? cx + 12 : cx;
-                    const ly = div.name === 'Chattogram' ? cy - 22 : cy;
-                    return (
-                      <text
-                        key={`label-${div.name}`}
-                        x={lx}
-                        y={ly}
-                        textAnchor="middle"
-                        fill={isHovered ? mapTheme.labelHoverColor : mapTheme.labelColor}
-                        fontSize={8.5 * invScale}
-                        fontWeight={700}
-                        letterSpacing="0.16em"
-                        className="uppercase transition-colors duration-200"
-                      >
-                        {div.name}
-                      </text>
-                    );
-                  })}
-                </g>
-
-                {/* 6. 24 Color-Coded GPS Pins */}
-                <g>
-                  {projectedSpots.map(({ spot, px, py }) => {
-                    const isFocus = spot.id === focus?.id;
-                    const dimmed = Boolean(category && spot.category !== category);
-                    const color = mapTheme.pins[spot.category] ?? '#1E293B';
-                    const dotRadius = (isFocus ? 7.5 : 4.8) * invScale;
-                    const strokeW = 2.2 * invScale;
-
-                    const flipBelow = py < 70;
-                    const tipW = Math.min(220, Math.max(88, spot.name.length * 7.2 + 22));
-                    const tipH = 26;
-                    const tipY = flipBelow ? 14 : -(tipH + 14);
-                    const scaledW = tipW * invScale;
-                    let tipX = -tipW / 2;
-                    if (px - scaledW / 2 < 10) tipX = (10 - px) / invScale;
-                    else if (px + scaledW / 2 > SVG_W - 10) tipX = (SVG_W - 10 - scaledW - px) / invScale;
-
-                    return (
-                      <g
-                        key={spot.id}
-                        data-map-pin={spot.id}
-                        transform={`translate(${px}, ${py})`}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`${spot.name}, ${spot.district}`}
-                        onMouseEnter={() => setFocusId(spot.id)}
-                        onFocus={() => setFocusId(spot.id)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (isFocus) openSpot(spot.id);
-                          else setFocusId(spot.id);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            if (isFocus) openSpot(spot.id);
-                            else setFocusId(spot.id);
-                          }
-                        }}
-                        opacity={dimmed ? 0.22 : 1}
-                        className="cursor-pointer transition-opacity duration-200 focus:outline-none"
-                      >
-                        <circle r={13 / zoom} fill="transparent" />
-
-                        {isDark && !dimmed && (
-                          <circle
-                            r={dotRadius * 2.1}
-                            fill={color}
-                            opacity={isFocus ? 0.55 : 0.35}
-                            filter="url(#bd-pin-glow)"
-                          />
-                        )}
-
-                        {isFocus && (
-                          <circle
-                            r={12 * invScale}
-                            fill={color}
-                            opacity={0.35}
-                            className="animate-ping"
-                            style={{ transformOrigin: '0px 0px' }}
-                          />
-                        )}
-
-                        <circle
-                          r={dotRadius}
-                          fill={color}
-                          stroke={isDark ? '#0B111E' : '#FFFFFF'}
-                          strokeWidth={strokeW}
+                  {/* 5. Interactive 8-Division Fills & Crisp Internal Borders */}
+                  <g>
+                    {DIVISIONS.map((div) => {
+                      const isHovered = hoveredDivision === div.name;
+                      const isFocusDiv = focus?.division === div.name;
+                      const fill = isHovered
+                        ? mapTheme.landHoverFill
+                        : isFocusDiv
+                          ? mapTheme.landFocusFill
+                          : mapTheme.landFill;
+                      return (
+                        <path
+                          key={div.name}
+                          data-division-path={div.name}
+                          d={div.d}
+                          fill={fill}
+                          stroke={isHovered ? focusColor : mapTheme.innerStroke}
+                          strokeOpacity={isHovered ? 0.65 : 1}
+                          strokeWidth={isHovered ? 1.5 : 1}
+                          strokeLinejoin="round"
+                          vectorEffect="non-scaling-stroke"
+                          onMouseEnter={() => setHoveredDivision(div.name)}
+                          onMouseLeave={() => setHoveredDivision((prev) => (prev === div.name ? null : prev))}
+                          className="transition-colors duration-200"
                         />
+                      );
+                    })}
+                  </g>
 
-                        {isFocus && (
-                          <g transform={`scale(${invScale})`} pointerEvents="none">
-                            <rect
-                              x={tipX}
-                              y={tipY}
-                              width={tipW}
-                              height={tipH}
-                              rx={tipH / 2}
-                              fill={mapTheme.tooltipBg}
-                            />
-                            <text
-                              x={tipX + tipW / 2}
-                              y={tipY + tipH / 2 + 4}
-                              textAnchor="middle"
-                              fill={mapTheme.tooltipText}
-                              fontSize={11}
-                              fontWeight={600}
-                            >
-                              {spot.name}
-                            </text>
-                          </g>
-                        )}
+                  {/* 6. Subtle Division Micro-Labels */}
+                  <g pointerEvents="none">
+                    {DIVISIONS.map((div) => {
+                      const [cx, cy] = div.centroid;
+                      const isHovered = hoveredDivision === div.name;
+                      const lx = div.name === 'Chattogram' ? cx + 12 : cx;
+                      const ly = div.name === 'Chattogram' ? cy - 22 : cy;
+                      return (
+                        <text
+                          key={`label-${div.name}`}
+                          x={lx}
+                          y={ly}
+                          textAnchor="middle"
+                          fill={isHovered ? mapTheme.labelHoverColor : mapTheme.labelColor}
+                          fontSize={8.5 * invScale}
+                          fontWeight={700}
+                          letterSpacing="0.16em"
+                          className="uppercase transition-colors duration-200"
+                        >
+                          {div.name}
+                        </text>
+                      );
+                    })}
+                  </g>
+
+                  {/* 7. Animated Curved Flight-Arc & Traveling Light Comet */}
+                  {flightArc && (
+                    <g data-flight-arc pointerEvents="none" aria-hidden="true">
+                      {/* Soft persistent dotted trajectory after comet arrives */}
+                      <path
+                        ref={arcDottedRef}
+                        d={flightArc.d}
+                        fill="none"
+                        stroke={mapTheme.arcTrail}
+                        strokeWidth={1.6 * invScale}
+                        strokeDasharray={`${4 * invScale} ${5 * invScale}`}
+                        strokeLinecap="round"
+                        opacity={0}
+                      />
+                      {/* Active animated draw stroke */}
+                      <path
+                        ref={arcActiveRef}
+                        d={flightArc.d}
+                        fill="none"
+                        stroke={focusColor}
+                        strokeWidth={2.4 * invScale}
+                        strokeLinecap="round"
+                        opacity={0}
+                      />
+                      {/* Glowing traveling comet head */}
+                      <g ref={cometRef} opacity={0}>
+                        <circle
+                          r={8.5 * invScale}
+                          fill={focusColor}
+                          opacity={0.55}
+                          filter="url(#bd-pin-glow)"
+                        />
+                        <circle
+                          r={3.8 * invScale}
+                          fill={isDark ? '#FFFFFF' : focusColor}
+                          stroke={isDark ? focusColor : '#FFFFFF'}
+                          strokeWidth={1.5 * invScale}
+                        />
                       </g>
-                    );
-                  })}
+                    </g>
+                  )}
+
+                  {/* 8. 24 Color-Coded GPS Pins with Layered Sonar Radar Rings */}
+                  <g>
+                    {projectedSpots.map(({ spot, px, py }) => {
+                      const isFocus = spot.id === focus?.id;
+                      const dimmed = Boolean(category && spot.category !== category);
+                      const color = mapTheme.pins[spot.category] ?? '#1E293B';
+                      const dotRadius = (isFocus ? 7.5 : 4.8) * invScale;
+                      const strokeW = 2.2 * invScale;
+
+                      const flipBelow = py < 70;
+                      const tipW = Math.min(220, Math.max(88, spot.name.length * 7.2 + 22));
+                      const tipH = 26;
+                      const tipY = flipBelow ? 14 : -(tipH + 16);
+                      const scaledW = tipW * invScale;
+                      let tipX = -tipW / 2;
+                      if (px - scaledW / 2 < 18) tipX = (18 - px) / invScale;
+                      else if (px + scaledW / 2 > SVG_W - 28) tipX = (SVG_W - 28 - scaledW - px) / invScale;
+
+                      return (
+                        <g
+                          key={spot.id}
+                          data-map-pin={spot.id}
+                          data-cursor="fly"
+                          transform={`translate(${px}, ${py})`}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`${spot.name}, ${spot.district}`}
+                          onMouseEnter={() => selectSpot(spot.id)}
+                          onFocus={() => selectSpot(spot.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isFocus) openSpot(spot.id);
+                            else selectSpot(spot.id);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              if (isFocus) openSpot(spot.id);
+                              else selectSpot(spot.id);
+                            }
+                          }}
+                          opacity={dimmed ? 0.22 : 1}
+                          className="cursor-pointer transition-opacity duration-200 focus:outline-none"
+                        >
+                          <circle r={13 / zoom} fill="transparent" />
+
+                          {isDark && !dimmed && (
+                            <circle
+                              r={dotRadius * 2.1}
+                              fill={color}
+                              opacity={isFocus ? 0.55 : 0.35}
+                              filter="url(#bd-pin-glow)"
+                            />
+                          )}
+
+                          {/* Layered expanding sonar radar pulses around the active destination pin */}
+                          {isFocus && (
+                            <g pointerEvents="none">
+                              <circle
+                                r={11 * invScale}
+                                fill="none"
+                                stroke={color}
+                                strokeWidth={1.8 * invScale}
+                                className="atlas-sonar-ring"
+                              />
+                              <circle
+                                r={11 * invScale}
+                                fill="none"
+                                stroke={color}
+                                strokeWidth={1.4 * invScale}
+                                className="atlas-sonar-ring-delayed"
+                              />
+                            </g>
+                          )}
+
+                          <circle
+                            r={dotRadius}
+                            fill={color}
+                            stroke={isDark ? '#0B111E' : '#FFFFFF'}
+                            strokeWidth={strokeW}
+                          />
+
+                          {isFocus && (
+                            <g transform={`scale(${invScale})`} pointerEvents="none">
+                              <rect
+                                x={tipX}
+                                y={tipY}
+                                width={tipW}
+                                height={tipH}
+                                rx={tipH / 2}
+                                fill={mapTheme.tooltipBg}
+                              />
+                              <text
+                                x={tipX + tipW / 2}
+                                y={tipY + tipH / 2 + 4}
+                                textAnchor="middle"
+                                fill={mapTheme.tooltipText}
+                                fontSize={11}
+                                fontWeight={600}
+                              >
+                                {spot.name}
+                              </text>
+                            </g>
+                          )}
+                        </g>
+                      );
+                    })}
+                  </g>
                 </g>
-              </g>
-            </svg>
+              </svg>
+            </div>
           </div>
         </div>
       </div>

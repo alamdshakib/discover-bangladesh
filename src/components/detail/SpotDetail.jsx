@@ -94,6 +94,8 @@ function DetailGallery({ spot }) {
             <button
               key={url}
               type="button"
+              data-cursor="view"
+              data-detail-thumb
               onClick={() => goTo(i)}
               aria-label={`Show photo ${i + 1}`}
               aria-current={i === index ? 'true' : undefined}
@@ -109,6 +111,7 @@ function DetailGallery({ spot }) {
         <div className="flex items-center gap-1.5">
           <button
             type="button"
+            data-cursor="magnetic"
             onClick={() => goTo(index - 1)}
             aria-label="Previous photo"
             className="glass hidden h-10 w-10 items-center justify-center rounded-full text-ink transition active:scale-95 sm:flex"
@@ -120,6 +123,7 @@ function DetailGallery({ spot }) {
           </span>
           <button
             type="button"
+            data-cursor="magnetic"
             onClick={() => goTo(index + 1)}
             aria-label="Next photo"
             className="glass hidden h-10 w-10 items-center justify-center rounded-full text-ink transition active:scale-95 sm:flex"
@@ -134,6 +138,7 @@ function DetailGallery({ spot }) {
           href={credit}
           target="_blank"
           rel="noopener noreferrer"
+          data-cursor="magnetic"
           className="glass-dark absolute top-4 left-4 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide text-white/90 transition hover:text-white"
         >
           Photo · Wikimedia Commons
@@ -147,6 +152,7 @@ function DetailGallery({ spot }) {
 function InfoCard({ icon: Icon, title, children, className = '' }) {
   return (
     <div
+      data-detail-stagger
       className={`rounded-3xl border border-line bg-white p-4 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-5 ${className}`}
     >
       <p className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">
@@ -163,7 +169,7 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
 
   return (
     <div className="p-5 pb-10 sm:p-8 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-10" data-lenis-prevent>
-      <div className="flex flex-wrap gap-1.5 pr-12">
+      <div data-detail-stagger className="flex flex-wrap gap-1.5 pr-12">
         <MetaPill tone="ink">
           {chapter?.number} · {spot.category}
         </MetaPill>
@@ -173,19 +179,27 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
 
       <h2
         id={titleId}
+        data-detail-stagger
         className="mt-4 font-display leading-[0.95] font-black tracking-[-0.045em] text-ink dark:text-slate-50"
         style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)' }}
       >
         {spot.name}
       </h2>
-      <p className="mt-3 text-base leading-snug text-ink-soft dark:text-slate-300 sm:text-lg">{spot.tagline}</p>
-      <p className="mt-5 text-sm leading-relaxed text-ink-soft dark:text-slate-400 sm:text-[15px]">{spot.description}</p>
+      <p data-detail-stagger className="mt-3 text-base leading-snug text-ink-soft dark:text-slate-300 sm:text-lg">
+        {spot.tagline}
+      </p>
+      <p data-detail-stagger className="mt-5 text-sm leading-relaxed text-ink-soft dark:text-slate-400 sm:text-[15px]">
+        {spot.description}
+      </p>
 
-      <h3 className="mt-8 text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">Highlights</h3>
+      <h3 data-detail-stagger className="mt-8 text-[11px] font-semibold tracking-[0.2em] text-mist uppercase">
+        Highlights
+      </h3>
       <ol className="mt-2">
         {spot.highlights.map((item, i) => (
           <li
             key={item}
+            data-detail-stagger
             className="flex gap-4 border-t border-line py-3.5 text-sm leading-relaxed text-ink dark:border-white/10 dark:text-slate-100"
           >
             <span className="font-display text-sm font-bold text-mist tabular-nums">{String(i + 1).padStart(2, '0')}</span>
@@ -208,13 +222,14 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
         </InfoCard>
 
         <InfoCard icon={Navigation} title="Coordinates">
-          <p className="font-display text-sm font-semibold text-ink tabular-nums dark:text-slate-50">
+          <p className="font-mono text-sm font-semibold text-ink tabular-nums dark:text-slate-50">
             {formatCoordinates(spot.coordinates)}
           </p>
           <a
             href={getMapsUrl(spot.coordinates)}
             target="_blank"
             rel="noopener noreferrer"
+            data-cursor="magnetic"
             className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white transition-colors hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
           >
             Open in Google Maps
@@ -229,6 +244,8 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
 
       <button
         type="button"
+        data-detail-stagger
+        data-cursor="explore"
         onClick={onNext}
         className="group mt-6 flex w-full items-center justify-between gap-4 rounded-3xl border border-line bg-white p-3 pr-5 text-left transition-colors hover:border-haze active:scale-[0.98] dark:border-white/10 dark:bg-[#131C2E] dark:hover:border-white/25"
       >
@@ -260,6 +277,7 @@ function DetailDialog() {
   const titleId = useId();
   const backdropRef = useRef(null);
   const panelRef = useRef(null);
+  const contentRef = useRef(null);
   const closeRef = useRef(null);
   const closingRef = useRef(false);
   const dragRef = useRef(null);
@@ -269,24 +287,69 @@ function DetailDialog() {
   const currentIndex = spots.findIndex((s) => s.id === spot.id);
   const nextSpot = spots[(currentIndex + 1) % spots.length];
 
-  // Entrance animation (modal on desktop, slide-up sheet on mobile).
+  // Spring-physics panel entrance (modal on desktop, slide-up sheet on mobile).
   useLayoutEffect(() => {
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
     const d = reduce ? 0 : 1;
     const ctx = gsap.context(() => {
-      gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4 * d });
+      gsap.fromTo(backdropRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4 * d, ease: 'power2.out' });
       if (isDesktop) {
         gsap.fromTo(
           panelRef.current,
-          { opacity: 0, y: 40, scale: 0.96 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.65 * d, ease: 'expo.out' }
+          { opacity: 0, y: 36, scale: 0.94 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.68 * d, ease: 'back.out(1.2)', clearProps: 'transform' }
         );
       } else {
-        gsap.fromTo(panelRef.current, { yPercent: 100, y: 0 }, { yPercent: 0, duration: 0.6 * d, ease: 'expo.out' });
+        gsap.fromTo(
+          panelRef.current,
+          { yPercent: 100, y: 0 },
+          { yPercent: 0, duration: 0.62 * d, ease: 'expo.out', clearProps: 'transform' }
+        );
       }
     });
     return () => ctx.revert();
   }, [isDesktop]);
+
+  // Staggered motion-graphics entrance for interior content on open & spot switch.
+  useLayoutEffect(() => {
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+    if (reduce || !contentRef.current) return undefined;
+
+    const ctx = gsap.context(() => {
+      const items = contentRef.current.querySelectorAll('[data-detail-stagger]');
+      const thumbs = contentRef.current.querySelectorAll('[data-detail-thumb]');
+      gsap.fromTo(
+        items,
+        { y: 18, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.52,
+          stagger: 0.04,
+          delay: 0.14,
+          ease: 'power3.out',
+          clearProps: 'transform,opacity',
+        }
+      );
+      if (thumbs.length > 0) {
+        gsap.fromTo(
+          thumbs,
+          { scale: 0.85, opacity: 0 },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.45,
+            stagger: 0.05,
+            delay: 0.18,
+            ease: 'back.out(1.4)',
+            clearProps: 'transform,opacity',
+          }
+        );
+      }
+    }, contentRef);
+
+    return () => ctx.revert();
+  }, [spot.id]);
 
   const requestClose = useCallback(() => {
     if (closingRef.current) return;
@@ -297,17 +360,17 @@ function DetailDialog() {
       return;
     }
     const tl = gsap.timeline({ onComplete: closeSpot });
-    tl.to(backdropRef.current, { opacity: 0, duration: 0.3 }, 0);
+    tl.to(backdropRef.current, { opacity: 0, duration: 0.28 }, 0);
     tl.to(
       panelRef.current,
       isDesktop
-        ? { opacity: 0, y: 30, scale: 0.97, duration: 0.28, ease: 'power2.in' }
-        : { yPercent: 100, duration: 0.38, ease: 'power3.in' },
+        ? { opacity: 0, y: 28, scale: 0.96, duration: 0.28, ease: 'power2.in' }
+        : { yPercent: 100, duration: 0.36, ease: 'power3.in' },
       0
     );
   }, [closeSpot, isDesktop]);
 
-  // Focus management, Escape to close, and a simple focus trap.
+  // Focus management, Escape to close, and focus trap.
   useEffect(() => {
     const previouslyFocused = document.activeElement;
     closeRef.current?.focus({ preventScroll: true });
@@ -380,7 +443,7 @@ function DetailDialog() {
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="pointer-events-auto relative flex h-[92svh] w-full flex-col overflow-hidden rounded-t-4xl bg-canvas shadow-[0_-20px_60px_-20px_rgba(15,23,42,0.5)] dark:border-t dark:border-white/10 dark:bg-[#0B111E] dark:shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.85)] lg:h-[min(86vh,860px)] lg:max-w-6xl lg:flex-row lg:rounded-4xl lg:border lg:border-white/70 lg:bg-white/80 lg:shadow-[0_50px_120px_-40px_rgba(15,23,42,0.7)] lg:backdrop-blur-2xl dark:lg:border-white/10 dark:lg:bg-[#131C2E]/90 dark:lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.9)]"
+          className="pointer-events-auto relative flex h-[92svh] w-full flex-col overflow-hidden rounded-t-4xl bg-canvas shadow-[0_-20px_60px_-20px_rgba(15,23,42,0.5)] will-change-transform dark:border-t dark:border-white/10 dark:bg-[#0B111E] dark:shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.85)] lg:h-[min(86vh,860px)] lg:max-w-6xl lg:flex-row lg:rounded-4xl lg:border lg:border-white/70 lg:bg-white/80 lg:shadow-[0_50px_120px_-40px_rgba(15,23,42,0.7)] lg:backdrop-blur-2xl dark:lg:border-white/10 dark:lg:bg-[#131C2E]/90 dark:lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.9)]"
         >
           <div
             onPointerDown={onDragStart}
@@ -396,6 +459,7 @@ function DetailDialog() {
           <button
             ref={closeRef}
             type="button"
+            data-cursor="magnetic"
             onClick={requestClose}
             aria-label="Close details"
             className="absolute top-10 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink shadow-md transition-colors hover:bg-canvas active:scale-95 dark:border dark:border-white/15 dark:bg-[#131C2E] dark:text-slate-100 lg:top-5 lg:right-5 lg:h-11 lg:w-11 lg:bg-ink lg:text-white lg:hover:bg-ink-soft dark:lg:border-transparent dark:lg:bg-white dark:lg:text-[#0B111E] dark:lg:hover:bg-slate-200"
@@ -405,7 +469,8 @@ function DetailDialog() {
 
           <div
             key={spot.id}
-            className="flex min-h-0 flex-1 animate-fade-in flex-col overflow-y-auto overscroll-contain lg:flex-row lg:overflow-hidden"
+            ref={contentRef}
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain lg:flex-row lg:overflow-hidden"
             data-lenis-prevent
           >
             <DetailGallery spot={spot} />
@@ -417,7 +482,7 @@ function DetailDialog() {
   );
 }
 
-/** Spot detail: glassmorphic modal on desktop, touch-swipeable bottom sheet on mobile. */
+/** Spot detail: spring-physics glassmorphic modal on desktop, touch-swipeable bottom sheet on mobile. */
 export function SpotDetail() {
   const { activeSpot } = useShowcase();
   if (!activeSpot) return null;

@@ -12,6 +12,7 @@ export function ThemeToggle({ className = '', showLabel = false }) {
     <button
       type="button"
       data-theme-toggle
+      data-cursor="magnetic"
       onClick={toggleTheme}
       aria-pressed={isDark}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

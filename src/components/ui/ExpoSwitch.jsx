@@ -8,6 +8,7 @@ export function ExpoSwitch({ checked, onChange, className = '', tone = 'light' }
     <button
       type="button"
       role="switch"
+      data-cursor="magnetic"
       aria-checked={checked}
       aria-label="Expo Mode"
       onClick={() => onChange(!checked)}

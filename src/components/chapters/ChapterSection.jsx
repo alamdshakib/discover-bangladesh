@@ -1,11 +1,8 @@
 import { useLayoutEffect, useRef } from 'react';
-import { gsap, MEDIA } from '@animations';
+import { gsap, MEDIA, ScrollTrigger } from '@animations';
 import { getBentoSpans } from '@utils';
 import { ChapterHeader } from './ChapterHeader.jsx';
 import { SpotCard } from '../spots/SpotCard.jsx';
-
-/** Subtle lag pattern for card depth (yPercent) on desktop. */
-const DEPTH = [0, 3, 1.5];
 
 export function ChapterSection({ chapter, spots, onOpen }) {
   const scopeRef = useRef(null);
@@ -20,31 +17,73 @@ export function ChapterSection({ chapter, spots, onOpen }) {
       if (reduce) return;
       const scope = scopeRef.current;
 
-      // Staggered card reveal (all devices)
-      gsap.from(scope.querySelectorAll('[data-spot-card]'), {
-        y: 60,
+      // 1. Custom SVG topographic contour lines draw themselves on scroll entry
+      const contours = scope.querySelectorAll('[data-chapter-contour]');
+      contours.forEach((path) => {
+        const len = typeof path.getTotalLength === 'function' ? path.getTotalLength() : 1400;
+        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
+      });
+      if (contours.length > 0) {
+        gsap.to(contours, {
+          strokeDashoffset: 0,
+          duration: 1.5,
+          stagger: 0.14,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: scope, start: 'top 84%', once: true },
+        });
+      }
+
+      // 2. Architectural hairline divider draw-in
+      const rule = scope.querySelector('[data-chapter-rule]');
+      if (rule) {
+        gsap.fromTo(
+          rule,
+          { scaleX: 0 },
+          {
+            scaleX: 1,
+            duration: 1.1,
+            ease: 'power3.out',
+            transformOrigin: 'left center',
+            scrollTrigger: { trigger: scope, start: 'top 84%', once: true },
+          }
+        );
+      }
+
+      // 3. Masked word-by-word & display headline entrance
+      gsap.from(scope.querySelectorAll('[data-chapter-number], [data-chapter-title], [data-chapter-word]'), {
+        yPercent: 105,
         opacity: 0,
-        duration: 1,
-        stagger: 0.1,
-        ease: 'expo.out',
-        scrollTrigger: { trigger: scope.querySelector('[data-chapter-grid]'), start: 'top 85%', once: true },
+        duration: 1.0,
+        stagger: 0.055,
+        ease: 'power4.out',
+        clearProps: 'transform',
+        scrollTrigger: { trigger: scope, start: 'top 82%', once: true },
       });
 
-      gsap.from(scope.querySelectorAll('[data-chapter-number], [data-chapter-title]'), {
-        yPercent: 40,
-        opacity: 0,
-        duration: 1.1,
-        stagger: 0.08,
-        ease: 'expo.out',
-        scrollTrigger: { trigger: scope, start: 'top 80%', once: true },
+      // 4. Scroll-batched wave entrance across visible card rows
+      const cardWraps = scope.querySelectorAll('[data-spot-card-wrap]');
+      gsap.set(cardWraps, { y: 54, scale: 0.95, opacity: 0 });
+      ScrollTrigger.batch(cardWraps, {
+        start: 'top 88%',
+        once: true,
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            y: 0,
+            scale: 1,
+            opacity: 1,
+            duration: 0.9,
+            stagger: 0.08,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+          }),
       });
 
       if (!isDesktop) return;
 
-      // Kinetic chapter transition: title drifts against its number while the backdrop parallaxes.
+      // 5. Kinetic chapter header parallax
       const headerScrub = { trigger: scope, start: 'top bottom', end: 'top top', scrub: 0.8 };
-      gsap.fromTo(scope.querySelector('[data-chapter-title]'), { x: 80 }, { x: -20, ease: 'none', scrollTrigger: headerScrub });
-      gsap.fromTo(scope.querySelector('[data-chapter-number]'), { x: -40 }, { x: 10, ease: 'none', scrollTrigger: headerScrub });
+      gsap.fromTo(scope.querySelector('[data-chapter-title]'), { x: 48 }, { x: -16, ease: 'none', scrollTrigger: headerScrub });
+      gsap.fromTo(scope.querySelector('[data-chapter-number]'), { x: -24 }, { x: 8, ease: 'none', scrollTrigger: headerScrub });
       gsap.fromTo(
         scope.querySelector('[data-chapter-bg]'),
         { yPercent: -8 },
@@ -55,29 +94,18 @@ export function ChapterSection({ chapter, spots, onOpen }) {
         }
       );
 
-      // Parallax depth: images drift inside their frames, alternate cards lag slightly.
-      scope.querySelectorAll('[data-spot-card]').forEach((card, i) => {
-        const media = card.querySelector('[data-card-media]');
+      // 6. Scroll-scrubbed living editorial window parallax on every card cover photo
+      scope.querySelectorAll('[data-spot-card-wrap]').forEach((wrap) => {
+        const media = wrap.querySelector('[data-card-media]');
         if (media) {
           gsap.fromTo(
             media,
-            { yPercent: -5 },
+            { scale: 1.15, yPercent: -6 },
             {
-              yPercent: 5,
+              scale: 1.15,
+              yPercent: 6,
               ease: 'none',
-              scrollTrigger: { trigger: card, start: 'top bottom', end: 'bottom top', scrub: true },
-            }
-          );
-        }
-        const depth = DEPTH[i % DEPTH.length];
-        if (depth) {
-          gsap.fromTo(
-            card,
-            { yPercent: depth },
-            {
-              yPercent: 0,
-              ease: 'none',
-              scrollTrigger: { trigger: card, start: 'top bottom', end: 'center 60%', scrub: true },
+              scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
             }
           );
         }

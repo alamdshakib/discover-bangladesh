@@ -32,6 +32,7 @@ export function Navbar() {
         >
           <button
             type="button"
+            data-cursor="magnetic"
             onClick={() => scrollToTarget(0, { offset: 0 })}
             className="flex shrink-0 items-center gap-1.5 transition active:scale-95"
             aria-label={`${SITE_META.name} — back to top`}
@@ -56,6 +57,7 @@ export function Navbar() {
             <ThemeToggle />
             <button
               type="button"
+              data-cursor="magnetic"
               onClick={() => scrollToTarget(`#${SECTION_IDS.atlas}`)}
               className="hidden h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200 md:inline-flex"
             >

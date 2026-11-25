@@ -157,6 +157,7 @@ export function Footer() {
             <button
               ref={backBtnRef}
               type="button"
+              data-cursor="magnetic"
               onClick={() => scrollToTarget(0, { offset: 0 })}
               onPointerMove={handleMagneticMove}
               onPointerLeave={handleMagneticLeave}
@@ -234,6 +235,7 @@ export function Footer() {
               <Fragment key={chapter.id}>
                 <button
                   type="button"
+                  data-cursor="magnetic"
                   onClick={() => handleChapterJump(chapter)}
                   className="relative py-0.5 text-white/60 transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-white after:transition-transform after:duration-300 hover:text-white hover:after:scale-x-100 active:scale-95"
                 >

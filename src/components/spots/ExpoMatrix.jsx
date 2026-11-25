@@ -18,7 +18,7 @@ function countTags(spots, field) {
   }, {});
 }
 
-/** Expo Mode: high-density bento matrix of every spot with instant multi-tag filters. */
+/** Expo Mode: high-density bento matrix of every spot with instant multi-tag filters & choreographed wave morph. */
 export function ExpoMatrix({ spots, onOpen }) {
   const [selection, setSelection] = useState(emptySelection);
   const gridRef = useRef(null);
@@ -53,15 +53,29 @@ export function ExpoMatrix({ spots, onOpen }) {
     setSelection(emptySelection());
   };
 
-  // Entrance stagger on mount.
+  // Choreographed staggered wave entrance on view morph.
   useLayoutEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const cards = gridRef.current.querySelectorAll('[data-expo-card]');
-    if (!reduce) {
-      gsap.from(cards, { opacity: 0, y: 30, scale: 0.96, duration: 0.7, stagger: 0.025, ease: 'expo.out', delay: 0.1 });
-    }
+    const ctx = gsap.context(() => {
+      if (!reduce) {
+        gsap.fromTo(
+          cards,
+          { opacity: 0, y: 26, scale: 0.92 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.65,
+            stagger: 0.03,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+          }
+        );
+      }
+    }, gridRef);
     hasMounted.current = true;
-    return () => gsap.killTweensOf(cards);
+    return () => ctx.revert();
   }, []);
 
   // FLIP re-layout whenever the filtered set changes.
@@ -81,7 +95,11 @@ export function ExpoMatrix({ spots, onOpen }) {
         nested: true,
         prune: true,
         onEnter: (els) =>
-          gsap.fromTo(els, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, stagger: 0.03, ease: 'power3.out' }),
+          gsap.fromTo(
+            els,
+            { opacity: 0, scale: 0.92, y: 18 },
+            { opacity: 1, scale: 1, y: 0, duration: 0.5, stagger: 0.03, ease: 'power3.out' }
+          ),
         onComplete: () => ScrollTrigger.refresh(),
       });
     } else {
@@ -120,6 +138,7 @@ export function ExpoMatrix({ spots, onOpen }) {
                 index === 0 ? (
                   <button
                     type="button"
+                    data-cursor="magnetic"
                     aria-pressed={activeCount === 0}
                     onClick={clearAll}
                     className={`flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors duration-200 active:scale-95 ${
@@ -160,6 +179,7 @@ export function ExpoMatrix({ spots, onOpen }) {
           </p>
           <button
             type="button"
+            data-cursor="magnetic"
             onClick={clearAll}
             className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition-colors active:scale-95 dark:bg-white dark:text-[#0B111E]"
           >
