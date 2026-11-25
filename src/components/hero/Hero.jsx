@@ -1,13 +1,14 @@
 import { useLayoutEffect, useRef } from 'react';
-import { ArrowDownRight, Map, MapPin } from 'lucide-react';
+import { ArrowDownRight, Compass, Map, MapPin } from 'lucide-react';
 import { SITE_META, SECTION_IDS } from '@data';
 import { useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
-import { getImageSrc } from '@utils';
+import { formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 import { HeroTerrain3D } from '../HeroTerrain3D.jsx';
 
 const HERO_SPOT_ID = 'sajek-valley';
+const SHOWCASE_WORDS = ['Rivers,', 'ridges,', 'mangroves', '&', 'a', 'thousand', 'years', 'of', 'living', 'heritage.'];
 
 export function Hero() {
   const { spots, openSpot } = useShowcase();
@@ -23,55 +24,74 @@ export function Hero() {
       if (reduce) return;
 
       const scope = scopeRef.current;
-      const lines = scope.querySelectorAll('[data-hero-line]');
-      const frame = scope.querySelector('[data-hero-frame]');
-      const copyItems = scope.querySelectorAll('[data-hero-copy] > *');
+      const titleSplits = scope.querySelectorAll('[data-hero-split]');
+      const showcaseWords = scope.querySelectorAll('[data-hero-word]');
+      const frameEntrance = scope.querySelector('[data-hero-frame-entrance]');
+      const ctas = scope.querySelectorAll('[data-hero-cta]');
 
-      // Never lock Hero elements at opacity: 0 on mount; animate cleanly via ctx.add when triggered
-      // and always restore clean props so content is 100% visible under every lifecycle path.
+      // Safe 3D split-text flip reveal (rotateX: -45deg, yPercent: 110 → 0, stagger: 0.08, power4.out)
+      // Never locks elements at opacity: 0 on mount; always restores clean props.
       const playEntrance = () => {
         ctx.add(() => {
           const tl = gsap.timeline({
             defaults: { overwrite: 'auto' },
           });
+
           tl.fromTo(
-            lines,
-            { yPercent: 85, rotateX: 10, opacity: 0, transformOrigin: 'bottom center' },
+            titleSplits,
+            { rotateX: -45, yPercent: 110, opacity: 0, transformOrigin: '50% 100% -24px' },
             {
-              yPercent: 0,
               rotateX: 0,
+              yPercent: 0,
               opacity: 1,
-              duration: 0.95,
-              stagger: 0.07,
+              duration: 1.0,
+              stagger: 0.08,
               ease: 'power4.out',
               clearProps: 'transform,opacity',
             },
             0
           );
+
           tl.fromTo(
-            frame,
-            { opacity: 0, y: 18 },
+            frameEntrance,
+            { opacity: 0, y: 20 },
             {
               opacity: 1,
               y: 0,
-              duration: 0.9,
+              duration: 0.92,
               ease: 'expo.out',
-              clearProps: 'opacity,y',
+              clearProps: 'transform,opacity',
             },
-            0.1
+            0.12
           );
+
           tl.fromTo(
-            copyItems,
-            { y: 20, opacity: 0 },
+            showcaseWords,
+            { rotateX: -45, yPercent: 110, opacity: 0, transformOrigin: '50% 100% -14px' },
+            {
+              rotateX: 0,
+              yPercent: 0,
+              opacity: 1,
+              duration: 0.85,
+              stagger: 0.035,
+              ease: 'power4.out',
+              clearProps: 'transform,opacity',
+            },
+            0.22
+          );
+
+          tl.fromTo(
+            ctas,
+            { y: 18, opacity: 0 },
             {
               y: 0,
               opacity: 1,
-              duration: 0.8,
-              stagger: 0.07,
+              duration: 0.75,
+              stagger: 0.08,
               ease: 'power3.out',
               clearProps: 'transform,opacity',
             },
-            0.28
+            0.38
           );
         });
       };
@@ -94,7 +114,7 @@ export function Hero() {
         playEntrance();
       }
 
-      // Slow ambient Ken Burns drift on the hero photograph
+      // Subtle ambient Ken Burns zoom drift on the Hero photograph
       gsap.fromTo(
         scope.querySelector('[data-hero-kenburns]'),
         { scale: 1.0 },
@@ -102,45 +122,65 @@ export function Hero() {
       );
 
       if (isDesktop) {
-        // Reverse scrubbed hero: starts large & full width, smoothly shrinks & rounds inward on scroll
-        // while counter-parallaxing the internal photo and floating metadata layers independently.
-        const scrub = { trigger: scope, start: 'top top', end: 'bottom 22%', scrub: 1 };
-        gsap.fromTo(
-          '[data-hero-frame]',
+        // Unified ScrollTrigger timeline: reverse-scale Hero frame (1 → 0.88),
+        // inner counter-parallax (yPercent: -8 → 14), and opposite-speed floating badges.
+        const scrubTl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: scope,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1,
+          },
+        });
+
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-frame]'),
           { scale: 1, borderRadius: '1.75rem', transformOrigin: 'center top' },
-          {
-            scale: 0.9,
-            borderRadius: '2.75rem',
-            ease: 'none',
-            immediateRender: false,
-            scrollTrigger: scrub,
-          }
+          { scale: 0.88, borderRadius: '2.85rem', immediateRender: false },
+          0
         );
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-media]'),
+          { scale: 1.18, yPercent: -8 },
+          { scale: 1.18, yPercent: 14, immediateRender: false },
+          0
+        );
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-pill]'),
+          { y: 0 },
+          { y: -42, immediateRender: false },
+          0
+        );
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-coord-badge]'),
+          { y: 0 },
+          { y: 42, immediateRender: false },
+          0
+        );
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-copy]'),
+          { y: 0 },
+          { y: 26, immediateRender: false },
+          0
+        );
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-title]'),
+          { y: 0, opacity: 1 },
+          { y: -18, opacity: 0.55, immediateRender: false },
+          0
+        );
+      } else {
+        // Touch-friendly counter-parallax on mobile
         gsap.fromTo(
           '[data-hero-media]',
-          { scale: 1.08, yPercent: -6 },
+          { scale: 1.14, yPercent: -6 },
           {
             scale: 1.14,
-            yPercent: 12,
+            yPercent: 10,
             ease: 'none',
             immediateRender: false,
-            scrollTrigger: scrub,
-          }
-        );
-        gsap.to('[data-hero-pill]', { y: -26, ease: 'none', scrollTrigger: scrub });
-        gsap.to('[data-hero-copy]', { y: 22, ease: 'none', scrollTrigger: scrub });
-        gsap.to('[data-hero-title]', { y: -16, opacity: 0.55, ease: 'none', scrollTrigger: scrub });
-      } else {
-        // Light touch-friendly parallax — no pinning, zero clipping.
-        gsap.fromTo(
-          '[data-hero-media]',
-          { scale: 1.06, yPercent: -3 },
-          {
-            scale: 1.1,
-            yPercent: 6,
-            ease: 'none',
-            immediateRender: false,
-            scrollTrigger: { trigger: '[data-hero-frame]', start: 'top bottom', end: 'bottom top', scrub: true },
+            scrollTrigger: { trigger: '[data-hero-frame]', start: 'top bottom', end: 'bottom top', scrub: 1 },
           }
         );
       }
@@ -164,19 +204,19 @@ export function Hero() {
       {/* All Hero typography, badges, buttons, and showcase card sit strictly above at z-10 */}
       <div className="relative z-10 mx-auto max-w-[1600px]">
         <div className="flex flex-col gap-4 px-1 sm:px-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="overflow-hidden [perspective:900px]">
+          <div className="overflow-hidden py-0.5 [perspective:1000px]">
             <p
-              data-hero-line
-              className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-ink-soft uppercase transition-colors duration-300 dark:text-slate-400"
+              data-hero-split
+              className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-ink-soft uppercase transition-colors duration-300 will-change-transform dark:text-slate-400"
             >
               <span className="h-2 w-2 rounded-full bg-bd-green" aria-hidden="true" />
               {SITE_META.edition}
             </p>
           </div>
-          <div className="overflow-hidden [perspective:900px]">
+          <div className="overflow-hidden py-0.5 [perspective:1000px]">
             <p
-              data-hero-line
-              className="max-w-md text-sm leading-relaxed text-ink-soft transition-colors duration-300 dark:text-slate-400"
+              data-hero-split
+              className="max-w-md text-sm leading-relaxed text-ink-soft transition-colors duration-300 will-change-transform dark:text-slate-400"
             >
               {SITE_META.description}
             </p>
@@ -187,19 +227,19 @@ export function Hero() {
           data-hero-title
           className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2 px-0.5 font-display text-ink transition-colors duration-300 dark:text-slate-50 sm:px-2"
         >
-          <span className="inline-block overflow-hidden py-1 [perspective:900px]">
+          <span className="inline-block overflow-hidden py-1.5 [perspective:1000px]">
             <span
-              data-hero-line
-              className="block leading-[0.88] font-black tracking-[-0.06em]"
+              data-hero-split
+              className="block leading-[0.88] font-black tracking-[-0.06em] will-change-transform"
               style={{ fontSize: 'clamp(2.85rem, 13.8vw, 14.5rem)' }}
             >
               DISCOVER
             </span>
           </span>
-          <span className="inline-block overflow-hidden py-1 [perspective:900px]">
+          <span className="inline-block overflow-hidden py-1.5 [perspective:1000px]">
             <span
-              data-hero-line
-              className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.32em] text-mist transition-colors duration-300 dark:text-slate-400 sm:tracking-[0.45em]"
+              data-hero-split
+              className="mb-[0.35em] flex items-center gap-3 font-bold tracking-[0.32em] text-mist transition-colors duration-300 will-change-transform dark:text-slate-400 sm:tracking-[0.45em]"
               style={{ fontSize: 'clamp(0.8rem, 1.55vw, 1.5rem)' }}
             >
               <span className="h-px w-8 bg-mist dark:bg-slate-600 sm:w-12" aria-hidden="true" />
@@ -208,11 +248,12 @@ export function Hero() {
           </span>
         </h1>
 
-        <div
-          data-hero-frame
-          data-cursor="explore"
-          className="relative mt-6 h-[clamp(460px,72svh,820px)] w-full overflow-hidden rounded-[1.75rem] bg-ink shadow-[0_32px_90px_-36px_rgba(15,23,42,0.45)] will-change-transform dark:shadow-[0_32px_90px_-32px_rgba(0,0,0,0.85)] dark:ring-1 dark:ring-white/10 sm:mt-8"
-        >
+        <div data-hero-frame-entrance className="mt-6 will-change-transform sm:mt-8">
+          <div
+            data-hero-frame
+            data-cursor="explore"
+            className="relative h-[clamp(460px,72svh,820px)] w-full overflow-hidden rounded-[1.75rem] bg-ink shadow-[0_32px_90px_-36px_rgba(15,23,42,0.45)] will-change-transform dark:shadow-[0_32px_90px_-32px_rgba(0,0,0,0.85)] dark:ring-1 dark:ring-white/10"
+          >
           <div data-hero-media className="absolute inset-0 will-change-transform">
             <div data-hero-kenburns className="h-full w-full will-change-transform">
               <SmartImage
@@ -230,6 +271,16 @@ export function Hero() {
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-ink/10"
           />
 
+          {/* Opposite-speed floating coordinate pill (top-left on sm+) */}
+          <div
+            data-hero-coord-badge
+            className="glass-dark pointer-events-none absolute top-4 left-4 z-10 hidden items-center gap-2 rounded-full border border-white/20 px-3.5 py-1.5 font-mono text-[11px] font-semibold tracking-wider text-white/90 tabular-nums will-change-transform sm:top-6 sm:left-6 sm:inline-flex"
+          >
+            <Compass className="h-3.5 w-3.5 text-emerald-400" strokeWidth={2.2} aria-hidden="true" />
+            <span>{formatCoordinates(heroSpot.coordinates)}</span>
+          </div>
+
+          {/* Floating location pill (top-right, drifts upward on scroll) */}
           <button
             type="button"
             data-hero-pill
@@ -250,20 +301,32 @@ export function Hero() {
             className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-6 p-5 text-white will-change-transform sm:p-10 lg:flex-row lg:items-end lg:justify-between lg:p-14"
           >
             <div className="max-w-2xl">
-              <p className="text-[11px] font-semibold tracking-[0.24em] text-white/70 uppercase">
-                Hills · Sea · Forest · Heritage
-              </p>
+              <div className="overflow-hidden py-0.5 [perspective:800px]">
+                <p
+                  data-hero-split
+                  className="text-[11px] font-semibold tracking-[0.24em] text-white/70 uppercase will-change-transform"
+                >
+                  Hills · Sea · Forest · Heritage
+                </p>
+              </div>
               <p
-                className="mt-3 font-display leading-[1.02] font-bold tracking-[-0.03em]"
+                className="mt-3 flex flex-wrap gap-x-[0.26em] gap-y-0.5 font-display leading-[1.04] font-bold tracking-[-0.03em]"
                 style={{ fontSize: 'clamp(1.65rem, 3.6vw, 3.4rem)' }}
               >
-                Rivers, ridges, mangroves &amp; a thousand years of living heritage.
+                {SHOWCASE_WORDS.map((word, idx) => (
+                  <span key={`${word}-${idx}`} className="inline-block overflow-hidden py-0.5 [perspective:900px]">
+                    <span data-hero-word className="inline-block will-change-transform">
+                      {word}
+                    </span>
+                  </span>
+                ))}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2 sm:gap-3">
               <button
                 type="button"
+                data-hero-cta
                 data-cursor="magnetic"
                 onClick={() => scrollToTarget(`#${SECTION_IDS.showcase}`)}
                 className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-xs font-semibold text-ink transition hover:bg-canvas active:scale-95 sm:h-12 sm:px-6 sm:text-sm"
@@ -273,6 +336,7 @@ export function Hero() {
               </button>
               <button
                 type="button"
+                data-hero-cta
                 data-cursor="magnetic"
                 onClick={() => scrollToTarget(`#${SECTION_IDS.atlas}`)}
                 className="glass-dark inline-flex h-11 items-center gap-2 rounded-full border border-white/20 px-4 text-xs font-semibold text-white transition hover:bg-ink active:scale-95 sm:h-12 sm:px-6 sm:text-sm"
@@ -281,6 +345,7 @@ export function Hero() {
                 Interactive Map
               </button>
             </div>
+          </div>
           </div>
         </div>
       </div>
