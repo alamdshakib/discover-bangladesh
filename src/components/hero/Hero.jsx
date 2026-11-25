@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef } from 'react';
-import { ArrowDown, ArrowDownRight, Compass, Map, MapPin } from 'lucide-react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { ArrowDownRight, Compass, Map, MapPin } from 'lucide-react';
 import { SITE_META, SECTION_IDS } from '@data';
 import { useMagnetic, useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
@@ -7,7 +7,15 @@ import { formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 import { HeroTerrain3D } from '../HeroTerrain3D.jsx';
 
-const HERO_SPOT_ID = 'sajek-valley';
+const SLIDE_DURATION = 6; // seconds per destination slide
+
+const HERO_CAROUSEL_SPEC = [
+  { id: 'sajek-valley', shortLabel: 'Sajek' },
+  { id: 'coxs-bazar', shortLabel: "Cox's Bazar" },
+  { id: 'sundarbans', shortLabel: 'Sundarbans' },
+  { id: 'tanguar-haor', shortLabel: 'Tanguar Haor' },
+];
+
 const DISCOVER_LETTERS = 'DISCOVER'.split('');
 const SHOWCASE_WORDS = [
   'Rivers,',
@@ -22,250 +30,549 @@ const SHOWCASE_WORDS = [
   'heritage.',
 ];
 
+// Ultra-fine SVG fractalNoise texture for 4% photographic cinema film grain (zero external fetch)
+const FILM_GRAIN_DATA_URI =
+  "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
 export function Hero() {
   const { spots, openSpot } = useShowcase();
   const scopeRef = useRef(null);
-  const exploreBtnRef = useMagnetic({ strengthX: 12, strengthY: 8 });
+  const frameRef = useRef(null);
+
+  // 3-plane mouse camera gimbal refs
+  const photoPlaneRef = useRef(null);
+  const typePlaneRef = useRef(null);
+  const hudTopPlaneRef = useRef(null);
+  const hudBottomPlaneRef = useRef(null);
+
+  // Carousel refs
+  const slideRefs = useRef([]);
+  const zoomRefs = useRef([]);
+  const progressFillRefs = useRef([]);
+  const timerTweenRef = useRef(null);
+  const goToSlideRef = useRef(null);
+  const activeIdxRef = useRef(0);
+  const inViewRef = useRef(true);
+
+  // Odometer & location swap refs
+  const coordTextRef = useRef(null);
+  const coordProxyRef = useRef({ lat: 23.3819, lng: 92.2938 });
+  const locationLabelRef = useRef(null);
+
+  // Magnetic controls
+  const exploreBtnRef = useMagnetic({ strengthX: 14, strengthY: 9 });
   const atlasBtnRef = useMagnetic({ strengthX: 12, strengthY: 8 });
   const pillBtnRef = useMagnetic({ strengthX: 10, strengthY: 7 });
-  const heroSpot = spots.find((s) => s.id === HERO_SPOT_ID) ?? spots[0];
 
+  const heroSlides = useMemo(() => {
+    const resolved = HERO_CAROUSEL_SPEC.map((item) => {
+      const spot = spots.find((s) => s.id === item.id);
+      return spot ? { ...spot, shortLabel: item.shortLabel } : null;
+    }).filter(Boolean);
+    return resolved.length > 0 ? resolved : spots.slice(0, 4).map((s) => ({ ...s, shortLabel: s.name }));
+  }, [spots]);
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const activeSpot = heroSlides[activeIdx] ?? heroSlides[0];
+
+  // Keep initial coordinate proxy synced on first mount
+  useEffect(() => {
+    const first = heroSlides[0];
+    if (first?.coordinates) {
+      coordProxyRef.current = { lat: first.coordinates.lat, lng: first.coordinates.lng };
+    }
+  }, [heroSlides]);
+
+  // Core slide progress starter + cinematic wipe / Ken Burns / coordinate odometer choreography
+  const startSlideProgress = useCallback(
+    (idx) => {
+      timerTweenRef.current?.kill();
+      const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+
+      progressFillRefs.current.forEach((bar, i) => {
+        if (!bar) return;
+        gsap.killTweensOf(bar);
+        gsap.set(bar, { scaleX: i === idx && reduce ? 1 : 0, transformOrigin: 'left center' });
+      });
+
+      if (reduce) return;
+
+      const activeBar = progressFillRefs.current[idx];
+      if (!activeBar) return;
+
+      timerTweenRef.current = gsap.fromTo(
+        activeBar,
+        { scaleX: 0, transformOrigin: 'left center' },
+        {
+          scaleX: 1,
+          duration: SLIDE_DURATION,
+          ease: 'none',
+          paused: !inViewRef.current,
+          onComplete: () => {
+            const next = (idx + 1) % heroSlides.length;
+            goToSlideRef.current?.(next);
+          },
+        }
+      );
+    },
+    [heroSlides.length]
+  );
+
+  const goToSlide = useCallback(
+    (nextIdx) => {
+      if (!heroSlides.length) return;
+      const clamped = ((nextIdx % heroSlides.length) + heroSlides.length) % heroSlides.length;
+      const prevIdx = activeIdxRef.current;
+      const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+
+      if (clamped === prevIdx) {
+        startSlideProgress(clamped);
+        return;
+      }
+
+      activeIdxRef.current = clamped;
+      setActiveIdx(clamped);
+
+      const nextSpot = heroSlides[clamped];
+      const incomingSlide = slideRefs.current[clamped];
+      const outgoingSlide = slideRefs.current[prevIdx];
+      const incomingZoom = zoomRefs.current[clamped];
+
+      // 1. Silky iris / curtain clip-path wipe + slow Ken Burns zoom drift (1.0 -> 1.10)
+      if (incomingSlide) {
+        slideRefs.current.forEach((el, i) => {
+          if (!el) return;
+          if (i !== clamped && i !== prevIdx) {
+            gsap.set(el, { opacity: 0, zIndex: 0, clipPath: 'inset(0% 0% 0% 0%)' });
+          }
+        });
+
+        if (outgoingSlide) {
+          gsap.set(outgoingSlide, { opacity: 1, zIndex: 1, clipPath: 'inset(0% 0% 0% 0%)' });
+        }
+
+        if (reduce) {
+          gsap.set(incomingSlide, { opacity: 1, zIndex: 2, clipPath: 'inset(0% 0% 0% 0%)' });
+          if (outgoingSlide) gsap.set(outgoingSlide, { opacity: 0, zIndex: 0 });
+        } else {
+          // Alternate sleek horizontal curtain wipe and expanding circular cinema iris
+          const useIris = clamped % 2 === 1;
+          const startClip = useIris ? 'circle(0% at 50% 52%)' : 'inset(0% 0% 0% 100%)';
+          const endClip = useIris ? 'circle(145% at 50% 52%)' : 'inset(0% 0% 0% 0%)';
+
+          gsap.killTweensOf(incomingSlide);
+          gsap.fromTo(
+            incomingSlide,
+            { opacity: 1, zIndex: 2, clipPath: startClip },
+            {
+              clipPath: endClip,
+              duration: 1.18,
+              ease: 'expo.inOut',
+              onComplete: () => {
+                gsap.set(incomingSlide, { clipPath: 'inset(0% 0% 0% 0%)' });
+                if (outgoingSlide && activeIdxRef.current === clamped) {
+                  gsap.set(outgoingSlide, { opacity: 0, zIndex: 0 });
+                }
+              },
+            }
+          );
+
+          if (incomingZoom) {
+            gsap.killTweensOf(incomingZoom);
+            gsap.fromTo(
+              incomingZoom,
+              { scale: 1.0 },
+              { scale: 1.1, duration: SLIDE_DURATION + 1.4, ease: 'none', overwrite: 'auto' }
+            );
+          }
+        }
+      }
+
+      // 2. Odometer coordinate ticker on top-left GPS badge
+      if (nextSpot?.coordinates && coordTextRef.current) {
+        if (reduce) {
+          coordProxyRef.current = { ...nextSpot.coordinates };
+          coordTextRef.current.textContent = formatCoordinates(nextSpot.coordinates);
+        } else {
+          gsap.to(coordProxyRef.current, {
+            lat: nextSpot.coordinates.lat,
+            lng: nextSpot.coordinates.lng,
+            duration: 0.92,
+            ease: 'power3.out',
+            overwrite: 'auto',
+            onUpdate: () => {
+              if (coordTextRef.current) {
+                coordTextRef.current.textContent = formatCoordinates(coordProxyRef.current);
+              }
+            },
+          });
+        }
+      }
+
+      // 3. Top-right location pill vertical kinetic swap
+      if (locationLabelRef.current && !reduce) {
+        gsap.fromTo(
+          locationLabelRef.current,
+          { y: 9, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.48, ease: 'power3.out', clearProps: 'transform,opacity' }
+        );
+      }
+
+      // 4. Restart 6s story progress bar
+      startSlideProgress(clamped);
+    },
+    [heroSlides, startSlideProgress]
+  );
+
+  useEffect(() => {
+    goToSlideRef.current = goToSlide;
+  }, [goToSlide]);
+
+  // Initialize first slide Ken Burns + 6s auto-carousel + IntersectionObserver pause off-screen
+  useEffect(() => {
+    const scope = scopeRef.current;
+    if (!scope || !heroSlides.length) return undefined;
+
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+    const firstSlide = slideRefs.current[0];
+    const firstZoom = zoomRefs.current[0];
+
+    slideRefs.current.forEach((el, idx) => {
+      if (!el) return;
+      gsap.set(el, {
+        opacity: idx === 0 ? 1 : 0,
+        zIndex: idx === 0 ? 2 : 0,
+        clipPath: 'inset(0% 0% 0% 0%)',
+      });
+    });
+
+    if (!reduce && firstZoom) {
+      gsap.fromTo(firstZoom, { scale: 1.0 }, { scale: 1.1, duration: SLIDE_DURATION + 1.4, ease: 'none' });
+    }
+    if (firstSlide) {
+      startSlideProgress(0);
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = Boolean(entries[0]?.isIntersecting);
+        inViewRef.current = visible;
+        if (!timerTweenRef.current) return;
+        if (visible) timerTweenRef.current.play();
+        else timerTweenRef.current.pause();
+      },
+      { threshold: 0.08 }
+    );
+    io.observe(scope);
+
+    return () => {
+      io.disconnect();
+      timerTweenRef.current?.kill();
+    };
+  }, [goToSlide, heroSlides.length, startSlideProgress]);
+
+  // GSAP context-scoped Entrance + Ambient Sunbeams/Mist + 3-Plane Mouse Gimbal + ScrollTrigger Kinetic Split
   useLayoutEffect(() => {
     let cleanupWait = null;
     const mm = gsap.matchMedia(scopeRef);
 
-    mm.add({ isDesktop: MEDIA.desktop, reduce: MEDIA.reduceMotion }, (ctx) => {
-      const { reduce } = ctx.conditions;
-      if (reduce) return;
+    mm.add(
+      {
+        isDesktop: MEDIA.desktop,
+        finePointer: '(pointer: fine)',
+        reduce: MEDIA.reduceMotion,
+      },
+      (ctx) => {
+        const { isDesktop, finePointer, reduce } = ctx.conditions;
+        if (reduce) return undefined;
 
-      const scope = scopeRef.current;
-      const headerSplits = scope.querySelectorAll('[data-hero-header-split]');
-      const discoverChars = scope.querySelectorAll('[data-hero-discover-char]');
-      const subtitleNode = scope.querySelector('[data-hero-subtitle-reveal]');
-      const showcaseWords = scope.querySelectorAll('[data-hero-word]');
-      const frameEntrance = scope.querySelector('[data-hero-frame-entrance]');
-      const ctas = scope.querySelectorAll('[data-hero-cta]');
+        const scope = scopeRef.current;
+        const frame = frameRef.current;
+        const headerSplits = scope.querySelectorAll('[data-hero-header-split]');
+        const discoverChars = scope.querySelectorAll('[data-hero-discover-char]');
+        const discoverSpreadNodes = scope.querySelectorAll('[data-hero-discover-spread]');
+        const subtitleNode = scope.querySelector('[data-hero-subtitle-reveal]');
+        const showcaseWords = scope.querySelectorAll('[data-hero-word]');
+        const frameEntrance = scope.querySelector('[data-hero-frame-entrance]');
+        const ctas = scope.querySelectorAll('[data-hero-cta]');
 
-      // Choreographed load entrance: DISCOVER letters rise smoothly up from behind the mountain ridges
-      // (yPercent: 120, rotateX: -35deg, opacity: 0 -> 0, 0, 1, stagger: 0.045, power4.out).
-      // Never locks elements at opacity: 0 on mount; always restores clean inline styles.
-      const playEntrance = () => {
-        ctx.add(() => {
-          const tl = gsap.timeline({
-            defaults: { overwrite: 'auto' },
-          });
+        // 1. Load Entrance Choreography (synced with CinematicIntro, never permanently hides content)
+        const playEntrance = () => {
+          ctx.add(() => {
+            const tl = gsap.timeline({ defaults: { overwrite: 'auto' } });
 
-          tl.fromTo(
-            headerSplits,
-            { yPercent: 105, opacity: 0 },
-            {
-              yPercent: 0,
-              opacity: 1,
-              duration: 0.85,
-              stagger: 0.08,
-              ease: 'power3.out',
-              clearProps: 'transform,opacity',
-            },
-            0
-          );
-
-          tl.fromTo(
-            frameEntrance,
-            { opacity: 0, y: 18 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.9,
-              ease: 'expo.out',
-              clearProps: 'transform,opacity',
-            },
-            0.05
-          );
-
-          tl.fromTo(
-            discoverChars,
-            {
-              yPercent: 120,
-              rotateX: -35,
-              opacity: 0,
-              transformPerspective: 900,
-              transformOrigin: '50% 100% -20px',
-            },
-            {
-              yPercent: 0,
-              rotateX: 0,
-              opacity: 1,
-              duration: 1.08,
-              stagger: 0.045,
-              ease: 'power4.out',
-              clearProps: 'transform,opacity',
-            },
-            0.12
-          );
-
-          if (subtitleNode) {
             tl.fromTo(
-              subtitleNode,
-              { yPercent: 120, rotateX: -35, opacity: 0, transformPerspective: 800 },
+              headerSplits,
+              { yPercent: 105, opacity: 0 },
+              {
+                yPercent: 0,
+                opacity: 1,
+                duration: 0.82,
+                stagger: 0.08,
+                ease: 'power3.out',
+                clearProps: 'transform,opacity',
+              },
+              0
+            );
+
+            tl.fromTo(
+              frameEntrance,
+              { opacity: 0, y: 18 },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 0.88,
+                ease: 'expo.out',
+                clearProps: 'transform,opacity',
+              },
+              0.04
+            );
+
+            tl.fromTo(
+              discoverChars,
+              {
+                yPercent: 112,
+                rotateX: -38,
+                opacity: 0,
+                transformPerspective: 950,
+                transformOrigin: '50% 100% -20px',
+              },
               {
                 yPercent: 0,
                 rotateX: 0,
                 opacity: 1,
-                duration: 0.95,
+                duration: 1.04,
+                stagger: 0.045,
                 ease: 'power4.out',
                 clearProps: 'transform,opacity',
               },
-              0.38
+              0.12
             );
+
+            if (subtitleNode) {
+              tl.fromTo(
+                subtitleNode,
+                { yPercent: 115, opacity: 0 },
+                {
+                  yPercent: 0,
+                  opacity: 1,
+                  duration: 0.88,
+                  ease: 'power4.out',
+                  clearProps: 'transform,opacity',
+                },
+                0.36
+              );
+            }
+
+            tl.fromTo(
+              showcaseWords,
+              { rotateX: -35, yPercent: 110, opacity: 0, transformOrigin: '50% 100% -12px' },
+              {
+                rotateX: 0,
+                yPercent: 0,
+                opacity: 1,
+                duration: 0.8,
+                stagger: 0.03,
+                ease: 'power4.out',
+                clearProps: 'transform,opacity',
+              },
+              0.3
+            );
+
+            tl.fromTo(
+              ctas,
+              { y: 16, opacity: 0 },
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.7,
+                stagger: 0.07,
+                ease: 'power3.out',
+                clearProps: 'transform,opacity',
+              },
+              0.44
+            );
+          });
+        };
+
+        const introActive = Boolean(document.querySelector('[data-cinematic-intro]'));
+        if (introActive) {
+          let played = false;
+          const trigger = () => {
+            if (played) return;
+            played = true;
+            playEntrance();
+          };
+          window.addEventListener('db:intro-done', trigger, { once: true });
+          const fallbackId = window.setTimeout(trigger, 3900);
+          cleanupWait = () => {
+            window.removeEventListener('db:intro-done', trigger);
+            window.clearTimeout(fallbackId);
+          };
+        } else {
+          playEntrance();
+        }
+
+        // 2. Atmospheric Real-World Lighting: Drifting Volumetric Sunbeams & Horizon Mist Glow
+        gsap.fromTo(
+          scope.querySelector('[data-hero-sunbeams]'),
+          { xPercent: -7, opacity: 0.58, scale: 1 },
+          {
+            xPercent: 9,
+            opacity: 0.95,
+            scale: 1.06,
+            duration: 11,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
           }
+        );
 
-          tl.fromTo(
-            showcaseWords,
-            { rotateX: -35, yPercent: 110, opacity: 0, transformOrigin: '50% 100% -12px' },
-            {
-              rotateX: 0,
-              yPercent: 0,
-              opacity: 1,
-              duration: 0.82,
-              stagger: 0.03,
-              ease: 'power4.out',
-              clearProps: 'transform,opacity',
-            },
-            0.32
+        gsap.fromTo(
+          scope.querySelector('[data-hero-mist-glow]'),
+          { xPercent: -10, opacity: 0.55 },
+          {
+            xPercent: 10,
+            opacity: 0.88,
+            duration: 16,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
+          }
+        );
+
+        // Kinetic Scroll Prompt flowing vertical light drop
+        gsap.fromTo(
+          scope.querySelector('[data-hero-light-drop]'),
+          { yPercent: -130, opacity: 0 },
+          {
+            yPercent: 240,
+            opacity: 1,
+            duration: 1.45,
+            ease: 'power2.inOut',
+            repeat: -1,
+          }
+        );
+
+        // 3. Scroll-Scrubbed Kinetic Split (ScrollTrigger, scrub: 1)
+        const maxSpreadPx = isDesktop ? 22 : 8;
+        const scrubTl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: frame,
+            start: 'top 18%',
+            end: 'bottom top',
+            scrub: 1,
+          },
+        });
+
+        if (isDesktop) {
+          scrubTl.fromTo(
+            frame,
+            { scale: 1, transformOrigin: 'center top' },
+            { scale: 0.92, immediateRender: false },
+            0
           );
+        }
 
-          tl.fromTo(
-            ctas,
-            { y: 16, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.72,
-              stagger: 0.07,
-              ease: 'power3.out',
-              clearProps: 'transform,opacity',
-            },
-            0.46
+        // Background real photograph counter-pan
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-scroll-photo]'),
+          { yPercent: -5 },
+          { yPercent: 12, immediateRender: false },
+          0
+        );
+
+        // Giant DISCOVER + BANGLADESH sinks softly and fades while letters expand outward in spacing
+        scrubTl.fromTo(
+          scope.querySelector('[data-hero-scroll-type]'),
+          { yPercent: 0, opacity: 1 },
+          { yPercent: 35, opacity: 0.15, immediateRender: false },
+          0
+        );
+
+        discoverSpreadNodes.forEach((node, idx) => {
+          const centeredOffset = idx - (DISCOVER_LETTERS.length - 1) / 2;
+          scrubTl.fromTo(
+            node,
+            { x: 0 },
+            { x: centeredOffset * maxSpreadPx, immediateRender: false },
+            0
           );
         });
-      };
 
-      const introActive = Boolean(document.querySelector('[data-cinematic-intro]'));
-      if (introActive) {
-        let played = false;
-        const trigger = () => {
-          if (played) return;
-          played = true;
-          playEntrance();
+        // 4. Live 3-Plane Mouse Camera Depth on Desktop (gsap.quickTo)
+        let cleanupMouse = null;
+        if (isDesktop && finePointer && frame) {
+          const photoEl = photoPlaneRef.current;
+          const typeEl = typePlaneRef.current;
+          const hudTopEl = hudTopPlaneRef.current;
+          const hudBottomEl = hudBottomPlaneRef.current;
+
+          if (typeEl) gsap.set(typeEl, { transformPerspective: 1000 });
+
+          const photoX = photoEl ? gsap.quickTo(photoEl, 'x', { duration: 0.9, ease: 'power3.out' }) : null;
+          const photoY = photoEl ? gsap.quickTo(photoEl, 'y', { duration: 0.9, ease: 'power3.out' }) : null;
+
+          const typeX = typeEl ? gsap.quickTo(typeEl, 'x', { duration: 0.75, ease: 'power3.out' }) : null;
+          const typeY = typeEl ? gsap.quickTo(typeEl, 'y', { duration: 0.75, ease: 'power3.out' }) : null;
+          const typeRotX = typeEl ? gsap.quickTo(typeEl, 'rotationX', { duration: 0.8, ease: 'power3.out' }) : null;
+          const typeRotY = typeEl ? gsap.quickTo(typeEl, 'rotationY', { duration: 0.8, ease: 'power3.out' }) : null;
+
+          const hudTopX = hudTopEl ? gsap.quickTo(hudTopEl, 'x', { duration: 0.65, ease: 'power3.out' }) : null;
+          const hudTopY = hudTopEl ? gsap.quickTo(hudTopEl, 'y', { duration: 0.65, ease: 'power3.out' }) : null;
+          const hudBotX = hudBottomEl ? gsap.quickTo(hudBottomEl, 'x', { duration: 0.65, ease: 'power3.out' }) : null;
+          const hudBotY = hudBottomEl ? gsap.quickTo(hudBottomEl, 'y', { duration: 0.65, ease: 'power3.out' }) : null;
+
+          const onPointerMove = (e) => {
+            const rect = frame.getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+            const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // [-1, 1]
+            const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2; // [-1, 1]
+
+            // Plane 1: Real Photo opposite camera gimbal (±14px)
+            photoX?.(-nx * 14);
+            photoY?.(-ny * 14);
+
+            // Plane 2: Monumental Typography opposite drift (±8px) + subtle 3D tilt
+            typeX?.(-nx * 8);
+            typeY?.(-ny * 8);
+            typeRotY?.(nx * 3.5);
+            typeRotX?.(-ny * 3.5);
+
+            // Plane 3: Foreground Pills & Bottom Controls (±4px)
+            hudTopX?.(nx * 4);
+            hudTopY?.(ny * 4);
+            hudBotX?.(nx * 4);
+            hudBotY?.(ny * 4);
+          };
+
+          const onPointerLeave = () => {
+            photoX?.(0);
+            photoY?.(0);
+            typeX?.(0);
+            typeY?.(0);
+            typeRotY?.(0);
+            typeRotX?.(0);
+            hudTopX?.(0);
+            hudTopY?.(0);
+            hudBotX?.(0);
+            hudBotY?.(0);
+          };
+
+          frame.addEventListener('pointermove', onPointerMove, { passive: true });
+          frame.addEventListener('pointerleave', onPointerLeave, { passive: true });
+          cleanupMouse = () => {
+            frame.removeEventListener('pointermove', onPointerMove);
+            frame.removeEventListener('pointerleave', onPointerLeave);
+          };
+        }
+
+        return () => {
+          cleanupMouse?.();
         };
-        window.addEventListener('db:intro-done', trigger, { once: true });
-        const fallbackId = window.setTimeout(trigger, 3900);
-        cleanupWait = () => {
-          window.removeEventListener('db:intro-done', trigger);
-          window.clearTimeout(fallbackId);
-        };
-      } else {
-        playEntrance();
       }
-
-      // Layer 1 ambient Sajek sky & clouds slow zoom drift
-      gsap.fromTo(
-        scope.querySelector('[data-hero-kenburns]'),
-        { scale: 1.03 },
-        { scale: 1.11, duration: 20, ease: 'sine.inOut', repeat: -1, yoyo: true }
-      );
-
-      // Layer 3 continuous drifting translucent mountain mist ribbons
-      gsap.fromTo(
-        scope.querySelector('[data-hero-mist-a]'),
-        { xPercent: -12 },
-        { xPercent: 12, duration: 16, ease: 'sine.inOut', repeat: -1, yoyo: true }
-      );
-      gsap.fromTo(
-        scope.querySelector('[data-hero-mist-b]'),
-        { xPercent: 10 },
-        { xPercent: -14, duration: 22, ease: 'sine.inOut', repeat: -1, yoyo: true }
-      );
-
-      // Animated "Scroll to explore ↓" pulse cue
-      gsap.fromTo(
-        scope.querySelector('[data-hero-scroll-arrow]'),
-        { y: -3, opacity: 0.65 },
-        { y: 4, opacity: 1, duration: 1.15, ease: 'sine.inOut', repeat: -1, yoyo: true }
-      );
-
-      // Unified 3-Layer Mountain Depth-Masking ScrollTrigger Timeline (scrub: 1)
-      const scrubTl = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: scope.querySelector('[data-hero-frame]'),
-          start: 'top 18%',
-          end: 'bottom top',
-          scrub: 1,
-        },
-      });
-
-      // Layer 1 (Back Sky): drifts gently for deep horizon separation
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-sky]'),
-        { scale: 1.12, yPercent: -5 },
-        { scale: 1.12, yPercent: 11, immediateRender: false },
-        0
-      );
-
-      // Distant atmospheric ridge: slight slow shift
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-ridge-back]'),
-        { yPercent: 0 },
-        { yPercent: 4, immediateRender: false },
-        0
-      );
-
-      // Layer 2 (Middle Monumental DISCOVER BANGLADESH): physically sinks deeper behind the mountain peaks
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-mountain-title]'),
-        { yPercent: 0, scale: 1, opacity: 1 },
-        { yPercent: 45, scale: 0.92, opacity: 0.35, immediateRender: false },
-        0
-      );
-
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-mountain-subtitle]'),
-        { yPercent: 0, y: 0, scale: 1, opacity: 1 },
-        { yPercent: 45, y: 58, scale: 0.92, opacity: 0.25, immediateRender: false },
-        0
-      );
-
-      // Layer 3 (Mid & Front Mountain Ridges): glide upward faster to amplify 3D parallax separation
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-ridge-mid]'),
-        { yPercent: 0 },
-        { yPercent: -4, immediateRender: false },
-        0
-      );
-
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-ridge-front]'),
-        { yPercent: 0 },
-        { yPercent: -8, immediateRender: false },
-        0
-      );
-
-      // Floating top coordinate & location pills
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-coord-badge]'),
-        { y: 0 },
-        { y: 28, immediateRender: false },
-        0
-      );
-
-      scrubTl.fromTo(
-        scope.querySelector('[data-hero-pill-wrap]'),
-        { y: 0 },
-        { y: -24, immediateRender: false },
-        0
-      );
-    });
+    );
 
     return () => {
       cleanupWait?.();
@@ -280,11 +587,11 @@ export function Hero() {
       data-hero-section
       className="relative overflow-x-clip px-3 pt-24 sm:px-5 md:pt-28"
     >
-      {/* Subtle procedural topographic backdrop strictly in z-0 */}
+      {/* Ambient procedural terrain strictly in z-0 background */}
       <HeroTerrain3D sectionRef={scopeRef} />
 
       <div className="relative z-10 mx-auto max-w-[1600px]">
-        {/* Top editorial eyebrow + description bar — cleanly padded below fixed z-50 Navbar */}
+        {/* Editorial Header Bar — guaranteed clean clearance below fixed z-50 Navbar */}
         <div
           data-hero-top-bar
           className="flex flex-col gap-3 px-1 pt-2 sm:px-3 md:pt-3 lg:flex-row lg:items-end lg:justify-between"
@@ -308,235 +615,211 @@ export function Hero() {
           </div>
         </div>
 
-        {/* 3-Layer Mountain Depth-Masking Parallax Stage */}
+        {/* 100% Full-Real National Geographic / Awwwards Cinematic Photography Stage */}
         <div data-hero-frame-entrance className="mt-4 will-change-transform sm:mt-5">
           <div
+            ref={frameRef}
             data-hero-frame
-            className="relative h-[clamp(560px,80svh,850px)] w-full overflow-hidden rounded-[28px] bg-[#0b1626] shadow-[0_34px_95px_-34px_rgba(15,23,42,0.52)] ring-1 ring-slate-900/10 [container-type:inline-size] will-change-transform dark:shadow-[0_36px_100px_-30px_rgba(0,0,0,0.9)] dark:ring-white/12"
+            className="relative h-[clamp(540px,80svh,850px)] w-full overflow-hidden rounded-[28px] bg-[#060a12] shadow-[0_34px_95px_-34px_rgba(15,23,42,0.52)] ring-1 ring-slate-900/10 [container-type:inline-size] will-change-transform dark:shadow-[0_36px_100px_-30px_rgba(0,0,0,0.9)] dark:ring-white/12"
           >
-            {/* Accessible semantic H1 */}
+            {/* Semantic H1 for screen readers and SEO */}
             <h1 className="sr-only">Discover Bangladesh</h1>
 
-            {/* LAYER 1 (z-10, Back — Sajek Valley Sky & Clouds with Slow Ambient Drift) */}
-            <div data-hero-sky className="absolute inset-0 z-10 will-change-transform">
-              <div data-hero-kenburns className="h-full w-full will-change-transform">
-                <SmartImage
-                  src={getImageSrc(heroSpot.images.cover, 'full')}
-                  alt={`${heroSpot.name}, ${heroSpot.district} — misty hills at sunrise`}
-                  loading="eager"
-                  fetchPriority="high"
-                  className="h-full w-full"
-                  imgClassName="h-full w-full object-cover object-[50%_28%]"
-                />
-              </div>
-              {/* Soft atmospheric sky & horizon toning so mist-white DISCOVER gleams over Sajek sky */}
+            {/* =========================================================
+                PLANE 1: Full-Bleed Real Photography & 4-Spot Auto-Carousel
+                ========================================================= */}
+            <div data-hero-scroll-photo className="absolute -inset-y-[6%] inset-x-0 z-10 will-change-transform">
               <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0b1c31]/52 via-[#122a44]/24 to-[#08121f]/80 dark:from-[#07111f]/65 dark:via-[#0d2036]/32 dark:to-[#060c16]/88"
-              />
-              {/* Subtle golden-emerald zenith bloom */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 h-[55%]"
-                style={{
-                  background:
-                    'radial-gradient(ellipse 68% 58% at 50% 34%, rgba(226, 244, 255, 0.16) 0%, rgba(16, 185, 129, 0.08) 45%, rgba(11, 22, 38, 0) 78%)',
-                }}
-              />
-            </div>
-
-            {/* Distant Atmospheric Horizon Ridge (z-[15] — sits behind DISCOVER) */}
-            <svg
-              data-hero-ridge-back
-              aria-hidden="true"
-              viewBox="0 0 1440 420"
-              preserveAspectRatio="none"
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-[64%] w-full will-change-transform sm:h-[59%]"
-            >
-              <defs>
-                <linearGradient id="hero-far-ridge" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#28435f" stopOpacity="0.56" />
-                  <stop offset="100%" stopColor="#122236" stopOpacity="0.86" />
-                </linearGradient>
-              </defs>
-              <path
-                fill="url(#hero-far-ridge)"
-                d="M0,196 L64,174 Q118,154 168,126 L224,96 Q256,80 292,98 L358,132 Q404,154 452,124 L526,74 Q562,52 602,72 L684,116 Q736,142 792,118 L868,84 Q912,66 958,88 L1038,128 Q1082,146 1128,114 L1198,68 Q1236,46 1278,68 L1356,112 Q1398,134 1440,144 L1440,420 L0,420 Z"
-              />
-            </svg>
-
-            {/* LAYER 2 (z-20, Middle — Monumental DISCOVER Typography Embedded Along the Mountain Ridge) */}
-            <div
-              aria-hidden="true"
-              data-hero-mountain-title
-              className="pointer-events-none absolute inset-x-0 bottom-[53.5%] z-20 flex justify-center px-3 select-none will-change-transform sm:bottom-[42%] sm:px-6 lg:bottom-[40.5%]"
-            >
-              <div
-                className="flex w-full max-w-[1460px] items-end justify-between leading-[0.84] font-black tracking-[-0.045em] [perspective:1000px]"
-                style={{
-                  fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
-                  fontSize: 'clamp(2.35rem, 13.4cqw, 13.6rem)',
-                }}
+                ref={photoPlaneRef}
+                data-hero-plane-photo
+                className="relative h-full w-full scale-[1.08] will-change-transform"
               >
-                {DISCOVER_LETTERS.map((char, idx) => (
-                  <span
-                    key={`${char}-${idx}`}
-                    data-hero-discover-char
-                    className="inline-block bg-clip-text px-[0.02em] pb-[0.04em] text-transparent will-change-transform"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(241, 245, 249, 0.94) 56%, rgba(186, 210, 232, 0.68) 100%)',
-                      WebkitBackgroundClip: 'text',
-                      filter: 'drop-shadow(0 12px 34px rgba(8, 18, 34, 0.42))',
+                {heroSlides.map((spot, idx) => (
+                  <div
+                    key={spot.id}
+                    ref={(el) => {
+                      slideRefs.current[idx] = el;
                     }}
+                    data-hero-slide={spot.id}
+                    data-active={idx === activeIdx ? 'true' : 'false'}
+                    className="absolute inset-0 h-full w-full will-change-[clip-path,opacity]"
+                    style={{ opacity: idx === 0 ? 1 : 0, zIndex: idx === 0 ? 2 : 0 }}
                   >
-                    {char}
-                  </span>
+                    <div
+                      ref={(el) => {
+                        zoomRefs.current[idx] = el;
+                      }}
+                      className="h-full w-full will-change-transform"
+                    >
+                      <SmartImage
+                        src={getImageSrc(spot.images.cover, 'full')}
+                        alt={`${spot.name}, ${spot.district} — editorial landscape`}
+                        loading={idx === 0 ? 'eager' : 'lazy'}
+                        fetchPriority={idx === 0 ? 'high' : 'auto'}
+                        className="h-full w-full"
+                        imgClassName="h-full w-full object-cover object-center"
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* LAYER 3A (z-[26], Mid-Ground Sajek Mountain Silhouette — physically overlaps the lower edge of DISCOVER) */}
-            <svg
-              data-hero-ridge-mid
-              aria-hidden="true"
-              viewBox="0 0 1440 420"
-              preserveAspectRatio="none"
-              className="pointer-events-none absolute inset-x-0 bottom-[-4%] z-[26] h-[60.5%] w-full will-change-transform sm:h-[50%] lg:h-[49%]"
-            >
-              <defs>
-                <linearGradient id="hero-mid-ridge" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1b324a" />
-                  <stop offset="44%" stopColor="#112134" />
-                  <stop offset="100%" stopColor="#091320" />
-                </linearGradient>
-              </defs>
-              <path
-                fill="url(#hero-mid-ridge)"
-                stroke="rgba(226, 238, 250, 0.25)"
-                strokeWidth="1.25"
-                d="M0,42 L46,30 L92,14 Q114,6 138,16 L194,36 L242,24 L296,8 Q318,2 344,14 L408,36 L458,22 L516,10 Q542,4 568,16 L628,34 L684,16 Q712,8 742,18 L802,36 L858,20 L918,6 Q944,0 972,12 L1038,36 L1094,22 L1154,8 Q1180,2 1208,14 L1274,36 L1332,18 Q1358,10 1388,20 L1440,34 L1440,420 L0,420 Z"
-              />
-            </svg>
-
-            {/* Continuous Drifting Valley Mist Layer A (z-[27], glides horizontally across the mid-ridge) */}
+            {/* Atmospheric Real-World Lighting: Volumetric Diagonal Morning Sunbeams */}
             <div
-              data-hero-mist-a
+              data-hero-sunbeams
               aria-hidden="true"
-              className="pointer-events-none absolute -inset-x-[18%] bottom-[38%] z-[27] h-[22%] opacity-75 will-change-transform sm:bottom-[29%]"
+              className="pointer-events-none absolute -inset-[22%] z-[14] mix-blend-screen will-change-transform"
               style={{
+                transform: 'rotate(-22deg)',
                 background:
-                  'radial-gradient(ellipse 36% 48% at 26% 52%, rgba(226, 240, 252, 0.24) 0%, rgba(226, 240, 252, 0) 75%), radial-gradient(ellipse 40% 52% at 72% 48%, rgba(203, 229, 248, 0.20) 0%, rgba(203, 229, 248, 0) 76%)',
+                  'radial-gradient(ellipse 52% 24% at 32% 24%, rgba(255, 249, 230, 0.22) 0%, rgba(255, 249, 230, 0) 72%), radial-gradient(ellipse 46% 18% at 62% 36%, rgba(186, 230, 253, 0.14) 0%, rgba(186, 230, 253, 0) 75%), radial-gradient(ellipse 38% 14% at 48% 18%, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 70%)',
               }}
             />
 
-            {/* Sleek Tracked BANGLADESH Subtitle (z-[28], nestled along the misty valley saddle, sinks behind Front Ridge on scroll) */}
+            {/* Purely Photographic Soft Translucent Horizon Mist Glow (zero vector shapes) */}
+            <div
+              data-hero-mist-glow
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-x-[16%] top-[28%] z-[15] h-[42%] mix-blend-screen will-change-transform"
+              style={{
+                background:
+                  'radial-gradient(ellipse 58% 46% at 50% 50%, rgba(226, 240, 252, 0.14) 0%, rgba(186, 224, 248, 0.06) 48%, rgba(6, 10, 18, 0) 78%)',
+              }}
+            />
+
+            {/* Ultra-fine 4% Cinema Film Grain Texture */}
             <div
               aria-hidden="true"
-              data-hero-mountain-subtitle
-              className="pointer-events-none absolute inset-x-0 bottom-[45.5%] z-[28] flex justify-center px-4 select-none will-change-transform sm:bottom-[35.5%] lg:bottom-[34.5%]"
+              className="cinema-grain pointer-events-none absolute -inset-[8%] z-[16] opacity-[0.04] mix-blend-overlay"
+              style={{ backgroundImage: FILM_GRAIN_DATA_URI, backgroundSize: '180px 180px' }}
+            />
+
+            {/* Natural Photographic Dark Vignette (zero fake waves, crisp foreground legibility) */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-[18]"
+              style={{
+                background:
+                  'linear-gradient(to top, rgba(6, 10, 18, 0.88) 0%, rgba(6, 10, 18, 0.32) 42%, rgba(6, 10, 18, 0.16) 72%, rgba(6, 10, 18, 0.24) 100%)',
+              }}
+            />
+
+            {/* =========================================================
+                PLANE 2: Monumental Kinetic Sky Typography (DISCOVER + BANGLADESH)
+                ========================================================= */}
+            <div
+              aria-hidden="true"
+              data-hero-scroll-type
+              className="pointer-events-none absolute inset-x-0 top-[18%] z-20 flex justify-center px-3 select-none will-change-transform sm:top-[17%] sm:px-8 lg:top-[16%]"
             >
-              <div className="overflow-hidden py-1 [perspective:800px]">
+              <div
+                ref={typePlaneRef}
+                data-hero-plane-type
+                className="flex w-full max-w-[1440px] flex-col items-center will-change-transform"
+              >
                 <div
-                  data-hero-subtitle-reveal
-                  className="flex items-center gap-2.5 font-bold tracking-[0.34em] text-white/90 uppercase will-change-transform sm:gap-4 sm:tracking-[0.52em]"
+                  className="flex w-full items-end justify-between leading-[0.86] font-black tracking-[-0.04em] [perspective:1000px]"
                   style={{
                     fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
-                    fontSize: 'clamp(0.68rem, 1.45cqw, 1.32rem)',
-                    textShadow: '0 4px 18px rgba(6, 13, 24, 0.75)',
+                    fontSize: 'clamp(2.25rem, 12.6cqw, 12.8rem)',
                   }}
                 >
-                  <span className="h-px w-6 bg-gradient-to-r from-transparent to-emerald-300/70 sm:w-12" />
-                  <span>BANGLADESH</span>
-                  <span className="h-px w-6 bg-gradient-to-l from-transparent to-emerald-300/70 sm:w-12" />
+                  {DISCOVER_LETTERS.map((char, idx) => (
+                    <span
+                      key={`${char}-${idx}`}
+                      data-hero-discover-spread
+                      className="inline-block will-change-transform"
+                    >
+                      <span
+                        data-hero-discover-char
+                        className="inline-block bg-clip-text px-[0.02em] pb-[0.04em] text-transparent will-change-transform"
+                        style={{
+                          backgroundImage:
+                            'linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(241, 245, 249, 0.92) 58%, rgba(203, 221, 238, 0.72) 100%)',
+                          WebkitBackgroundClip: 'text',
+                          filter: 'drop-shadow(0 14px 36px rgba(6, 10, 18, 0.52))',
+                        }}
+                      >
+                        {char}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-2 overflow-hidden py-1 sm:mt-3">
+                  <div
+                    data-hero-subtitle-reveal
+                    className="flex items-center gap-2.5 font-bold tracking-[0.34em] text-white/90 uppercase will-change-transform sm:gap-4 sm:tracking-[0.54em]"
+                    style={{
+                      fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
+                      fontSize: 'clamp(0.66rem, 1.35cqw, 1.25rem)',
+                      textShadow: '0 4px 20px rgba(6, 10, 18, 0.72)',
+                    }}
+                  >
+                    <span className="h-px w-6 bg-gradient-to-r from-transparent to-white/70 sm:w-12" />
+                    <span>BANGLADESH</span>
+                    <span className="h-px w-6 bg-gradient-to-l from-transparent to-white/70 sm:w-12" />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* LAYER 3B (z-30, Front Pine/Slate Mountain Ridge Silhouette + Deep Editorial Vignette) */}
-            <svg
-              data-hero-ridge-front
-              aria-hidden="true"
-              viewBox="0 0 1440 420"
-              preserveAspectRatio="none"
-              className="pointer-events-none absolute inset-x-0 bottom-[-6%] z-30 h-[48.5%] w-full will-change-transform sm:h-[39.5%] lg:h-[38.5%]"
+            {/* =========================================================
+                PLANE 3A: Top Floating Odometer Coordinate & Location Pills
+                ========================================================= */}
+            <div
+              ref={hudTopPlaneRef}
+              data-hero-plane-hud-top
+              className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 will-change-transform sm:p-6"
             >
-              <defs>
-                <linearGradient id="hero-front-ridge" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0f1f30" />
-                  <stop offset="38%" stopColor="#0a1523" />
-                  <stop offset="100%" stopColor="#050b14" />
-                </linearGradient>
-              </defs>
-              <path
-                fill="url(#hero-front-ridge)"
-                stroke="rgba(148, 184, 209, 0.17)"
-                strokeWidth="1.1"
-                d="M0,44 L78,24 Q112,16 148,26 L236,48 L318,28 L396,12 Q428,6 464,18 L556,46 L642,32 L728,16 Q762,10 798,22 L892,48 L978,28 L1062,12 Q1096,6 1132,18 L1228,46 L1316,26 Q1356,16 1398,26 L1440,36 L1440,420 L0,420 Z"
-              />
-            </svg>
-
-            {/* Continuous Drifting Valley Mist Layer B (z-[31], glides across front mountain crest) */}
-            <div
-              data-hero-mist-b
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-x-[18%] bottom-[29%] z-[31] h-[18%] opacity-70 will-change-transform sm:bottom-[21%]"
-              style={{
-                background:
-                  'radial-gradient(ellipse 42% 45% at 46% 50%, rgba(186, 224, 245, 0.16) 0%, rgba(186, 224, 245, 0) 74%), radial-gradient(ellipse 30% 42% at 84% 55%, rgba(16, 185, 129, 0.10) 0%, rgba(16, 185, 129, 0) 74%)',
-              }}
-            />
-
-            {/* Crisp bottom vignette over front ridge for effortless foreground HUD readability */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-[32] h-[42%] bg-gradient-to-t from-[#050b14]/95 via-[#07101d]/75 to-transparent sm:h-[36%]"
-            />
-
-            {/* LAYER 4 (z-40, Foreground Editorial HUD) */}
-            {/* Top-left coordinates pill */}
-            <div
-              data-hero-coord-badge
-              className="glass-dark pointer-events-none absolute top-4 left-4 z-40 hidden items-center gap-2 rounded-full border border-white/20 px-3.5 py-1.5 font-mono text-[11px] font-semibold tracking-wider text-white/90 tabular-nums will-change-transform sm:top-6 sm:left-6 sm:inline-flex"
-            >
-              <Compass className="h-3.5 w-3.5 text-emerald-400" strokeWidth={2.2} aria-hidden="true" />
-              <span>{formatCoordinates(heroSpot.coordinates)}</span>
-            </div>
-
-            {/* Top-right Sajek Valley location pill */}
-            <div
-              data-hero-pill-wrap
-              className="absolute top-4 right-4 z-40 max-w-[calc(100%-2rem)] will-change-transform sm:top-6 sm:right-6"
-            >
-              <button
-                ref={pillBtnRef}
-                type="button"
-                data-hero-pill
-                data-cursor="explore"
-                onClick={() => openSpot(heroSpot.id)}
-                className="glass flex max-w-full items-center gap-2 rounded-full border border-white/65 py-1.5 pr-3.5 pl-2 text-xs font-semibold text-ink transition-colors duration-300 active:scale-95 dark:border-white/15 dark:text-slate-50"
+              {/* Odometer GPS Coordinates Pill */}
+              <div
+                data-hero-coord-badge
+                className="glass-dark hidden items-center gap-2 rounded-full border border-white/20 px-3.5 py-1.5 font-mono text-[11px] font-semibold tracking-wider text-white/95 tabular-nums shadow-lg sm:inline-flex"
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-300 dark:bg-white dark:text-[#0B111E]">
-                  <MapPin className="h-3.5 w-3.5" strokeWidth={2.2} />
+                <Compass className="h-3.5 w-3.5 text-emerald-400" strokeWidth={2.2} aria-hidden="true" />
+                <span ref={coordTextRef} data-hero-coord-text>
+                  {formatCoordinates(activeSpot.coordinates)}
                 </span>
-                <span className="truncate">
-                  {heroSpot.name}, {heroSpot.district}
-                </span>
-              </button>
+              </div>
+
+              {/* Active Destination Pill (opens current carousel spot) */}
+              <div className="pointer-events-auto ml-auto max-w-[calc(100%-0.5rem)] sm:max-w-xs">
+                <button
+                  ref={pillBtnRef}
+                  type="button"
+                  data-hero-pill
+                  data-cursor="explore"
+                  onClick={() => openSpot(activeSpot.id)}
+                  className="glass flex max-w-full items-center gap-2 rounded-full border border-white/65 py-1.5 pr-3.5 pl-2 text-xs font-semibold text-ink shadow-lg transition-colors duration-300 active:scale-95 dark:border-white/15 dark:text-slate-50"
+                >
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-300 dark:bg-white dark:text-[#0B111E]">
+                    <MapPin className="h-3.5 w-3.5" strokeWidth={2.2} />
+                  </span>
+                  <span ref={locationLabelRef} data-hero-location-label className="truncate will-change-transform">
+                    {activeSpot.name}, {activeSpot.district}
+                  </span>
+                </button>
+              </div>
             </div>
 
-            {/* Bottom Editorial Headline, CTAs & Scroll Cue */}
+            {/* =========================================================
+                PLANE 3B: Bottom Editorial Copy, Tactile CTAs & 4-Spot Story Progress
+                ========================================================= */}
             <div
+              ref={hudBottomPlaneRef}
+              data-hero-plane-hud-bottom
               data-hero-copy
-              className="absolute inset-x-0 bottom-0 z-40 flex flex-col gap-4 p-4 text-white sm:gap-5 sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-10"
+              className="absolute inset-x-0 bottom-0 z-30 flex flex-col gap-5 p-4 text-white will-change-transform sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-10"
             >
               <div className="max-w-xl">
-                <p className="text-[10px] font-semibold tracking-[0.24em] text-emerald-300/90 uppercase sm:text-[11px]">
+                <p className="text-[10px] font-semibold tracking-[0.24em] text-emerald-300/95 uppercase sm:text-[11px]">
                   Hills · Sea · Forest · Heritage
                 </p>
                 <p
                   className="mt-1.5 flex flex-wrap gap-x-[0.25em] gap-y-0.5 font-display leading-[1.08] font-bold tracking-[-0.025em] text-white sm:mt-2"
-                  style={{ fontSize: 'clamp(1.2rem, 2.4vw, 2.35rem)' }}
+                  style={{ fontSize: 'clamp(1.22rem, 2.45vw, 2.35rem)' }}
                 >
                   {SHOWCASE_WORDS.map((word, idx) => (
                     <span key={`${word}-${idx}`} className="inline-block overflow-hidden py-0.5 [perspective:900px]">
@@ -548,49 +831,107 @@ export function Hero() {
                 </p>
 
                 <div className="mt-3.5 flex flex-wrap items-center gap-2 sm:mt-5 sm:gap-3">
+                  {/* Liquid Fill Hover CTA */}
                   <button
                     ref={exploreBtnRef}
                     type="button"
                     data-hero-cta
+                    data-hero-liquid-cta
                     data-cursor="magnetic"
                     onClick={() => scrollToTarget(`#${SECTION_IDS.showcase}`)}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-3.5 text-xs font-semibold text-ink transition hover:bg-canvas active:scale-95 sm:h-11 sm:gap-2 sm:px-5 sm:text-sm"
+                    className="group relative inline-flex h-10 items-center gap-2 overflow-hidden rounded-full bg-white px-4 text-xs font-semibold text-ink shadow-[0_14px_34px_-12px_rgba(255,255,255,0.4)] transition-colors duration-300 hover:text-white active:scale-95 sm:h-11 sm:px-5.5 sm:text-sm"
                   >
-                    Explore Destinations
-                    <ArrowDownRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.2} />
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 translate-y-[104%] rounded-full bg-gradient-to-r from-[#0b192c] via-[#006a4e] to-[#0f2942] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0"
+                    />
+                    <span className="relative z-10">Explore Destinations</span>
+                    <ArrowDownRight
+                      className="relative z-10 h-4 w-4 transition-transform duration-300 ease-out group-hover:translate-x-0.5 group-hover:translate-y-0.5"
+                      strokeWidth={2.2}
+                    />
                   </button>
+
+                  {/* Live Radar Pulse Interactive Map Pill */}
                   <button
                     ref={atlasBtnRef}
                     type="button"
                     data-hero-cta
                     data-cursor="magnetic"
                     onClick={() => scrollToTarget(`#${SECTION_IDS.atlas}`)}
-                    className="glass-dark inline-flex h-9 items-center gap-1.5 rounded-full border border-white/20 px-3.5 text-xs font-semibold text-white transition hover:bg-ink active:scale-95 sm:h-11 sm:gap-2 sm:px-5 sm:text-sm"
+                    className="glass-dark group inline-flex h-10 items-center gap-2 rounded-full border border-white/25 px-4 text-xs font-semibold text-white transition hover:border-emerald-300/45 hover:bg-ink/90 active:scale-95 sm:h-11 sm:px-5.5 sm:text-sm"
                   >
-                    <Map className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2} />
-                    Interactive Map
+                    <span className="relative flex h-2 w-2 items-center justify-center" aria-hidden="true">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                    </span>
+                    <Map className="h-3.5 w-3.5 text-white/85 sm:h-4 sm:w-4" strokeWidth={2} />
+                    <span>Interactive Map</span>
                   </button>
                 </div>
               </div>
 
-              {/* Bottom-right animated "Scroll to explore ↓" indicator (with right clearance for desktop Compass HUD) */}
-              <button
-                type="button"
-                data-hero-cta
-                data-hero-scroll-cue
-                data-cursor="magnetic"
-                onClick={() => scrollToTarget(`#${SECTION_IDS.showcase}`)}
-                className="group hidden w-fit items-center gap-2.5 self-start rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-2 text-[11px] font-semibold tracking-[0.16em] text-white/80 uppercase backdrop-blur-md transition hover:border-white/30 hover:bg-white/[0.12] hover:text-white sm:inline-flex lg:mr-14 lg:self-end"
-              >
-                <span>Scroll to explore</span>
-                <span
-                  data-hero-scroll-arrow
-                  className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/12 text-emerald-300 will-change-transform"
-                  aria-hidden="true"
+              {/* Bottom-Right: Kinetic Scroll Prompt + 4-Destination Story Progress Bars (clears desktop Compass HUD) */}
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:items-end lg:mr-14">
+                <button
+                  type="button"
+                  data-hero-cta
+                  data-hero-scroll-cue
+                  data-cursor="magnetic"
+                  onClick={() => scrollToTarget(`#${SECTION_IDS.showcase}`)}
+                  className="hidden w-fit items-center gap-2.5 rounded-full border border-white/18 bg-black/25 px-3.5 py-1.5 text-[10px] font-semibold tracking-[0.18em] text-white/85 uppercase backdrop-blur-md transition hover:border-white/35 hover:bg-black/40 hover:text-white sm:inline-flex"
                 >
-                  <ArrowDown className="h-3 w-3" strokeWidth={2.4} />
-                </span>
-              </button>
+                  <span>Scroll to explore</span>
+                  <span
+                    aria-hidden="true"
+                    className="relative inline-flex h-4 w-[3px] overflow-hidden rounded-full bg-white/20"
+                  >
+                    <span
+                      data-hero-light-drop
+                      className="block h-2 w-full rounded-full bg-emerald-300 shadow-[0_0_8px_#6ee7b7] will-change-transform"
+                    />
+                  </span>
+                </button>
+
+                {/* 4-Destination Clickable Story Progress Indicators */}
+                <div
+                  role="tablist"
+                  aria-label="Featured Bangladesh destinations"
+                  className="grid w-full grid-cols-4 gap-2 sm:w-[340px] md:w-[380px]"
+                >
+                  {heroSlides.map((spot, idx) => {
+                    const isCurrent = idx === activeIdx;
+                    return (
+                      <button
+                        key={spot.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={isCurrent}
+                        data-hero-story-btn={idx}
+                        data-cursor="magnetic"
+                        onClick={() => goToSlide(idx)}
+                        className={`group flex flex-col gap-1.5 rounded-lg px-1 py-1 text-left transition-opacity ${
+                          isCurrent ? 'opacity-100' : 'opacity-60 hover:opacity-90'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1 truncate text-[10px] font-semibold tracking-wider text-white uppercase tabular-nums">
+                          <span className="font-mono text-emerald-300/90">0{idx + 1}</span>
+                          <span className="truncate">{spot.shortLabel}</span>
+                        </span>
+                        <span className="relative h-[2.5px] w-full overflow-hidden rounded-full bg-white/25">
+                          <span
+                            ref={(el) => {
+                              progressFillRefs.current[idx] = el;
+                            }}
+                            data-hero-story-fill={idx}
+                            className="block h-full w-full origin-left scale-x-0 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] will-change-transform"
+                          />
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
