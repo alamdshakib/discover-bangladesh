@@ -35,14 +35,13 @@ export function MobileMenu({ open, onClose }) {
       const items = drawerRef.current.querySelectorAll('[data-mobile-nav-item]');
       gsap.fromTo(
         items,
-        { x: -24, y: 14, skewX: -6, opacity: 0 },
+        { x: -18, y: 10, opacity: 0 },
         {
           x: 0,
           y: 0,
-          skewX: 0,
           opacity: 1,
-          duration: 0.5,
-          stagger: 0.045,
+          duration: 0.45,
+          stagger: 0.04,
           ease: 'power3.out',
           overwrite: 'auto',
           clearProps: 'transform,opacity',

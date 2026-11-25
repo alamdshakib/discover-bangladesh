@@ -17,9 +17,9 @@ const SPAN_CLASS = {
 };
 
 /**
- * Spatial 3D editorial destination card with heavy perspective(1000px) tilt (±8deg),
- * translateZ(28px) floating layers, live holographic specular sheen, shutter unmask,
- * scrubbed inner window parallax, and snappy thumbnail crossfade.
+ * Editorial destination card with a clean, completely level luxury hover:
+ * subtle -6px vertical lift, soft shadow elevation, crisp border highlight,
+ * smooth 1.05 inner cover photo zoom, shutter entrance, thumbnail switcher, and magnetic ↗ button.
  */
 export function SpotCard({ spot, span = 6, label, onOpen }) {
   const images = getSpotImages(spot);
@@ -27,37 +27,11 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
   const [notesOpen, setNotesOpen] = useState(false);
   const wide = span === 12;
 
-  const cardRef = useRef(null);
-  const sheenRef = useRef(null);
   const photoStageRef = useRef(null);
   const actionBtnRef = useMagnetic({ strengthX: 11, strengthY: 11 });
-  const tiltRef = useRef(null);
   const hasSwitchedRef = useRef(false);
 
   const open = () => onOpen(spot.id);
-
-  // Lazily initialize gsap.quickTo trackers so entrance/clearProps tweens never kill them.
-  const ensureTilt = () => {
-    if (tiltRef.current) return tiltRef.current;
-    const card = cardRef.current;
-    if (!card) return null;
-    if (!window.matchMedia('(pointer: fine)').matches || window.matchMedia(MEDIA.reduceMotion).matches) {
-      return null;
-    }
-    tiltRef.current = {
-      rx: gsap.quickTo(card, 'rotationX', { duration: 0.35, ease: 'power3.out' }),
-      ry: gsap.quickTo(card, 'rotationY', { duration: 0.35, ease: 'power3.out' }),
-    };
-    return tiltRef.current;
-  };
-
-  useEffect(() => {
-    const card = cardRef.current;
-    return () => {
-      tiltRef.current = null;
-      if (card) gsap.killTweensOf(card);
-    };
-  }, []);
 
   // Snappy thumbnail crossfade + subtle zoom-settle animation.
   useEffect(() => {
@@ -69,69 +43,19 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
     if (!stage || window.matchMedia(MEDIA.reduceMotion).matches) return;
     gsap.fromTo(
       stage,
-      { opacity: 0.45, scale: 1.07 },
-      { opacity: 1, scale: 1, duration: 0.42, ease: 'power3.out', overwrite: 'auto' }
+      { opacity: 0.45, scale: 1.04 },
+      { opacity: 1, scale: 1, duration: 0.38, ease: 'power3.out', overwrite: 'auto' }
     );
   }, [active]);
 
-  const handleCardMove = (e) => {
-    if (e.pointerType !== 'mouse' || !cardRef.current) return;
-    if (!window.matchMedia(MEDIA.desktop).matches) return;
-    const tilt = ensureTilt();
-    if (!tilt) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / Math.max(rect.width, 1);
-    const py = (e.clientY - rect.top) / Math.max(rect.height, 1);
-
-    tilt.rx((0.5 - py) * 16); // ±8 deg
-    tilt.ry((px - 0.5) * 16); // ±8 deg
-
-    if (sheenRef.current) {
-      sheenRef.current.style.setProperty('--mx', `${(px * 100).toFixed(1)}%`);
-      sheenRef.current.style.setProperty('--my', `${(py * 100).toFixed(1)}%`);
-      sheenRef.current.style.opacity = '1';
-    }
-  };
-
-  const handleCardLeave = () => {
-    if (tiltRef.current) {
-      tiltRef.current.rx(0);
-      tiltRef.current.ry(0);
-    }
-    if (sheenRef.current) {
-      sheenRef.current.style.opacity = '0';
-    }
-  };
-
   return (
-    <div
-      data-spot-card-wrap
-      className={`[perspective:1000px] ${SPAN_CLASS[span] ?? SPAN_CLASS[6]}`}
-    >
+    <div data-spot-card-wrap className={SPAN_CLASS[span] ?? SPAN_CLASS[6]}>
       <article
-        ref={cardRef}
         data-spot-card
-        onPointerMove={handleCardMove}
-        onPointerLeave={handleCardLeave}
-        className="group relative flex h-full flex-col rounded-4xl border border-line bg-card transition-[background-color,border-color,box-shadow] duration-300 will-change-transform hover:shadow-[0_44px_88px_-38px_rgba(15,23,42,0.46)] dark:border-white/10 dark:bg-[#131C2E] dark:hover:shadow-[0_44px_88px_-34px_rgba(0,0,0,0.88)] lg:[transform-style:preserve-3d]"
+        className="group relative flex h-full flex-col rounded-4xl border border-line bg-card transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:border-slate-300/95 hover:shadow-[0_28px_60px_-24px_rgba(15,23,42,0.22)] dark:border-white/10 dark:bg-[#131C2E] dark:hover:border-white/25 dark:hover:shadow-[0_30px_64px_-22px_rgba(0,0,0,0.75)]"
       >
-        {/* Live holographic cursor-following specular sheen */}
-        <div
-          ref={sheenRef}
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-20 overflow-hidden rounded-4xl opacity-0 transition-opacity duration-300"
-          style={{
-            background:
-              'radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.28) 0%, rgba(16, 185, 129, 0.12) 28%, rgba(56, 189, 248, 0.1) 48%, transparent 66%)',
-          }}
-        />
-
-        {/* Media region — photo clipped inside rounded-t-4xl while floating UI sits in 3D Z-space */}
-        <div
-          className={`relative lg:[transform-style:preserve-3d] ${
-            wide ? 'h-64 sm:h-80 lg:h-[420px]' : 'h-64 sm:h-72 lg:h-[340px]'
-          }`}
-        >
+        {/* Media region */}
+        <div className={`relative ${wide ? 'h-64 sm:h-80 lg:h-[420px]' : 'h-64 sm:h-72 lg:h-[340px]'}`}>
           <div data-card-shutter className="absolute inset-0 overflow-hidden rounded-t-4xl bg-line">
             <button
               type="button"
@@ -148,7 +72,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
                       fallbackSrc={images[active]}
                       alt={`${spot.name} — photo ${active + 1} of ${images.length}`}
                       className="h-full w-full"
-                      imgClassName="h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.05]"
+                      imgClassName="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
                     />
                   </div>
                 </div>
@@ -160,19 +84,19 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
             </button>
           </div>
 
-          {/* translateZ(28px) lifted top metadata pills */}
-          <div className="pointer-events-none absolute top-3 right-3 left-3 z-10 flex items-start justify-between gap-2 sm:top-4 sm:right-4 sm:left-4 lg:[transform:translateZ(28px)]">
+          {/* Top metadata pills */}
+          <div className="pointer-events-none absolute top-3 right-3 left-3 z-10 flex items-start justify-between gap-2 sm:top-4 sm:right-4 sm:left-4">
             <MetaPill tone="glass">{label}</MetaPill>
             <MetaPill tone="dark" icon={CalendarDays} className="shrink-0">
               {getSeasonShort(spot)}
             </MetaPill>
           </div>
 
-          {/* translateZ(28px) lifted circular thumbnail dock */}
+          {/* Circular thumbnail dock */}
           <div
             role="group"
             aria-label={`${spot.name} photos`}
-            className="glass absolute bottom-3 left-3 z-10 flex gap-1 rounded-full border border-white/60 p-1 shadow-sm dark:border-white/15 sm:bottom-4 sm:left-4 lg:[transform:translateZ(28px)]"
+            className="glass absolute bottom-3 left-3 z-10 flex gap-1 rounded-full border border-white/60 p-1 shadow-sm dark:border-white/15 sm:bottom-4 sm:left-4"
           >
             {images.map((img, i) => (
               <button
@@ -205,7 +129,7 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
 
         {/* Card copy & interactive footer */}
         <div
-          className={`flex flex-1 flex-col p-5 sm:p-6 lg:[transform-style:preserve-3d] ${
+          className={`flex flex-1 flex-col p-5 sm:p-6 ${
             wide ? 'lg:flex-row lg:items-start lg:gap-10 lg:p-8' : ''
           }`}
         >
@@ -229,12 +153,8 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
             </p>
           </div>
 
-          <div
-            className={`mt-auto pt-5 lg:[transform-style:preserve-3d] ${
-              wide ? 'lg:mt-0 lg:w-[44%] lg:pt-0' : ''
-            }`}
-          >
-            <div className="flex items-center justify-between gap-3 lg:[transform-style:preserve-3d]">
+          <div className={`mt-auto pt-5 ${wide ? 'lg:mt-0 lg:w-[44%] lg:pt-0' : ''}`}>
+            <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 data-cursor="magnetic"
@@ -253,21 +173,19 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
                 />
               </button>
 
-              <div className="lg:[transform:translateZ(28px)]">
-                <button
-                  ref={actionBtnRef}
-                  type="button"
-                  data-cursor="magnetic"
-                  onClick={open}
-                  aria-label={`Explore ${spot.name}`}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white shadow-md transition-[background-color,color] duration-300 active:scale-95 dark:bg-white dark:text-[#0B111E]"
-                >
-                  <ArrowUpRight
-                    className="h-4 w-4 transition-transform duration-300 group-hover:rotate-45"
-                    strokeWidth={2.2}
-                  />
-                </button>
-              </div>
+              <button
+                ref={actionBtnRef}
+                type="button"
+                data-cursor="magnetic"
+                onClick={open}
+                aria-label={`Explore ${spot.name}`}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white shadow-md transition-[background-color,color] duration-300 active:scale-95 dark:bg-white dark:text-[#0B111E]"
+              >
+                <ArrowUpRight
+                  className="h-4 w-4 transition-transform duration-300 group-hover:rotate-45"
+                  strokeWidth={2.2}
+                />
+              </button>
             </div>
             <TravelNotes spot={spot} open={notesOpen} />
           </div>

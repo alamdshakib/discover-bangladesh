@@ -489,8 +489,7 @@ export function SpotAtlas() {
 
           <h2
             id="atlas-title"
-            data-velocity-skew
-            className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 will-change-transform dark:text-slate-50"
+            className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"
             style={{ fontSize: 'clamp(2rem, 5vw, 4.75rem)' }}
           >
             Coordinate Atlas

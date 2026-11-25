@@ -73,20 +73,16 @@ export function Showcase() {
         gsap.fromTo(
           cards,
           {
-            scale: 0.9,
-            rotationX: 10,
-            y: 30,
+            scale: 0.96,
+            y: 24,
             opacity: 0,
-            transformPerspective: 1000,
-            transformOrigin: '50% 0%',
           },
           {
             scale: 1,
-            rotationX: 0,
             y: 0,
             opacity: 1,
-            duration: 0.62,
-            stagger: 0.025,
+            duration: 0.56,
+            stagger: 0.022,
             ease: 'power3.out',
             overwrite: 'auto',
             clearProps: 'transform,opacity',
@@ -116,7 +112,7 @@ export function Showcase() {
     <section id={SECTION_IDS.showcase} aria-label="Destinations" className="relative mt-6 scroll-mt-24 sm:mt-10">
       <div className="mx-auto max-w-[1600px] px-3 sm:px-5">
         <div className="flex flex-col gap-5 px-1 pb-6 sm:px-3 lg:flex-row lg:items-end lg:justify-between lg:pb-8">
-          <div data-velocity-skew className="will-change-transform">
+          <div>
             <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">The Collection</p>
             <h2
               className="mt-2 font-display leading-[0.9] font-black tracking-[-0.05em] text-ink transition-colors duration-300 dark:text-slate-50"
@@ -168,7 +164,7 @@ export function Showcase() {
         onTop={() => scrollToTarget(0, { offset: 0 })}
       />
 
-      <div ref={viewRef} className="mx-auto mt-4 max-w-[1600px] px-3 [perspective:1200px] sm:mt-6 sm:px-5">
+      <div ref={viewRef} className="mx-auto mt-4 max-w-[1600px] px-3 sm:mt-6 sm:px-5">
         {displayMode === 'editorial' ? (
           <div className="flex flex-col gap-16 sm:gap-20 lg:gap-28">
             {CHAPTERS.map((chapter) => (

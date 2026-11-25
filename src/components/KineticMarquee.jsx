@@ -53,7 +53,6 @@ export function KineticMarquee({
     let bottomX = -(bottomGroup.offsetWidth || 1000) * 0.5;
     let direction = 1;
     let smoothedVelocity = 0;
-    let smoothedSkew = 0;
     let topWidth = topGroup.offsetWidth || 1200;
     let bottomWidth = bottomGroup.offsetWidth || 1200;
 
@@ -97,11 +96,8 @@ export function KineticMarquee({
       if (bottomX >= 0) bottomX -= bottomWidth;
       else if (bottomX < -bottomWidth) bottomX += bottomWidth;
 
-      const targetSkew = Math.max(-5.5, Math.min(5.5, smoothedVelocity * -0.12));
-      smoothedSkew += (targetSkew - smoothedSkew) * 0.14;
-
-      topTrack.style.transform = `translate3d(${topX.toFixed(2)}px, 0, 0) skewX(${smoothedSkew.toFixed(2)}deg)`;
-      bottomTrack.style.transform = `translate3d(${bottomX.toFixed(2)}px, 0, 0) skewX(${(-smoothedSkew).toFixed(2)}deg)`;
+      topTrack.style.transform = `translate3d(${topX.toFixed(2)}px, 0, 0)`;
+      bottomTrack.style.transform = `translate3d(${bottomX.toFixed(2)}px, 0, 0)`;
     };
 
     gsap.ticker.add(onTick);

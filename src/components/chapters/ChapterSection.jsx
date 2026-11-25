@@ -175,8 +175,7 @@ export function ChapterSection({ chapter, spots, onOpen }) {
 
       <div
         data-chapter-grid
-        data-velocity-skew
-        className="mt-3 grid grid-cols-1 gap-3 will-change-transform sm:mt-4 sm:gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-5"
+        className="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-5"
       >
         {spots.map((spot, i) => (
           <SpotCard

@@ -13,10 +13,10 @@ const INTERACTIVE_SELECTOR =
   'a[href], button:not([disabled]), [role="switch"], [role="radio"], [data-cursor="magnetic"]';
 
 /**
- * Global tactile motion-physics controller mounted once at the root of App:
+ * Global tactile motion controller mounted once at the root of App:
  * 1. Top 2px luminous gradient reading progress beam (`z-[60]`).
  * 2. 60fps GSAP `quickTo` dual-layer morphing & magnetically stretching cursor (`pointer: fine` only).
- * 3. Lenis scroll-velocity dynamic skew (`skewY` capped at ±2.5deg) with spring settle across content grids & headings.
+ * Scroll-velocity skewing is intentionally disabled so all cards, grids, and headings stay 100% level.
  */
 export function GlobalMotion() {
   const [finePointerEnabled, setFinePointerEnabled] = useState(false);
@@ -42,75 +42,22 @@ export function GlobalMotion() {
     };
   }, []);
 
-  // 1 & 3: Top Reading Progress Beam + Scroll-Velocity Dynamic Skew (±2.5deg spring)
+  // 1: Top Reading Progress Beam (GPU scaleX, zero skew distortion)
   useEffect(() => {
-    const reduceMotion = window.matchMedia(MEDIA.reduceMotion).matches;
-    let skewNodes = [];
-
-    const refreshTargets = () => {
-      skewNodes = Array.from(document.querySelectorAll('[data-velocity-skew]'));
-    };
-    refreshTargets();
-
-    const mutationObserver = new MutationObserver(refreshTargets);
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
-
     let smoothedProgress = 0;
-    let currentSkew = 0;
-    let skewVelocity = 0;
-    let isSkewResting = true;
-    let lastFallbackScroll = window.scrollY || 0;
 
     const onTick = () => {
       const state = getScrollState();
-
-      // Reading progress beam update (GPU scaleX)
       smoothedProgress += (state.progress - smoothedProgress) * 0.22;
       const clampedProgress = Math.max(0, Math.min(1, smoothedProgress));
       if (beamRef.current) {
         beamRef.current.style.transform = `scaleX(${clampedProgress.toFixed(4)})`;
-      }
-
-      if (reduceMotion) return;
-
-      // Velocity calculation (uses Lenis velocity, with fallback window delta)
-      const currentScroll = window.scrollY || 0;
-      const fallbackVel = (currentScroll - lastFallbackScroll) * 0.65;
-      lastFallbackScroll = currentScroll;
-      const rawVelocity = Math.abs(state.velocity) > 0.01 ? state.velocity : fallbackVel;
-
-      // Cap dynamic skew strictly within ±2.5deg and spring smoothly back to 0deg on stop
-      const targetSkew = Math.max(-2.5, Math.min(2.5, rawVelocity * 0.085));
-      skewVelocity += (targetSkew - currentSkew) * 0.18;
-      skewVelocity *= 0.72;
-      currentSkew = Math.max(-2.5, Math.min(2.5, currentSkew + skewVelocity));
-
-      if (Math.abs(currentSkew) < 0.004 && Math.abs(skewVelocity) < 0.004 && Math.abs(targetSkew) < 0.004) {
-        if (!isSkewResting) {
-          isSkewResting = true;
-          currentSkew = 0;
-          skewVelocity = 0;
-          for (let i = 0; i < skewNodes.length; i += 1) {
-            skewNodes[i].style.transform = '';
-          }
-        }
-        return;
-      }
-
-      isSkewResting = false;
-      const skewTransform = `skewY(${currentSkew.toFixed(3)}deg)`;
-      for (let i = 0; i < skewNodes.length; i += 1) {
-        skewNodes[i].style.transform = skewTransform;
       }
     };
 
     gsap.ticker.add(onTick);
     return () => {
       gsap.ticker.remove(onTick);
-      mutationObserver.disconnect();
-      for (let i = 0; i < skewNodes.length; i += 1) {
-        skewNodes[i].style.transform = '';
-      }
     };
   }, []);
 
@@ -192,7 +139,6 @@ export function GlobalMotion() {
         const stretch = Math.min(0.18, (dist / maxRadius) * 0.2);
         const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
-        // Pull ring magnetically toward button center + apply subtle elastic stretch
         ringX(cx + dx * 0.36);
         ringY(cy + dy * 0.36);
         ringScaleX(1 + stretch);
