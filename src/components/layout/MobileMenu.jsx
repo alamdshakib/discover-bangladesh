@@ -8,7 +8,7 @@ import { SearchBar } from '../search/SearchBar.jsx';
 import { ExpoSwitch } from '../ui/ExpoSwitch.jsx';
 import { ThemeToggle } from '../ui/ThemeToggle.jsx';
 
-/** Slide-down mobile menu drawer (< md) with sequential skew-settle link stagger. */
+/** Slide-down mobile menu drawer (< md) with sequential level link stagger. */
 export function MobileMenu({ open, onClose }) {
   const { spots, expoMode, setExpoMode } = useShowcase();
   const drawerRef = useRef(null);
@@ -25,7 +25,7 @@ export function MobileMenu({ open, onClose }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  // Sequential slide + subtle skew-settle animation whenever the mobile drawer opens
+  // Sequential level slide animation whenever the mobile drawer opens
   useLayoutEffect(() => {
     if (!open || !drawerRef.current) return undefined;
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
