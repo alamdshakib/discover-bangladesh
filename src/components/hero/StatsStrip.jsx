@@ -5,7 +5,7 @@ import { gsap, MEDIA } from '@animations';
 
 const CARD_TONES = [
   'border-line bg-card text-ink dark:border-white/10 dark:bg-[#131C2E] dark:text-slate-50',
-  'border-mist/40 bg-mist/25 text-ink dark:border-white/10 dark:bg-[#182338] dark:text-slate-50',
+  'border-slate-300/80 bg-slate-200/65 text-ink dark:border-white/10 dark:bg-[#182338] dark:text-slate-50',
   'border-ink bg-ink text-white dark:border-white/15 dark:bg-[#1E293B] dark:text-white',
   'border-line bg-card text-ink dark:border-white/10 dark:bg-[#131C2E] dark:text-slate-50',
 ];
@@ -92,6 +92,7 @@ export function StatsStrip() {
             start: 'top 90%',
             end: 'bottom 8%',
             toggleActions: 'play reverse play reverse',
+            fastScrollEnd: true,
             onEnter: playCountersAndSheen,
             onEnterBack: playCountersAndSheen,
           },

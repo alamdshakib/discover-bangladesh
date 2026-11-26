@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { spotsData } from '@data';
-import { gsap, MEDIA, pauseScroll, resumeScroll, ScrollTrigger } from '@animations';
+import { useScrollLock } from '@hooks';
+import { gsap, MEDIA, ScrollTrigger } from '@animations';
 import { getImageSrc } from '@utils';
 
 const MONTAGE_IDS = [
@@ -23,6 +24,7 @@ const TARGET_LNG = 90.3563;
  */
 export function CinematicIntro() {
   const [visible, setVisible] = useState(true);
+  const [scrollLocked, setScrollLocked] = useState(true);
   const [activeCut, setActiveCut] = useState(0);
 
   const rootRef = useRef(null);
@@ -33,6 +35,8 @@ export function CinematicIntro() {
   const exitedRef = useRef(false);
   const handoffFiredRef = useRef(false);
 
+  useScrollLock(visible && scrollLocked);
+
   const montageSpots = useMemo(() => {
     const byId = Object.fromEntries(spotsData.map((s) => [s.id, s]));
     return MONTAGE_IDS.map((id) => byId[id]).filter(Boolean);
@@ -41,7 +45,7 @@ export function CinematicIntro() {
   const fireHandoff = useCallback(() => {
     if (handoffFiredRef.current) return;
     handoffFiredRef.current = true;
-    resumeScroll();
+    setScrollLocked(false);
     window.dispatchEvent(new CustomEvent('db:intro-done'));
     window.requestAnimationFrame(() => ScrollTrigger.refresh());
   }, []);
@@ -54,28 +58,12 @@ export function CinematicIntro() {
     window.requestAnimationFrame(() => ScrollTrigger.refresh());
   }, [fireHandoff]);
 
-  // Lock native body + Lenis scroll while the cinema intro is mounted (without mutating html overflow)
+  // Hard wall-clock failsafe so backgrounded tabs never stay covered by the intro
   useEffect(() => {
     if (!visible) return undefined;
-
-    const { body } = document;
-    const prevBodyOverflow = body.style.overflow;
-
-    body.style.overflow = 'hidden';
-    pauseScroll();
-
-    // Ensure Lenis is also paused if its effect initialized a tick after mount
-    const rafId = window.requestAnimationFrame(() => pauseScroll());
-    const timerId = window.setTimeout(() => pauseScroll(), 80);
-    // Hard wall-clock failsafe so backgrounded tabs never stay covered by the intro
     const failsafeId = window.setTimeout(finishIntro, 4400);
-
     return () => {
-      window.cancelAnimationFrame(rafId);
-      window.clearTimeout(timerId);
       window.clearTimeout(failsafeId);
-      body.style.overflow = prevBodyOverflow;
-      resumeScroll();
       window.requestAnimationFrame(() => ScrollTrigger.refresh());
     };
   }, [visible, finishIntro]);

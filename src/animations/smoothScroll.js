@@ -4,6 +4,7 @@
  * progress directly without React re-renders.
  */
 let lenisInstance = null;
+let scrollPaused = false;
 
 const scrollState = {
   scroll: 0,
@@ -17,6 +18,10 @@ const NAV_OFFSET = -96;
 
 export function setLenis(instance) {
   lenisInstance = instance;
+  if (instance) {
+    if (scrollPaused) instance.stop();
+    else instance.start();
+  }
 }
 
 export function getLenis() {
@@ -64,9 +69,11 @@ export function scrollToTarget(target, { offset = NAV_OFFSET, immediate = false 
 }
 
 export function pauseScroll() {
+  scrollPaused = true;
   lenisInstance?.stop();
 }
 
 export function resumeScroll() {
+  scrollPaused = false;
   lenisInstance?.start();
 }

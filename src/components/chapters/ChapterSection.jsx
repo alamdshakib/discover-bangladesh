@@ -8,6 +8,7 @@ export function ChapterSection({ chapter, spots, onOpen }) {
   const scopeRef = useRef(null);
   const spans = getBentoSpans(spots.length);
   const coverUrl = spots[1]?.images.cover ?? spots[0]?.images.cover;
+  const spotsKey = spots.map((s) => s.id).join(',');
 
   useLayoutEffect(() => {
     const mm = gsap.matchMedia(scopeRef);
@@ -79,6 +80,7 @@ export function ChapterSection({ chapter, spots, onOpen }) {
             trigger: banner,
             start: 'top 88%',
             toggleActions: 'play none none reverse',
+            fastScrollEnd: true,
           },
         });
 
@@ -137,8 +139,9 @@ export function ChapterSection({ chapter, spots, onOpen }) {
         const cardTl = gsap.timeline({
           scrollTrigger: {
             trigger: wrap,
-            start: 'top 90%',
+            start: 'top 92%',
             toggleActions: 'play none none reverse',
+            fastScrollEnd: true,
           },
         });
 
@@ -191,7 +194,7 @@ export function ChapterSection({ chapter, spots, onOpen }) {
     });
 
     return () => mm.revert();
-  }, [spots.length]);
+  }, [spotsKey]);
 
   return (
     <section id={chapter.id} ref={scopeRef} aria-labelledby={`${chapter.id}-title`} className="scroll-mt-40">

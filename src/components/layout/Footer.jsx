@@ -11,7 +11,7 @@ const BASE_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.30) 0%, rgb
 const GLOW_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(226, 248, 240, 0.72) 100%)';
 
 export function Footer() {
-  const { spots, expoMode, setExpoMode } = useShowcase();
+  const { spots, expoMode, setExpoMode, journeySpots } = useShowcase();
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const footerRef = useRef(null);
   const cardRef = useRef(null);
@@ -140,7 +140,7 @@ export function Footer() {
           ease: 'power3.out',
           immediateRender: false,
           clearProps: 'transform,opacity',
-          scrollTrigger: { trigger: scope, start: 'top 94%', once: true },
+          scrollTrigger: { trigger: scope, start: 'top 94%', once: true, fastScrollEnd: true },
         }
       );
 
@@ -153,7 +153,7 @@ export function Footer() {
         ease: 'power3.out',
         immediateRender: false,
         clearProps: 'transform,opacity',
-        scrollTrigger: { trigger: scope, start: 'top 90%', once: true },
+        scrollTrigger: { trigger: scope, start: 'top 90%', once: true, fastScrollEnd: true },
       });
 
       // 3. Sunrise Mountain Ridge Wordmark Reveal (scrub: 1) — BANGLADESH rises up out of the mountain horizon
@@ -162,7 +162,7 @@ export function Footer() {
         scrollTrigger: {
           trigger: scope,
           start: 'top 96%',
-          end: 'bottom bottom',
+          end: 'bottom-=16 bottom',
           scrub: 1,
         },
       });
@@ -255,14 +255,21 @@ export function Footer() {
   const handleChapterJump = (chapter) => {
     if (expoMode) {
       setExpoMode(false);
-      window.setTimeout(() => scrollToTarget(`#${chapter.id}`, { offset: -140 }), 420);
+      window.setTimeout(() => scrollToTarget(`#${chapter.id}`, { offset: -148 }), 420);
       return;
     }
-    scrollToTarget(`#${chapter.id}`, { offset: -140 });
+    scrollToTarget(`#${chapter.id}`, { offset: -148 });
   };
 
+  const hasJourneyDock = journeySpots.length > 0;
+
   return (
-    <footer ref={footerRef} className="relative z-0 mt-24 px-3 pb-3 sm:mt-32 sm:px-5 sm:pb-5">
+    <footer
+      ref={footerRef}
+      className={`relative z-0 mt-24 overflow-x-clip px-3 sm:mt-32 sm:px-5 ${
+        hasJourneyDock ? 'pb-20 sm:pb-24 lg:pb-5' : 'pb-3 sm:pb-5'
+      }`}
+    >
       <div
         ref={cardRef}
         data-footer-card

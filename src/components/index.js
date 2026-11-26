@@ -24,7 +24,6 @@ export { JourneyDrawer } from './JourneyDrawer.jsx';
 export { CinematicIntro } from './CinematicIntro.jsx';
 export { GlobalMotion } from './GlobalMotion.jsx';
 export { ScrollCompassHUD } from './ScrollCompassHUD.jsx';
-export { HeroTerrain3D } from './HeroTerrain3D.jsx';
 export { KineticMarquee } from './KineticMarquee.jsx';
 export { ChapterAtmosphere } from './ChapterAtmosphere.jsx';
 export { CinemaLightbox } from './CinemaLightbox.jsx';

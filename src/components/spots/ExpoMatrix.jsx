@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { RotateCcw, SearchX } from 'lucide-react';
 import { FILTER_GROUPS } from '@data';
-import { Flip, gsap, ScrollTrigger } from '@animations';
+import { Flip, gsap, MEDIA, ScrollTrigger } from '@animations';
 import { filterSpots, getExpoTileClass } from '@utils';
 import { ExpoCard } from './ExpoCard.jsx';
 import { FilterPills } from './FilterPills.jsx';
@@ -26,6 +26,8 @@ export function ExpoMatrix({ spots, onOpen }) {
   const hasMounted = useRef(false);
 
   const filtered = useMemo(() => filterSpots(spots, FILTER_GROUPS, selection), [spots, selection]);
+  const filteredKey = useMemo(() => filtered.map((s) => s.id).join(','), [filtered]);
+  const revealedIdsRef = useRef(new Set());
   const tagCounts = useMemo(
     () => Object.fromEntries(FILTER_GROUPS.map((g) => [g.key, countTags(spots, g.field)])),
     [spots]
@@ -53,9 +55,9 @@ export function ExpoMatrix({ spots, onOpen }) {
     setSelection(emptySelection());
   };
 
-  // Bidirectional level card entrance + continuous scrubbed window parallax on mount.
+  // Level card entrance (once per spot so Flip & hover never fight inline transforms) + scrubbed media parallax.
   useLayoutEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
     const grid = gridRef.current;
     if (!grid) return undefined;
 
@@ -64,44 +66,52 @@ export function ExpoMatrix({ spots, onOpen }) {
       const cards = grid.querySelectorAll('[data-expo-card]');
 
       cards.forEach((card) => {
+        const spotId = card.getAttribute('data-flip-id');
         const shutter = card.querySelector('[data-card-shutter]');
         const media = card.querySelector('[data-card-media]');
 
-        const cardTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 92%',
-            toggleActions: 'play none none reverse',
-          },
-        });
+        if (spotId && !revealedIdsRef.current.has(spotId)) {
+          const cardTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 94%',
+              once: true,
+              fastScrollEnd: true,
+            },
+            onComplete: () => {
+              revealedIdsRef.current.add(spotId);
+            },
+          });
 
-        cardTl.fromTo(
-          card,
-          { y: 50, opacity: 0, scale: 0.97 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 0.65,
-            ease: 'power3.out',
-            immediateRender: false,
-            clearProps: 'transform',
-          },
-          0
-        );
-
-        if (shutter) {
           cardTl.fromTo(
-            shutter,
-            { clipPath: 'inset(12% 0% 0% 0% round 1.5rem)' },
+            card,
+            { y: 36, opacity: 0, scale: 0.97 },
             {
-              clipPath: 'inset(0% 0% 0% 0% round 1.5rem)',
-              duration: 0.7,
+              y: 0,
+              opacity: 1,
+              scale: 1,
+              duration: 0.58,
               ease: 'power3.out',
               immediateRender: false,
+              clearProps: 'transform,opacity',
             },
             0
           );
+
+          if (shutter) {
+            cardTl.fromTo(
+              shutter,
+              { clipPath: 'inset(10% 0% 0% 0% round 1.5rem)' },
+              {
+                clipPath: 'inset(0% 0% 0% 0% round 1.5rem)',
+                duration: 0.62,
+                ease: 'power3.out',
+                immediateRender: false,
+                clearProps: 'clipPath',
+              },
+              0
+            );
+          }
         }
 
         if (media) {
@@ -121,30 +131,35 @@ export function ExpoMatrix({ spots, onOpen }) {
 
     hasMounted.current = true;
     return () => ctx.revert();
-  }, []);
+  }, [filteredKey]);
 
-  // FLIP re-layout whenever the filtered set changes.
+  // FLIP re-layout whenever the filtered set changes via tag pills.
   useLayoutEffect(() => {
     if (!hasMounted.current) return;
     const state = flipState.current;
     flipState.current = null;
-    const cards = gridRef.current.querySelectorAll('[data-expo-card]');
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cards = gridRef.current?.querySelectorAll('[data-expo-card]');
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
 
-    if (state && !reduce) {
+    if (state && cards?.length && !reduce) {
       Flip.from(state, {
         targets: cards,
-        duration: 0.6,
+        duration: 0.58,
         ease: 'power3.inOut',
         stagger: 0.012,
         nested: true,
         prune: true,
-        onEnter: (els) =>
-          gsap.fromTo(
+        onEnter: (els) => {
+          els.forEach((el) => {
+            const id = el.getAttribute('data-flip-id');
+            if (id) revealedIdsRef.current.add(id);
+          });
+          return gsap.fromTo(
             els,
             { opacity: 0, scale: 0.92, y: 18 },
-            { opacity: 1, scale: 1, y: 0, duration: 0.5, stagger: 0.03, ease: 'power3.out' }
-          ),
+            { opacity: 1, scale: 1, y: 0, duration: 0.48, stagger: 0.025, ease: 'power3.out', clearProps: 'transform,opacity' }
+          );
+        },
         onComplete: () => ScrollTrigger.refresh(),
       });
     } else {

@@ -67,7 +67,10 @@ export function ChapterHeader({ chapter, count, coverUrl }) {
           imgClassName="h-full w-full object-cover grayscale-[35%]"
         />
       </div>
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-ink via-ink/85 to-ink/40" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-gradient-to-r from-ink via-ink/85 to-ink/40 dark:from-[#0f172a] dark:via-[#0f172a]/85 dark:to-[#0f172a]/40"
+      />
 
       {/* Chapter-specific inner atmosphere glow shifted via ScrollTrigger */}
       <div

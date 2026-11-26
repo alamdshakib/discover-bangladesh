@@ -165,6 +165,7 @@ export function SpotAtlas() {
   const dragRef = useRef(null);
   const prevCoordsRef = useRef(spots[0]?.coordinates ?? { lat: 23.685, lng: 90.3563 });
   const tiltQuickRef = useRef(null);
+  const pinPointerFocusRef = useRef({ active: false, wasFocused: false });
 
   const mapTheme = isDark ? DARK_MAP : LIGHT_MAP;
 
@@ -359,6 +360,7 @@ export function SpotAtlas() {
       return undefined;
     }
 
+    let pulseIo = null;
     const ctx = gsap.context(() => {
       const drawTl = gsap.timeline();
 
@@ -407,10 +409,24 @@ export function SpotAtlas() {
         });
 
         pulseTl.to(pulse, { opacity: 0, duration: 0.2 });
+
+        if (svgRef.current) {
+          pulseIo = new IntersectionObserver(
+            (entries) => {
+              if (entries[0]?.isIntersecting) pulseTl.play();
+              else pulseTl.pause();
+            },
+            { threshold: 0.02 }
+          );
+          pulseIo.observe(svgRef.current);
+        }
       }
     }, stageRef);
 
-    return () => ctx.revert();
+    return () => {
+      pulseIo?.disconnect();
+      ctx.revert();
+    };
   }, [showJourneyRoute, journeyLegs]);
 
   // Animate left preview card with crisp 3D flip/slide transition + live rolling coordinate odometer
@@ -542,7 +558,7 @@ export function SpotAtlas() {
     <section
       id={SECTION_IDS.atlas}
       aria-labelledby="atlas-title"
-      className="relative z-0 mt-20 scroll-mt-24 px-3 sm:mt-28 sm:px-5"
+      className="relative z-0 mt-20 scroll-mt-24 overflow-x-clip px-3 sm:mt-28 sm:px-5"
     >
       <div className="mx-auto grid max-w-[1600px] gap-3 lg:grid-cols-[1fr_1.15fr] lg:gap-4">
         {/* Left info & live telemetry preview column */}
@@ -662,7 +678,7 @@ export function SpotAtlas() {
                   className="h-44 w-full sm:h-56"
                   imgClassName="h-full w-full object-cover"
                 />
-                <div className="flex items-end justify-between gap-4 p-4 sm:p-5">
+                <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:p-5">
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold tracking-[0.18em] text-mist uppercase">
                       {chapterByCategory[focus.category]?.number} · {focus.category} · {focus.division}
@@ -672,10 +688,12 @@ export function SpotAtlas() {
                     </p>
                     <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-ink-soft tabular-nums dark:text-slate-400">
                       <Crosshair className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
-                      <span ref={coordTextRef}>{formatCoordinates(focus.coordinates)}</span>
+                      <span ref={coordTextRef} className="truncate">
+                        {formatCoordinates(focus.coordinates)}
+                      </span>
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
                     <JourneyBookmarkButton spotId={focus.id} spotName={focus.name} />
                     <button
                       type="button"
@@ -915,8 +933,10 @@ export function SpotAtlas() {
                           strokeWidth={isHovered ? 1.5 : 1}
                           strokeLinejoin="round"
                           vectorEffect="non-scaling-stroke"
-                          onMouseEnter={() => setHoveredDivision(div.name)}
-                          onMouseLeave={() => setHoveredDivision((prev) => (prev === div.name ? null : prev))}
+                          onPointerEnter={(e) => {
+                            if (e.pointerType === 'mouse') setHoveredDivision(div.name);
+                          }}
+                          onPointerLeave={() => setHoveredDivision((prev) => (prev === div.name ? null : prev))}
                           className="transition-colors duration-200"
                         />
                       );
@@ -1080,11 +1100,22 @@ export function SpotAtlas() {
                           role="button"
                           tabIndex={0}
                           aria-label={stopNumber ? `Stop ${stopNumber}: ${spot.name}, ${spot.district}` : `${spot.name}, ${spot.district}`}
-                          onMouseEnter={() => selectSpot(spot.id)}
-                          onFocus={() => selectSpot(spot.id)}
+                          onPointerDown={() => {
+                            pinPointerFocusRef.current = { active: true, wasFocused: isFocus };
+                          }}
+                          onPointerEnter={(e) => {
+                            if (e.pointerType === 'mouse') selectSpot(spot.id);
+                          }}
+                          onFocus={() => {
+                            if (!pinPointerFocusRef.current.active) selectSpot(spot.id);
+                          }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (isFocus) openSpot(spot.id);
+                            const openModal = pinPointerFocusRef.current.active
+                              ? pinPointerFocusRef.current.wasFocused
+                              : isFocus;
+                            pinPointerFocusRef.current.active = false;
+                            if (openModal) openSpot(spot.id);
                             else selectSpot(spot.id);
                           }}
                           onKeyDown={(e) => {

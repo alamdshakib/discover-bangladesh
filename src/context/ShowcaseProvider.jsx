@@ -90,14 +90,7 @@ export function ShowcaseProvider({ children }) {
 
   const toggleJourneySpot = useCallback((id) => {
     if (!spotsById.has(id)) return;
-    setJourneyIds((prev) => {
-      if (prev.includes(id)) {
-        const next = prev.filter((item) => item !== id);
-        if (next.length < 2) setRouteMode(false);
-        return next;
-      }
-      return [...prev, id];
-    });
+    setJourneyIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   }, []);
 
   const moveJourneySpot = useCallback((index, direction) => {
@@ -112,11 +105,7 @@ export function ShowcaseProvider({ children }) {
   }, []);
 
   const removeJourneySpot = useCallback((id) => {
-    setJourneyIds((prev) => {
-      const next = prev.filter((item) => item !== id);
-      if (next.length < 2) setRouteMode(false);
-      return next;
-    });
+    setJourneyIds((prev) => prev.filter((item) => item !== id));
   }, []);
 
   const clearJourney = useCallback(() => {
@@ -140,6 +129,7 @@ export function ShowcaseProvider({ children }) {
     const journeySpots = journeyIds.map((id) => spotsById.get(id)).filter(Boolean);
     const journeySet = new Set(journeyIds);
     const journeyMetrics = computeJourneyMetrics(journeySpots);
+    const effectiveRouteMode = routeMode && journeySpots.length >= 2;
 
     return {
       spots: spotsData,
@@ -160,7 +150,7 @@ export function ShowcaseProvider({ children }) {
       moveJourneySpot,
       removeJourneySpot,
       clearJourney,
-      routeMode,
+      routeMode: effectiveRouteMode,
       setRouteMode,
       journeyDrawerOpen,
       setJourneyDrawerOpen,

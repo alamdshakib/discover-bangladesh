@@ -149,11 +149,12 @@ export function Showcase() {
     return () => window.removeEventListener('resize', onResize);
   }, [seasonFilter]);
 
-  // Animated grid reflow + ScrollTrigger refresh + live count pop when seasonFilter changes
+  // Smooth container transition + ScrollTrigger refresh + live count pop when seasonFilter changes
+  // (Animates viewRef wrapper rather than individual cards so card ScrollTriggers are never overwritten)
   useLayoutEffect(() => {
     if (isFirstFilterRef.current) {
       isFirstFilterRef.current = false;
-      return;
+      return undefined;
     }
 
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
@@ -166,44 +167,38 @@ export function Showcase() {
     }
 
     if (!reduce && viewRef.current) {
-      const selector = displayMode === 'editorial' ? '[data-spot-card-wrap]' : '[data-expo-card]';
-      const cards = viewRef.current.querySelectorAll(selector);
-      if (cards.length > 0) {
-        gsap.fromTo(
-          cards,
-          { y: 28, opacity: 0, scale: 0.96 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 0.52,
-            stagger: 0.04,
-            ease: 'power3.out',
-            overwrite: 'auto',
-            clearProps: 'transform,opacity',
-          }
-        );
-      }
+      gsap.fromTo(
+        viewRef.current,
+        { y: 14, opacity: 0.45 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.38,
+          ease: 'power3.out',
+          overwrite: 'auto',
+          clearProps: 'transform,opacity',
+        }
+      );
     }
 
     const refreshRaf = window.requestAnimationFrame(() => ScrollTrigger.refresh());
     return () => window.cancelAnimationFrame(refreshRaf);
-  }, [seasonFilter, displayMode]);
+  }, [seasonFilter]);
 
   // Morph out current view cleanly, then swap.
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return undefined;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
 
     if (requestedMode === displayMode) {
       gsap.to(view, {
         opacity: 1,
         y: 0,
         scale: 1,
-        duration: reduce ? 0 : 0.4,
+        duration: reduce ? 0 : 0.38,
         ease: 'power3.out',
-        clearProps: 'transform',
+        clearProps: 'transform,opacity',
         overwrite: true,
       });
       return undefined;
@@ -211,9 +206,9 @@ export function Showcase() {
 
     const tween = gsap.to(view, {
       opacity: 0,
-      y: 22,
+      y: 18,
       scale: 0.985,
-      duration: reduce ? 0 : 0.24,
+      duration: reduce ? 0 : 0.22,
       ease: 'power2.in',
       overwrite: true,
       onComplete: () => setDisplayMode(requestedMode),
@@ -221,37 +216,11 @@ export function Showcase() {
     return () => tween.kill();
   }, [requestedMode, displayMode]);
 
-  // After a swap: recompute triggers and run the staggered level wave across cards.
+  // After a swap: recompute ScrollTriggers cleanly without overwriting individual card triggers.
   useLayoutEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return;
-    }
-    ScrollTrigger.refresh();
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!reduce && viewRef.current) {
-      const selector = displayMode === 'editorial' ? '[data-spot-card-wrap]' : '[data-expo-card]';
-      const cards = viewRef.current.querySelectorAll(selector);
-      if (cards.length > 0) {
-        gsap.fromTo(
-          cards,
-          {
-            scale: 0.96,
-            y: 24,
-            opacity: 0,
-          },
-          {
-            scale: 1,
-            y: 0,
-            opacity: 1,
-            duration: 0.56,
-            stagger: 0.022,
-            ease: 'power3.out',
-            overwrite: 'auto',
-            clearProps: 'transform,opacity',
-          }
-        );
-      }
+      return undefined;
     }
 
     const target = pendingTarget.current ?? `#${SECTION_IDS.showcase}`;
@@ -260,6 +229,9 @@ export function Showcase() {
     const element = document.querySelector(target);
     const alreadyPast = element ? element.getBoundingClientRect().top < 0 : false;
     scrollToTarget(target, { offset: isChapter ? -148 : -88, immediate: alreadyPast });
+
+    const refreshRaf = window.requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => window.cancelAnimationFrame(refreshRaf);
   }, [displayMode]);
 
   const jumpToChapter = (chapter) => {
@@ -276,7 +248,7 @@ export function Showcase() {
       <div className="mx-auto max-w-[1600px] px-3 sm:px-5">
         <div
           ref={headerRef}
-          className="flex flex-col gap-5 px-1 pb-5 sm:px-3 lg:flex-row lg:items-end lg:justify-between lg:pb-6"
+          className="flex flex-col gap-5 overflow-x-clip px-1 pb-5 sm:px-3 lg:flex-row lg:items-end lg:justify-between lg:pb-6"
         >
           <div className="px-1">
             <p

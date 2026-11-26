@@ -21,4 +21,18 @@ export default defineConfig({
       '@context': path.resolve(__dirname, 'src/context'),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 650,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'three-vendor', test: /[\\/]node_modules[\\/]three[\\/]/ },
+            { name: 'motion-vendor', test: /[\\/]node_modules[\\/](gsap|lenis|d3-geo)[\\/]/ },
+            { name: 'react-vendor', test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
 });

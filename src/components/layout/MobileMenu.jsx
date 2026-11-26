@@ -53,11 +53,11 @@ export function MobileMenu({ open, onClose }) {
   }, [open]);
 
   /** Close first, then scroll once the scroll lock has been released. */
-  const navigate = (target, beforeScroll) => {
+  const navigate = (target, beforeScroll, scrollOpts) => {
     onClose();
     window.setTimeout(() => {
       beforeScroll?.();
-      scrollToTarget(target);
+      scrollToTarget(target, scrollOpts);
     }, 120);
   };
 
@@ -134,9 +134,13 @@ export function MobileMenu({ open, onClose }) {
               type="button"
               data-mobile-nav-item
               onClick={() =>
-                navigate(expoMode ? `#${SECTION_IDS.showcase}` : `#${chapter.id}`, () => {
-                  if (expoMode) setExpoMode(false);
-                })
+                navigate(
+                  expoMode ? `#${SECTION_IDS.showcase}` : `#${chapter.id}`,
+                  () => {
+                    if (expoMode) setExpoMode(false);
+                  },
+                  expoMode ? undefined : { offset: -148 }
+                )
               }
               className="flex flex-col items-start rounded-3xl border border-line bg-white p-4 text-left transition-colors duration-300 will-change-transform active:scale-95 dark:border-white/10 dark:bg-[#131C2E]"
             >

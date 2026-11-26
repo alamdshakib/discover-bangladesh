@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDownRight, Compass, Map, MapPin } from 'lucide-react';
 import { SITE_META, SECTION_IDS } from '@data';
 import { useBangladeshTime, useLiveWeather, useMagnetic, useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
 import { formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
-import { HeroTerrain3D } from '../HeroTerrain3D.jsx';
+
+const HeroTerrain3D = lazy(() =>
+  import('../HeroTerrain3D.jsx').then((m) => ({ default: m.HeroTerrain3D }))
+);
 
 const SLIDE_DURATION = 6; // seconds per destination slide
 
@@ -415,8 +418,9 @@ export function Hero() {
           playEntrance();
         }
 
-        // 2. Atmospheric Real-World Lighting: Drifting Volumetric Sunbeams & Horizon Mist Glow
-        gsap.fromTo(
+        // 2. Atmospheric Real-World Lighting: Drifting Volumetric Sunbeams & Horizon Mist Glow (paused off-screen)
+        const ambientTl = gsap.timeline();
+        ambientTl.fromTo(
           scope.querySelector('[data-hero-sunbeams]'),
           { xPercent: -7, opacity: 0.58, scale: 1 },
           {
@@ -427,10 +431,11 @@ export function Hero() {
             ease: 'sine.inOut',
             repeat: -1,
             yoyo: true,
-          }
+          },
+          0
         );
 
-        gsap.fromTo(
+        ambientTl.fromTo(
           scope.querySelector('[data-hero-mist-glow]'),
           { xPercent: -10, opacity: 0.55 },
           {
@@ -440,11 +445,12 @@ export function Hero() {
             ease: 'sine.inOut',
             repeat: -1,
             yoyo: true,
-          }
+          },
+          0
         );
 
         // Kinetic Scroll Prompt flowing vertical light drop
-        gsap.fromTo(
+        ambientTl.fromTo(
           scope.querySelector('[data-hero-light-drop]'),
           { yPercent: -130, opacity: 0 },
           {
@@ -453,8 +459,18 @@ export function Hero() {
             duration: 1.45,
             ease: 'power2.inOut',
             repeat: -1,
-          }
+          },
+          0
         );
+
+        const ambientIo = new IntersectionObserver(
+          (entries) => {
+            if (entries[0]?.isIntersecting) ambientTl.play();
+            else ambientTl.pause();
+          },
+          { threshold: 0.02 }
+        );
+        ambientIo.observe(scope);
 
         // 3. Hero -> Stats Continuous Bidirectional Scrubbed Depth (scrub: 0.8)
         const maxSpreadPx = isDesktop ? 20 : 7;
@@ -561,6 +577,7 @@ export function Hero() {
         }
 
         return () => {
+          ambientIo.disconnect();
           cleanupMouse?.();
         };
       }
@@ -580,7 +597,9 @@ export function Hero() {
       className="relative overflow-x-clip px-3 pt-24 sm:px-5 md:pt-28"
     >
       {/* Ambient procedural terrain strictly in z-0 background */}
-      <HeroTerrain3D sectionRef={scopeRef} />
+      <Suspense fallback={null}>
+        <HeroTerrain3D sectionRef={scopeRef} />
+      </Suspense>
 
       <div className="relative z-10 mx-auto max-w-[1600px]">
         {/* Editorial Header Bar — guaranteed clean clearance below fixed z-50 Navbar */}
@@ -703,7 +722,7 @@ export function Hero() {
             <div
               aria-hidden="true"
               data-hero-scroll-type
-              className="pointer-events-none absolute inset-x-0 top-[18%] z-20 flex justify-center px-3 select-none will-change-transform sm:top-[17%] sm:px-8 lg:top-[16%]"
+              className="pointer-events-none absolute inset-x-0 top-[22%] z-20 flex justify-center px-3 select-none will-change-transform sm:top-[17%] sm:px-8 lg:top-[16%]"
             >
               <div
                 ref={typePlaneRef}
@@ -927,7 +946,7 @@ export function Hero() {
                         data-hero-story-btn={idx}
                         data-cursor="magnetic"
                         onClick={() => goToSlide(idx)}
-                        className={`group flex flex-col gap-1.5 rounded-lg px-1 py-1 text-left transition-opacity ${
+                        className={`group flex min-w-0 flex-col gap-1.5 rounded-lg px-1 py-1 text-left transition-opacity ${
                           isCurrent ? 'opacity-100' : 'opacity-60 hover:opacity-90'
                         }`}
                       >

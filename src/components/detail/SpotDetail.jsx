@@ -172,8 +172,8 @@ function DetailGallery({ spot }) {
               aria-current={i === index ? 'true' : undefined}
               className={`overflow-hidden rounded-xl transition active:scale-95 ${
                 i === index
-                  ? 'h-12 w-16 ring-2 ring-white sm:h-14 sm:w-20'
-                  : 'h-10 w-12 opacity-70 hover:opacity-100 sm:h-12 sm:w-14'
+                  ? 'h-10 w-12 ring-2 ring-white sm:h-14 sm:w-20'
+                  : 'h-9 w-10 opacity-70 hover:opacity-100 sm:h-12 sm:w-14'
               }`}
             >
               <img src={getImageSrc(url, 'thumb')} alt="" className="h-full w-full bg-ink-soft object-cover" />
@@ -559,6 +559,7 @@ function DetailDialog() {
       if (lightboxOpenRef.current) return;
       if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
         requestClose();
         return;
       }
@@ -610,7 +611,7 @@ function DetailDialog() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <div data-spot-detail className="fixed inset-0 z-[100]">
       <div
         ref={backdropRef}
         onClick={requestClose}

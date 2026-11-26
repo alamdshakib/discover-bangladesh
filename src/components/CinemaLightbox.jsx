@@ -474,12 +474,12 @@ function CinemaLightboxDialog({ spot, initialIndex, onClose }) {
         </div>
 
         {/* Centered Thumbnail Strip */}
-        <div className="flex items-center gap-2" role="group" aria-label="Lightbox thumbnails">
+        <div className="flex items-center gap-1.5 sm:gap-2" role="group" aria-label="Lightbox thumbnails">
           <button
             type="button"
             onClick={() => goTo(index - 1)}
             aria-label="Previous photo"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-white sm:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-white sm:hidden"
           >
             <ChevronLeft className="h-4 w-4" strokeWidth={2} />
           </button>
@@ -494,8 +494,8 @@ function CinemaLightboxDialog({ spot, initialIndex, onClose }) {
               aria-current={i === index ? 'true' : undefined}
               className={`overflow-hidden rounded-lg transition active:scale-95 ${
                 i === index
-                  ? 'h-11 w-16 ring-2 ring-white sm:h-12 sm:w-20'
-                  : 'h-9 w-12 opacity-55 hover:opacity-95 sm:h-10 sm:w-14'
+                  ? 'h-10 w-14 ring-2 ring-white sm:h-12 sm:w-20'
+                  : 'h-9 w-10 opacity-55 hover:opacity-95 sm:h-10 sm:w-14'
               }`}
             >
               <img src={getImageSrc(url, 'thumb')} alt="" draggable={false} className="h-full w-full object-cover" />
@@ -506,7 +506,7 @@ function CinemaLightboxDialog({ spot, initialIndex, onClose }) {
             type="button"
             onClick={() => goTo(index + 1)}
             aria-label="Next photo"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-white sm:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-white sm:hidden"
           >
             <ChevronRight className="h-4 w-4" strokeWidth={2} />
           </button>

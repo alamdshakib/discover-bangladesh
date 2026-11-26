@@ -8,7 +8,7 @@
   --color-canvas: #f4f6f8;
   --color-ink: #1e293b;
   --color-ink-soft: #334155;
-  --color-mist: #94a3b8;
+  --color-mist: #64748b;
   --color-haze: #cbd5e1;
   --color-line: #e2e8f0;
   --color-card: #ffffff;
@@ -150,6 +150,7 @@ html.theme-transitioning *::after {
     color-scheme: dark;
     --color-canvas: #0b111e;
     --color-card: #131c2e;
+    --color-mist: #94a3b8;
     --color-line: rgb(255 255 255 / 0.1);
     --color-haze: rgb(255 255 255 / 0.18);
   }

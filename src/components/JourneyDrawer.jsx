@@ -70,11 +70,26 @@ function JourneyDrawerDialog({ onClose }) {
   useEffect(() => {
     const prevFocus = document.activeElement;
     closeBtnRef.current?.focus({ preventScroll: true });
+    const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
     const onKey = (e) => {
+      if (document.querySelector('[data-spot-detail], [data-cinema-lightbox]')) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         requestClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !drawerRef.current) return;
+      const nodes = [...drawerRef.current.querySelectorAll(FOCUSABLE)].filter((n) => n.offsetParent !== null);
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
     window.addEventListener('keydown', onKey);
