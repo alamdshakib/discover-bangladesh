@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDownRight, Compass, Map, MapPin } from 'lucide-react';
 import { SITE_META, SECTION_IDS } from '@data';
-import { useMagnetic, useShowcase } from '@hooks';
+import { useBangladeshTime, useLiveWeather, useMagnetic, useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
 import { formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
@@ -74,6 +74,8 @@ export function Hero() {
 
   const [activeIdx, setActiveIdx] = useState(0);
   const activeSpot = heroSlides[activeIdx] ?? heroSlides[0];
+  const { weather, loading: weatherLoading } = useLiveWeather(activeSpot?.coordinates);
+  const bstTime = useBangladeshTime();
 
   // Keep initial coordinate proxy synced on first mount
   useEffect(() => {
@@ -774,8 +776,33 @@ export function Hero() {
                 </span>
               </div>
 
-              {/* Active Destination Pill (opens current carousel spot) */}
-              <div className="pointer-events-auto ml-auto max-w-[calc(100%-0.5rem)] sm:max-w-xs">
+              {/* Live Weather + BST Time HUD & Active Destination Pill */}
+              <div className="pointer-events-auto ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
+                {weatherLoading && !weather ? (
+                  <div
+                    data-hero-live-weather
+                    aria-hidden="true"
+                    className="glass-dark h-8 w-[198px] animate-pulse rounded-full border border-white/20 sm:h-9 sm:w-[218px]"
+                  />
+                ) : (
+                  <div
+                    data-hero-live-weather
+                    className="glass-dark inline-flex h-8 max-w-full items-center gap-1.5 rounded-full border border-white/20 px-3 text-[11px] font-medium text-white/95 shadow-lg tabular-nums sm:h-9 sm:gap-2 sm:px-3.5"
+                  >
+                    <span className="relative flex h-2 w-2 shrink-0 items-center justify-center" aria-hidden="true">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                    </span>
+                    <span className="truncate whitespace-nowrap">
+                      <span className="font-semibold text-emerald-300">Live</span>
+                      <span className="mx-1 text-white/35">·</span>
+                      <span className="font-semibold">{weather?.temperature ?? '--'}°C</span> {weather?.label ?? 'Clear'}
+                      <span className="mx-1 text-white/35">·</span>
+                      <span className="text-white/80">{bstTime}</span>
+                    </span>
+                  </div>
+                )}
+
                 <button
                   ref={pillBtnRef}
                   type="button"

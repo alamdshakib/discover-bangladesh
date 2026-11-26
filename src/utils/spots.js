@@ -29,8 +29,83 @@ export function getSeasonWindow(spot) {
   return spot.bestTime.split(' (')[0].trim();
 }
 
+const MONTH_NAMES = [
+  'january',
+  'february',
+  'march',
+  'april',
+  'may',
+  'june',
+  'july',
+  'august',
+  'september',
+  'october',
+  'november',
+  'december',
+];
+
+const MONTH_NAME_MAP = Object.fromEntries(MONTH_NAMES.map((m, idx) => [m, idx]));
+
 const MONTH_RANGE_RE =
   /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+to\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/i;
+
+const MONTH_RANGES_GLOBAL_RE =
+  /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+to\s+(January|February|March|April|May|June|July|August|September|October|November|December)\b/gi;
+
+/** Current 0-11 month index in Bangladesh Standard Time (Asia/Dhaka). */
+export function getBangladeshMonth(date = new Date()) {
+  try {
+    const label = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Dhaka', month: 'long' }).format(date);
+    const idx = MONTH_NAME_MAP[label.toLowerCase()];
+    if (typeof idx === 'number') return idx;
+  } catch {
+    // Fallback to local clock month when Intl timezone data is unavailable
+  }
+  return date.getMonth();
+}
+
+/** True when the current Bangladesh month falls within any recommended visiting window of `spot`. */
+export function isBestRightNow(spot, date = new Date()) {
+  const month = getBangladeshMonth(date);
+  const text = spot?.bestTime ?? '';
+  const matches = [...text.matchAll(MONTH_RANGES_GLOBAL_RE)];
+
+  if (matches.length === 0) {
+    return Boolean(spot?.seasons?.includes('Year-Round'));
+  }
+
+  return matches.some((m) => {
+    const start = MONTH_NAME_MAP[m[1].toLowerCase()];
+    const end = MONTH_NAME_MAP[m[2].toLowerCase()];
+    if (typeof start !== 'number' || typeof end !== 'number') return false;
+    return start <= end ? month >= start && month <= end : month >= start || month <= end;
+  });
+}
+
+export const SEASON_FILTER_OPTIONS = [
+  { key: 'all', label: 'All (24)' },
+  { key: 'best-now', label: 'Best Right Now' },
+  { key: 'winter', label: 'Winter (Nov–Feb)' },
+  { key: 'monsoon', label: 'Monsoon (Jun–Sep)' },
+  { key: 'year-round', label: 'Year-Round' },
+];
+
+/** Filter spots by the interactive Season & Vibe bar selection. */
+export function filterSpotsBySeasonVibe(spots, filterKey, date = new Date()) {
+  switch (filterKey) {
+    case 'best-now':
+      return spots.filter((spot) => isBestRightNow(spot, date));
+    case 'winter':
+      return spots.filter((spot) => spot.seasons?.includes('Winter'));
+    case 'monsoon':
+      return spots.filter((spot) => spot.seasons?.includes('Monsoon'));
+    case 'year-round':
+      return spots.filter((spot) => spot.seasons?.includes('Year-Round'));
+    case 'all':
+    default:
+      return spots;
+  }
+}
 
 /** Compact pill label for card headers ("Nov – Mar", "Jul – Sep", "Year-round"). */
 export function getSeasonShort(spot) {

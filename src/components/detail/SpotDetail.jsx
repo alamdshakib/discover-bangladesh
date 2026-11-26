@@ -5,15 +5,24 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  Cloud,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSun,
   ExternalLink,
   MapPin,
   Maximize2,
+  Moon,
   Navigation,
   Route,
+  Sun,
+  Wind,
   X,
 } from 'lucide-react';
 import { CHAPTERS } from '@data';
-import { useMediaQuery, useScrollLock, useShowcase } from '@hooks';
+import { useBangladeshTime, useLiveWeather, useMediaQuery, useScrollLock, useShowcase } from '@hooks';
 import { gsap, MEDIA } from '@animations';
 import {
   formatCoordinates,
@@ -236,8 +245,41 @@ function InfoCard({ icon: Icon, title, children, className = '' }) {
   );
 }
 
+function WeatherConditionIcon({ icon, className = 'h-4 w-4' }) {
+  switch (icon) {
+    case 'sun':
+      return <Sun className={className} strokeWidth={2.1} aria-hidden="true" />;
+    case 'moon':
+      return <Moon className={className} strokeWidth={2.1} aria-hidden="true" />;
+    case 'cloud':
+      return <Cloud className={className} strokeWidth={2.1} aria-hidden="true" />;
+    case 'fog':
+      return <CloudFog className={className} strokeWidth={2.1} aria-hidden="true" />;
+    case 'rain':
+      return <CloudRain className={className} strokeWidth={2.1} aria-hidden="true" />;
+    case 'storm':
+      return <CloudLightning className={className} strokeWidth={2.1} aria-hidden="true" />;
+    case 'cloud-sun':
+    default:
+      return <CloudSun className={className} strokeWidth={2.1} aria-hidden="true" />;
+  }
+}
+
 function DetailInfo({ spot, titleId, nextSpot, onNext }) {
   const chapter = chapterByCategory[spot.category];
+  const { weather, loading: weatherLoading } = useLiveWeather(spot.coordinates);
+  const bstTime = useBangladeshTime();
+  const weatherRowRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const row = weatherRowRef.current;
+    if (!row || weatherLoading || !weather || window.matchMedia(MEDIA.reduceMotion).matches) return;
+    gsap.fromTo(
+      row,
+      { y: 10, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out', clearProps: 'transform,opacity' }
+    );
+  }, [spot.id, weatherLoading, weather]);
 
   return (
     <div
@@ -312,6 +354,54 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
             Open in Google Maps
             <ExternalLink className="h-3.5 w-3.5" strokeWidth={2.2} />
           </a>
+        </InfoCard>
+
+        <InfoCard icon={CloudSun} title="Live Weather" className="sm:col-span-2">
+          <div data-detail-weather className="min-h-[44px]">
+            {weatherLoading && !weather ? (
+              <div className="flex flex-wrap items-center gap-2.5" aria-hidden="true">
+                <div className="h-10 w-36 animate-pulse rounded-2xl bg-line dark:bg-white/10" />
+                <div className="h-9 w-28 animate-pulse rounded-full bg-line dark:bg-white/10" />
+                <div className="h-9 w-28 animate-pulse rounded-full bg-line dark:bg-white/10" />
+              </div>
+            ) : (
+              <div
+                ref={weatherRowRef}
+                className="flex flex-wrap items-center justify-between gap-3 will-change-transform"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-canvas text-bd-green dark:bg-white/[0.07] dark:text-emerald-400">
+                    <WeatherConditionIcon icon={weather?.icon} className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-2 w-2 items-center justify-center" aria-hidden="true">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+                      </span>
+                      <span className="font-display text-lg font-bold tracking-tight text-ink tabular-nums dark:text-slate-50">
+                        {weather?.temperature ?? '--'}°C
+                      </span>
+                      <span className="text-sm font-medium text-ink-soft dark:text-slate-300">
+                        {weather?.label ?? 'Clear'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-xs font-medium text-ink tabular-nums dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200">
+                    <Wind className="h-3.5 w-3.5 text-mist" strokeWidth={2} aria-hidden="true" />
+                    {weather?.windspeed ?? '--'} km/h wind
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 font-mono text-xs font-medium text-ink tabular-nums dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-200">
+                    <Clock className="h-3.5 w-3.5 text-mist" strokeWidth={2} aria-hidden="true" />
+                    {bstTime}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </InfoCard>
 
         <InfoCard icon={Route} title="Route Guide" className="sm:col-span-2">
