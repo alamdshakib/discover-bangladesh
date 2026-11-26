@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ExternalLink,
   MapPin,
+  Maximize2,
   Navigation,
   Route,
   X,
@@ -33,10 +34,16 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
  * Swipeable & button-driven photo gallery with directional slide + circular iris mask reveal.
  */
 function DetailGallery({ spot }) {
+  const { lightbox, openLightbox } = useShowcase();
   const images = getSpotImages(spot);
   const [index, setIndex] = useState(0);
   const stripRef = useRef(null);
   const indexRef = useRef(0);
+  const lightboxOpenRef = useRef(Boolean(lightbox));
+
+  useEffect(() => {
+    lightboxOpenRef.current = Boolean(lightbox);
+  }, [lightbox]);
 
   const goTo = useCallback(
     (i) => {
@@ -84,6 +91,7 @@ function DetailGallery({ spot }) {
 
   useEffect(() => {
     const onKey = (e) => {
+      if (lightboxOpenRef.current) return;
       if (e.key === 'ArrowRight') goTo(indexRef.current + 1);
       if (e.key === 'ArrowLeft') goTo(indexRef.current - 1);
     };
@@ -115,13 +123,22 @@ function DetailGallery({ spot }) {
             aria-label={`${i + 1} of ${images.length}`}
           >
             <div data-gallery-stage={i} className="h-full w-full will-change-transform">
-              <SmartImage
-                src={getImageSrc(url, 'full')}
-                alt={`${spot.name} — photo ${i + 1} of ${images.length}`}
-                loading={i === 0 ? 'eager' : 'lazy'}
-                className="h-full w-full bg-ink"
-                imgClassName="h-full w-full object-cover"
-              />
+              <button
+                type="button"
+                data-cursor="view"
+                data-detail-open-lightbox
+                onClick={() => openLightbox(spot.id, i)}
+                aria-label={`Open ${spot.name} photo ${i + 1} in Cinema Lightbox`}
+                className="block h-full w-full cursor-zoom-in"
+              >
+                <SmartImage
+                  src={getImageSrc(url, 'full')}
+                  alt={`${spot.name} — photo ${i + 1} of ${images.length}`}
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  className="h-full w-full bg-ink"
+                  imgClassName="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
+                />
+              </button>
             </div>
           </div>
         ))}
@@ -175,6 +192,15 @@ function DetailGallery({ spot }) {
             className="glass hidden h-10 w-10 items-center justify-center rounded-full text-ink transition active:scale-95 sm:flex"
           >
             <ChevronRight className="h-5 w-5" strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            data-cursor="magnetic"
+            onClick={() => openLightbox(spot.id, index)}
+            aria-label="Open photo in Cinema Lightbox"
+            className="glass-dark flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/45 active:scale-95"
+          >
+            <Maximize2 className="h-4 w-4" strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -325,7 +351,7 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
 }
 
 function DetailDialog() {
-  const { activeSpot: spot, spots, openSpot, closeSpot } = useShowcase();
+  const { activeSpot: spot, spots, openSpot, closeSpot, lightbox } = useShowcase();
   const isDesktop = useMediaQuery(MEDIA.desktop);
   const titleId = useId();
   const backdropRef = useRef(null);
@@ -334,6 +360,11 @@ function DetailDialog() {
   const closeRef = useRef(null);
   const closingRef = useRef(false);
   const dragRef = useRef(null);
+  const lightboxOpenRef = useRef(Boolean(lightbox));
+
+  useEffect(() => {
+    lightboxOpenRef.current = Boolean(lightbox);
+  }, [lightbox]);
 
   useScrollLock(true);
 
@@ -433,6 +464,7 @@ function DetailDialog() {
     closeRef.current?.focus({ preventScroll: true });
 
     const onKey = (e) => {
+      if (lightboxOpenRef.current) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         requestClose();

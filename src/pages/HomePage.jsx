@@ -1,4 +1,4 @@
-import { Hero, KineticMarquee, Showcase, SpotAtlas, StatsStrip } from '@components';
+import { Hero, HorizontalReel, KineticMarquee, Showcase, SpotAtlas, StatsStrip } from '@components';
 
 export function HomePage() {
   return (
@@ -7,7 +7,8 @@ export function HomePage() {
       <StatsStrip />
       <KineticMarquee />
       <Showcase />
-      <KineticMarquee className="mt-20 sm:mt-28" />
+      <HorizontalReel />
+      <KineticMarquee className="mt-16 sm:mt-24" />
       <SpotAtlas />
     </>
   );

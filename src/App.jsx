@@ -1,5 +1,6 @@
 import {
   ChapterAtmosphere,
+  CinemaLightbox,
   CinematicIntro,
   Footer,
   GlobalMotion,
@@ -26,6 +27,7 @@ export default function App() {
       <Footer />
       <ScrollCompassHUD />
       <SpotDetail />
+      <CinemaLightbox />
     </ShowcaseProvider>
   );
 }

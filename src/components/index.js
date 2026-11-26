@@ -25,3 +25,5 @@ export { ScrollCompassHUD } from './ScrollCompassHUD.jsx';
 export { HeroTerrain3D } from './HeroTerrain3D.jsx';
 export { KineticMarquee } from './KineticMarquee.jsx';
 export { ChapterAtmosphere } from './ChapterAtmosphere.jsx';
+export { HorizontalReel } from './HorizontalReel.jsx';
+export { CinemaLightbox } from './CinemaLightbox.jsx';
