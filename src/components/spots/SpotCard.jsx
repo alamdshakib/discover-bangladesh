@@ -5,6 +5,7 @@ import { useMagnetic } from '@hooks';
 import { getImageSrc, getSeasonShort, getSpotImages } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 import { MetaPill } from '../ui/MetaPill.jsx';
+import { JourneyBookmarkButton } from '../ui/JourneyBookmarkButton.jsx';
 import { TravelNotes } from './TravelNotes.jsx';
 
 // Literal class names so Tailwind can detect them at build time.
@@ -173,19 +174,23 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
                 />
               </button>
 
-              <button
-                ref={actionBtnRef}
-                type="button"
-                data-cursor="magnetic"
-                onClick={open}
-                aria-label={`Explore ${spot.name}`}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white shadow-md transition-[background-color,color] duration-300 active:scale-95 dark:bg-white dark:text-[#0B111E]"
-              >
-                <ArrowUpRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:rotate-45"
-                  strokeWidth={2.2}
-                />
-              </button>
+              <div className="flex items-center gap-2">
+                <JourneyBookmarkButton spotId={spot.id} spotName={spot.name} />
+
+                <button
+                  ref={actionBtnRef}
+                  type="button"
+                  data-cursor="magnetic"
+                  onClick={open}
+                  aria-label={`Explore ${spot.name}`}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-white shadow-md transition-[background-color,color] duration-300 active:scale-95 dark:bg-white dark:text-[#0B111E]"
+                >
+                  <ArrowUpRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:rotate-45"
+                    strokeWidth={2.2}
+                  />
+                </button>
+              </div>
             </div>
             <TravelNotes spot={spot} open={notesOpen} />
           </div>

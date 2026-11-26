@@ -238,3 +238,44 @@ export function getBentoSpans(count) {
   }
   return spans;
 }
+
+const EARTH_RADIUS_KM = 6371;
+const toRad = (deg) => (deg * Math.PI) / 180;
+
+/** Spherical Haversine distance in whole kilometers between two `{ lat, lng }` coordinates. */
+export function haversineKm(a, b) {
+  if (!a || !b) return 0;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const sinLat = Math.sin(dLat / 2);
+  const sinLng = Math.sin(dLng / 2);
+  const h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLng * sinLng;
+  return Math.round(2 * EARTH_RADIUS_KM * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h))));
+}
+
+/** Computes consecutive leg distances and total Haversine distance across ordered journey spots. */
+export function computeJourneyMetrics(journeySpots) {
+  const legDistances = [];
+  let totalKm = 0;
+  for (let i = 0; i < journeySpots.length - 1; i += 1) {
+    const legKm = haversineKm(journeySpots[i].coordinates, journeySpots[i + 1].coordinates);
+    legDistances.push(legKm);
+    totalKm += legKm;
+  }
+  return { legDistances, totalKm };
+}
+
+/** Resolves an exact spot ID or short slug alias (e.g. `sajek` -> `sajek-valley`) from `?trip=` URLs. */
+export function resolveTripSlug(token, spots) {
+  const clean = String(token || '')
+    .trim()
+    .toLowerCase();
+  if (!clean) return null;
+  const exact = spots.find((s) => s.id === clean);
+  if (exact) return exact.id;
+  const prefixMatches = spots.filter((s) => s.id.startsWith(`${clean}-`) || s.id.startsWith(clean));
+  if (prefixMatches.length >= 1) return prefixMatches[0].id;
+  return null;
+}

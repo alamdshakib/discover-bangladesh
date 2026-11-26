@@ -19,6 +19,8 @@ export { SmartImage } from './ui/SmartImage.jsx';
 export { ExpoSwitch } from './ui/ExpoSwitch.jsx';
 export { MetaPill } from './ui/MetaPill.jsx';
 export { ThemeToggle } from './ui/ThemeToggle.jsx';
+export { JourneyBookmarkButton } from './ui/JourneyBookmarkButton.jsx';
+export { JourneyDrawer } from './JourneyDrawer.jsx';
 export { CinematicIntro } from './CinematicIntro.jsx';
 export { GlobalMotion } from './GlobalMotion.jsx';
 export { ScrollCompassHUD } from './ScrollCompassHUD.jsx';

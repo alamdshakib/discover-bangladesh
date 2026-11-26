@@ -35,6 +35,7 @@ import {
 } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 import { MetaPill } from '../ui/MetaPill.jsx';
+import { JourneyBookmarkButton } from '../ui/JourneyBookmarkButton.jsx';
 
 const chapterByCategory = Object.fromEntries(CHAPTERS.map((c) => [c.category, c]));
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -286,12 +287,13 @@ function DetailInfo({ spot, titleId, nextSpot, onNext }) {
       className="p-5 pb-10 sm:p-8 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:p-10"
       data-lenis-prevent
     >
-      <div data-detail-stagger className="flex flex-wrap gap-1.5 pr-12">
+      <div data-detail-stagger className="flex flex-wrap items-center gap-1.5 pr-12">
         <MetaPill tone="ink">
           {chapter?.number} · {spot.category}
         </MetaPill>
         <MetaPill icon={MapPin}>{spot.division} Division</MetaPill>
         <MetaPill>{spot.district}</MetaPill>
+        <JourneyBookmarkButton spotId={spot.id} spotName={spot.name} showLabel />
       </div>
 
       <h2

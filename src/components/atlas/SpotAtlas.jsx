@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { geoMercator, geoPath } from 'd3-geo';
-import { ArrowUpRight, Box, Crosshair, Layers, Minus, Plus, RotateCcw } from 'lucide-react';
+import { ArrowUpRight, Box, Crosshair, Layers, Minus, Plus, RotateCcw, Route } from 'lucide-react';
 import { CHAPTERS, SECTION_IDS } from '@data';
 import bangladeshDivisions from '@data/bangladeshDivisions.json';
 import { useShowcase, useTheme } from '@hooks';
 import { gsap, MEDIA } from '@animations';
 import { countByCategory, formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
+import { JourneyBookmarkButton } from '../ui/JourneyBookmarkButton.jsx';
 
 const SVG_W = 600;
 const SVG_H = 740;
@@ -139,7 +140,7 @@ function getDefaultReliefMode() {
  * with traveling light comet, layered radar sonar pulses, and coordinate odometer preview.
  */
 export function SpotAtlas() {
-  const { spots, openSpot } = useShowcase();
+  const { spots, openSpot, journeySpots, journeyMetrics, routeMode, setRouteMode } = useShowcase();
   const { isDark } = useTheme();
   const [focusId, setFocusId] = useState(spots[0]?.id);
   const [prevFocusId, setPrevFocusId] = useState(null);
@@ -159,6 +160,8 @@ export function SpotAtlas() {
   const arcActiveRef = useRef(null);
   const arcDottedRef = useRef(null);
   const cometRef = useRef(null);
+  const journeyGroupRef = useRef(null);
+  const journeyPulseRef = useRef(null);
   const dragRef = useRef(null);
   const prevCoordsRef = useRef(spots[0]?.coordinates ?? { lat: 23.685, lng: 90.3563 });
   const tiltQuickRef = useRef(null);
@@ -186,11 +189,36 @@ export function SpotAtlas() {
     return map;
   }, [spots]);
 
+  const journeyOrderById = useMemo(() => {
+    const map = new Map();
+    journeySpots.forEach((spot, idx) => map.set(spot.id, idx + 1));
+    return map;
+  }, [journeySpots]);
+
+  const journeyLegs = useMemo(() => {
+    if (journeySpots.length < 2) return [];
+    const legs = [];
+    for (let i = 0; i < journeySpots.length - 1; i += 1) {
+      const fromPt = pointById[journeySpots[i].id];
+      const toPt = pointById[journeySpots[i + 1].id];
+      if (!fromPt || !toPt) continue;
+      const arc = computeFlightArc(fromPt, toPt);
+      if (arc) legs.push({ ...arc, fromId: journeySpots[i].id, toId: journeySpots[i + 1].id });
+    }
+    return legs;
+  }, [journeySpots, pointById]);
+
+  const showJourneyRoute = routeMode && journeyLegs.length > 0;
+
   const projectedSpots = useMemo(() => {
     const items = spots.map((spot) => pointById[spot.id]);
-    // Render focused pin last so its marker and tooltip stay on top.
-    return items.sort((a, b) => (a.spot.id === focus?.id ? 1 : b.spot.id === focus?.id ? -1 : 0));
-  }, [spots, pointById, focus?.id]);
+    // Render journey stops & focused pin last so markers and badges stay cleanly on top.
+    return items.sort((a, b) => {
+      const aFocus = a.spot.id === focus?.id ? 2 : showJourneyRoute && journeyOrderById.has(a.spot.id) ? 1 : 0;
+      const bFocus = b.spot.id === focus?.id ? 2 : showJourneyRoute && journeyOrderById.has(b.spot.id) ? 1 : 0;
+      return aFocus - bFocus;
+    });
+  }, [spots, pointById, focus?.id, showJourneyRoute, journeyOrderById]);
 
   const flightArc = useMemo(() => {
     if (!prevFocusId || !focusId || prevFocusId === focusId) return null;
@@ -311,6 +339,79 @@ export function SpotAtlas() {
 
     return () => ctx.revert();
   }, [flightArc, flightKey]);
+
+  // Animate multi-stop custom Journey curved Bézier routes + sequential glowing traveling pulse
+  useLayoutEffect(() => {
+    if (!showJourneyRoute || !journeyGroupRef.current) return undefined;
+
+    const group = journeyGroupRef.current;
+    const pulse = journeyPulseRef.current;
+    const legNodes = [...group.querySelectorAll('[data-journey-leg]')];
+    const glowNodes = [...group.querySelectorAll('[data-journey-leg-glow]')];
+    const stopBadges = [...group.querySelectorAll('[data-journey-stop-pop]')];
+    if (legNodes.length === 0) return undefined;
+
+    const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
+    if (reduce) {
+      legNodes.forEach((p) => gsap.set(p, { strokeDashoffset: 0, opacity: 1 }));
+      glowNodes.forEach((p) => gsap.set(p, { opacity: 0.5 }));
+      if (pulse) gsap.set(pulse, { opacity: 0 });
+      return undefined;
+    }
+
+    const ctx = gsap.context(() => {
+      const drawTl = gsap.timeline();
+
+      legNodes.forEach((pathEl, idx) => {
+        const len = typeof pathEl.getTotalLength === 'function' ? pathEl.getTotalLength() : 280;
+        const glowEl = glowNodes[idx];
+        gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len, opacity: 1 });
+        if (glowEl) gsap.set(glowEl, { strokeDasharray: len, strokeDashoffset: len, opacity: 0.55 });
+
+        drawTl.to(
+          glowEl ? [glowEl, pathEl] : pathEl,
+          { strokeDashoffset: 0, duration: 0.52, ease: 'power2.inOut' },
+          idx * 0.34
+        );
+      });
+
+      if (stopBadges.length > 0) {
+        drawTl.fromTo(
+          stopBadges,
+          { scale: 0.6, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.4, stagger: 0.08, ease: 'back.out(2)' },
+          0.08
+        );
+      }
+
+      if (pulse && journeyLegs.length > 0) {
+        const pulseTl = gsap.timeline({ repeat: -1, repeatDelay: 0.35, delay: 0.25 });
+        const { p0: firstP0 } = journeyLegs[0];
+        gsap.set(pulse, { opacity: 0, attr: { transform: `translate(${firstP0.x}, ${firstP0.y})` } });
+        pulseTl.to(pulse, { opacity: 1, duration: 0.16 });
+
+        journeyLegs.forEach((leg) => {
+          const proxy = { t: 0 };
+          pulseTl.to(proxy, {
+            t: 1,
+            duration: 0.82,
+            ease: 'power1.inOut',
+            onUpdate: () => {
+              const t = proxy.t;
+              const omt = 1 - t;
+              const x = omt * omt * leg.p0.x + 2 * omt * t * leg.p1.x + t * t * leg.p2.x;
+              const y = omt * omt * leg.p0.y + 2 * omt * t * leg.p1.y + t * t * leg.p2.y;
+              pulse.setAttribute('transform', `translate(${x.toFixed(2)}, ${y.toFixed(2)})`);
+            },
+          });
+        });
+
+        pulseTl.to(pulse, { opacity: 0, duration: 0.2 });
+      }
+    }, stageRef);
+
+    return () => ctx.revert();
+  }, [showJourneyRoute, journeyLegs]);
 
   // Animate left preview card with crisp 3D flip/slide transition + live rolling coordinate odometer
   useEffect(() => {
@@ -446,16 +547,37 @@ export function SpotAtlas() {
       <div className="mx-auto grid max-w-[1600px] gap-3 lg:grid-cols-[1fr_1.15fr] lg:gap-4">
         {/* Left info & live telemetry preview column */}
         <div className="flex min-w-0 flex-col rounded-4xl border border-line bg-card p-5 transition-colors duration-300 dark:border-white/10 dark:bg-[#131C2E] sm:p-8 lg:p-10">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
             <p className="text-[11px] font-semibold tracking-[0.24em] text-mist uppercase">Interactive Map</p>
 
-            {/* 2D Flat / 3D Relief architectural toggle */}
-            <div
-              role="group"
-              aria-label="Map projection perspective"
-              data-atlas-relief-toggle
-              className="inline-flex rounded-full border border-line bg-canvas p-0.5 transition-colors duration-300 dark:border-white/10 dark:bg-[#0B111E]"
-            >
+            <div className="flex flex-wrap items-center gap-2">
+              {journeySpots.length >= 2 && (
+                <button
+                  type="button"
+                  data-atlas-route-toggle
+                  data-cursor="magnetic"
+                  aria-pressed={showJourneyRoute}
+                  onClick={() => setRouteMode((v) => !v)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold tabular-nums transition-colors duration-200 active:scale-95 ${
+                    showJourneyRoute
+                      ? 'border-emerald-500/60 bg-bd-green text-white shadow-[0_8px_20px_-8px_rgba(0,106,78,0.6)] dark:border-emerald-400/50 dark:bg-emerald-500 dark:text-[#081214]'
+                      : 'border-line bg-canvas text-ink hover:border-haze dark:border-white/10 dark:bg-[#0B111E] dark:text-slate-200 dark:hover:border-white/25'
+                  }`}
+                >
+                  <Route className="h-3 w-3" strokeWidth={2.2} />
+                  <span>
+                    Show My Route · {journeySpots.length} · {journeyMetrics.totalKm} km
+                  </span>
+                </button>
+              )}
+
+              {/* 2D Flat / 3D Relief architectural toggle */}
+              <div
+                role="group"
+                aria-label="Map projection perspective"
+                data-atlas-relief-toggle
+                className="inline-flex rounded-full border border-line bg-canvas p-0.5 transition-colors duration-300 dark:border-white/10 dark:bg-[#0B111E]"
+              >
               <button
                 type="button"
                 data-cursor="magnetic"
@@ -484,6 +606,7 @@ export function SpotAtlas() {
                 <Box className="h-3 w-3" strokeWidth={2.2} />
                 3D Relief
               </button>
+            </div>
             </div>
           </div>
 
@@ -552,15 +675,18 @@ export function SpotAtlas() {
                       <span ref={coordTextRef}>{formatCoordinates(focus.coordinates)}</span>
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    data-cursor="magnetic"
-                    onClick={() => openSpot(focus.id)}
-                    className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
-                  >
-                    Open
-                    <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
-                  </button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <JourneyBookmarkButton spotId={focus.id} spotName={focus.name} />
+                    <button
+                      type="button"
+                      data-cursor="magnetic"
+                      onClick={() => openSpot(focus.id)}
+                      className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-colors duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200"
+                    >
+                      Open
+                      <ArrowUpRight className="h-4 w-4" strokeWidth={2.2} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -823,7 +949,7 @@ export function SpotAtlas() {
                   </g>
 
                   {/* 7. Glowing Curved Flight-Arc & Traveling Light Comet */}
-                  {flightArc && (
+                  {!showJourneyRoute && flightArc && (
                     <g data-flight-arc pointerEvents="none" aria-hidden="true">
                       {/* Soft persistent dotted trajectory after comet arrives */}
                       <path
@@ -875,13 +1001,65 @@ export function SpotAtlas() {
                     </g>
                   )}
 
-                  {/* 8. 24 Color-Coded GPS Pins with Layered Sonar Radar Rings */}
+                  {/* 7B. Multi-Stop Custom Journey Route (Stop 1 -> Stop 2 -> Stop 3...) */}
+                  {showJourneyRoute && (
+                    <g ref={journeyGroupRef} data-journey-route pointerEvents="none" aria-hidden="true">
+                      {journeyLegs.map((leg, idx) => (
+                        <g key={`${leg.fromId}-${leg.toId}-${idx}`}>
+                          <path
+                            data-journey-leg-glow={idx}
+                            d={leg.d}
+                            fill="none"
+                            stroke={isDark ? '#34d399' : '#006a4e'}
+                            strokeWidth={6 * invScale}
+                            strokeLinecap="round"
+                            filter="url(#bd-pin-glow)"
+                            opacity={0.55}
+                          />
+                          <path
+                            data-journey-leg={idx}
+                            d={leg.d}
+                            fill="none"
+                            stroke={isDark ? '#34d399' : '#006a4e'}
+                            strokeWidth={2.6 * invScale}
+                            strokeLinecap="round"
+                          />
+                        </g>
+                      ))}
+
+                      {/* Sequential glowing traveling light pulse along the multi-stop path */}
+                      <g ref={journeyPulseRef} data-journey-pulse opacity={0}>
+                        <circle
+                          r={11 * invScale}
+                          fill={isDark ? '#34d399' : '#10b981'}
+                          opacity={0.65}
+                          filter="url(#bd-pin-glow)"
+                        />
+                        <circle
+                          r={4.5 * invScale}
+                          fill="#FFFFFF"
+                          stroke={isDark ? '#10b981' : '#006a4e'}
+                          strokeWidth={1.8 * invScale}
+                        />
+                      </g>
+                    </g>
+                  )}
+
+                  {/* 8. 24 Color-Coded GPS Pins with Layered Sonar Radar Rings & Numbered Stop Badges */}
                   <g>
                     {projectedSpots.map(({ spot, px, py }) => {
+                      const stopNumber = journeyOrderById.get(spot.id);
+                      const isRouteStop = Boolean(showJourneyRoute && stopNumber);
                       const isFocus = spot.id === focus?.id;
-                      const dimmed = Boolean(category && spot.category !== category);
-                      const color = mapTheme.pins[spot.category] ?? '#1E293B';
-                      const dotRadius = (isFocus ? 7.5 : 4.8) * invScale;
+                      const dimmed = showJourneyRoute
+                        ? !isRouteStop
+                        : Boolean(category && spot.category !== category);
+                      const color = isRouteStop
+                        ? isDark
+                          ? '#10b981'
+                          : '#006a4e'
+                        : mapTheme.pins[spot.category] ?? '#1E293B';
+                      const dotRadius = (isRouteStop ? 8.5 : isFocus ? 7.5 : 4.8) * invScale;
                       const strokeW = 2.2 * invScale;
 
                       const flipBelow = py < 70;
@@ -901,7 +1079,7 @@ export function SpotAtlas() {
                           transform={`translate(${px}, ${py})`}
                           role="button"
                           tabIndex={0}
-                          aria-label={`${spot.name}, ${spot.district}`}
+                          aria-label={stopNumber ? `Stop ${stopNumber}: ${spot.name}, ${spot.district}` : `${spot.name}, ${spot.district}`}
                           onMouseEnter={() => selectSpot(spot.id)}
                           onFocus={() => selectSpot(spot.id)}
                           onClick={(e) => {
@@ -916,7 +1094,7 @@ export function SpotAtlas() {
                               else selectSpot(spot.id);
                             }
                           }}
-                          opacity={dimmed ? 0.22 : 1}
+                          opacity={dimmed ? 0.34 : 1}
                           className="cursor-pointer transition-opacity duration-200 focus:outline-none"
                         >
                           <circle r={13 / zoom} fill="transparent" />
@@ -925,13 +1103,13 @@ export function SpotAtlas() {
                             <circle
                               r={dotRadius * 2.1}
                               fill={color}
-                              opacity={isFocus ? 0.55 : 0.35}
+                              opacity={isFocus || isRouteStop ? 0.55 : 0.35}
                               filter="url(#bd-pin-glow)"
                             />
                           )}
 
                           {/* Multi-ring staggered expanding sonar radar ripples around active pin */}
-                          {isFocus && (
+                          {(isFocus || isRouteStop) && (
                             <g data-sonar-rings pointerEvents="none">
                               <circle
                                 r={11 * invScale}
@@ -947,13 +1125,15 @@ export function SpotAtlas() {
                                 strokeWidth={1.4 * invScale}
                                 className="atlas-sonar-ring-delayed"
                               />
-                              <circle
-                                r={11 * invScale}
-                                fill="none"
-                                stroke={color}
-                                strokeWidth={1.1 * invScale}
-                                className="atlas-sonar-ring-third"
-                              />
+                              {isFocus && (
+                                <circle
+                                  r={11 * invScale}
+                                  fill="none"
+                                  stroke={color}
+                                  strokeWidth={1.1 * invScale}
+                                  className="atlas-sonar-ring-third"
+                                />
+                              )}
                             </g>
                           )}
 
@@ -963,6 +1143,35 @@ export function SpotAtlas() {
                             stroke={isDark ? '#0B111E' : '#FFFFFF'}
                             strokeWidth={strokeW}
                           />
+
+                          {/* Numbered Journey Stop Badge (1, 2, 3...) */}
+                          {isRouteStop && (
+                            <g
+                              data-journey-stop-badge={stopNumber}
+                              data-journey-stop-pop
+                              transform={`scale(${invScale})`}
+                              pointerEvents="none"
+                            >
+                              <circle
+                                cx={10}
+                                cy={-10}
+                                r={8.5}
+                                fill={isDark ? '#F8FAFC' : '#0B111E'}
+                                stroke={color}
+                                strokeWidth={1.6}
+                              />
+                              <text
+                                x={10}
+                                y={-6.5}
+                                textAnchor="middle"
+                                fill={isDark ? '#0B111E' : '#FFFFFF'}
+                                fontSize={10}
+                                fontWeight={800}
+                              >
+                                {stopNumber}
+                              </text>
+                            </g>
+                          )}
 
                           {isFocus && (
                             <g transform={`scale(${invScale})`} pointerEvents="none">

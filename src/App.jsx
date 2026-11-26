@@ -4,6 +4,7 @@ import {
   CinematicIntro,
   Footer,
   GlobalMotion,
+  JourneyDrawer,
   Navbar,
   ScrollCompassHUD,
   SpotDetail,
@@ -26,6 +27,7 @@ export default function App() {
       </main>
       <Footer />
       <ScrollCompassHUD />
+      <JourneyDrawer />
       <SpotDetail />
       <CinemaLightbox />
     </ShowcaseProvider>
