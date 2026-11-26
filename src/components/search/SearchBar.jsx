@@ -74,7 +74,7 @@ export function SearchBar({ inline = false, onNavigate, className = '' }) {
           }}
           onFocus={() => setFocused(true)}
           onKeyDown={onKeyDown}
-          placeholder="Search 24 destinations…"
+          placeholder={`Search ${spots.length} destinations…`}
           aria-label="Search destinations"
           role="combobox"
           aria-expanded={showPanel}

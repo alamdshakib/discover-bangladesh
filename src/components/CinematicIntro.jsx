@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { spotsData } from '@data';
+import { BANGLADESH_DIVISIONS, spotsData } from '@data';
 import { useScrollLock } from '@hooks';
 import { gsap, MEDIA, ScrollTrigger } from '@animations';
 import { getImageSrc } from '@utils';
@@ -405,7 +405,7 @@ export function CinematicIntro() {
         className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-[7.5svh] items-center justify-start border-t border-white/[0.08] bg-[#020408] px-5 will-change-transform sm:h-[9.5svh] sm:px-10"
       >
         <span className="font-mono text-[10px] font-medium tracking-[0.24em] text-white/35 uppercase">
-          8 DIVISIONS · 24 DESTINATIONS
+          {BANGLADESH_DIVISIONS.length} DIVISIONS · {spotsData.length} DESTINATIONS
         </span>
       </div>
 

@@ -1,11 +1,12 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { RotateCcw, SearchX } from 'lucide-react';
-import { FILTER_GROUPS } from '@data';
+import { ChevronDown, ChevronUp, RotateCcw, SearchX } from 'lucide-react';
+import { CHAPTERS, FILTER_GROUPS, SPOT_CATEGORIES } from '@data';
 import { Flip, gsap, MEDIA, ScrollTrigger } from '@animations';
-import { filterSpots, getExpoTileClass } from '@utils';
+import { filterSpots, getExpoTileClass, groupByCategory } from '@utils';
 import { ExpoCard } from './ExpoCard.jsx';
 import { FilterPills } from './FilterPills.jsx';
 
+const DEFAULT_VISIBLE = 6;
 const emptySelection = () => Object.fromEntries(FILTER_GROUPS.map((g) => [g.key, new Set()]));
 
 function countTags(spots, field) {
@@ -18,21 +19,43 @@ function countTags(spots, field) {
   }, {});
 }
 
-/** Expo Mode: high-density 3D bento matrix with shutter unmask, window parallax, and FLIP filters. */
-export function ExpoMatrix({ spots, onOpen }) {
+/**
+ * Expo Mode: high-density level bento matrix with shutter unmask, window parallax,
+ * per-chapter Show More (6 default when unfiltered), and FLIP multi-tag filters across all spots.
+ */
+export function ExpoMatrix({ spots, isSeasonFiltered = false, onOpen }) {
   const [selection, setSelection] = useState(emptySelection);
+  const [expandedChapters, setExpandedChapters] = useState(() => new Set());
   const gridRef = useRef(null);
   const flipState = useRef(null);
   const hasMounted = useRef(false);
 
   const filtered = useMemo(() => filterSpots(spots, FILTER_GROUPS, selection), [spots, selection]);
-  const filteredKey = useMemo(() => filtered.map((s) => s.id).join(','), [filtered]);
-  const revealedIdsRef = useRef(new Set());
   const tagCounts = useMemo(
     () => Object.fromEntries(FILTER_GROUPS.map((g) => [g.key, countTags(spots, g.field)])),
     [spots]
   );
   const activeCount = FILTER_GROUPS.reduce((n, g) => n + selection[g.key].size, 0);
+  const isAnyFilterActive = isSeasonFiltered || activeCount > 0;
+
+  const grouped = useMemo(() => groupByCategory(filtered, SPOT_CATEGORIES), [filtered]);
+  const visibleChapters = useMemo(
+    () => CHAPTERS.filter((chapter) => (grouped[chapter.category]?.length ?? 0) > 0),
+    [grouped]
+  );
+
+  const renderedKey = useMemo(() => {
+    if (isAnyFilterActive) return `filtered:${filtered.map((s) => s.id).join(',')}`;
+    return visibleChapters
+      .map((ch) => {
+        const list = grouped[ch.category] ?? [];
+        const shown = expandedChapters.has(ch.id) ? list : list.slice(0, DEFAULT_VISIBLE);
+        return `${ch.id}=${shown.map((s) => s.id).join(',')}`;
+      })
+      .join('|');
+  }, [isAnyFilterActive, filtered, visibleChapters, grouped, expandedChapters]);
+
+  const revealedIdsRef = useRef(new Set());
 
   const captureLayout = () => {
     const cards = gridRef.current?.querySelectorAll('[data-expo-card]');
@@ -46,6 +69,15 @@ export function ExpoMatrix({ spots, onOpen }) {
       if (nextSet.has(tag)) nextSet.delete(tag);
       else nextSet.add(tag);
       return { ...prev, [groupKey]: nextSet };
+    });
+  };
+
+  const toggleChapterExpand = (chapterId) => {
+    setExpandedChapters((prev) => {
+      const next = new Set(prev);
+      if (next.has(chapterId)) next.delete(chapterId);
+      else next.add(chapterId);
+      return next;
     });
   };
 
@@ -65,7 +97,7 @@ export function ExpoMatrix({ spots, onOpen }) {
       if (reduce) return;
       const cards = grid.querySelectorAll('[data-expo-card]');
 
-      cards.forEach((card) => {
+      cards.forEach((card, idx) => {
         const spotId = card.getAttribute('data-flip-id');
         const shutter = card.querySelector('[data-card-shutter]');
         const media = card.querySelector('[data-card-media]');
@@ -74,7 +106,7 @@ export function ExpoMatrix({ spots, onOpen }) {
           const cardTl = gsap.timeline({
             scrollTrigger: {
               trigger: card,
-              start: 'top 94%',
+              start: 'top 96%',
               once: true,
               fastScrollEnd: true,
             },
@@ -90,7 +122,8 @@ export function ExpoMatrix({ spots, onOpen }) {
               y: 0,
               opacity: 1,
               scale: 1,
-              duration: 0.58,
+              duration: 0.56,
+              delay: (idx % 6) * 0.035,
               ease: 'power3.out',
               immediateRender: false,
               clearProps: 'transform,opacity',
@@ -104,7 +137,7 @@ export function ExpoMatrix({ spots, onOpen }) {
               { clipPath: 'inset(10% 0% 0% 0% round 1.5rem)' },
               {
                 clipPath: 'inset(0% 0% 0% 0% round 1.5rem)',
-                duration: 0.62,
+                duration: 0.6,
                 ease: 'power3.out',
                 immediateRender: false,
                 clearProps: 'clipPath',
@@ -131,11 +164,11 @@ export function ExpoMatrix({ spots, onOpen }) {
 
     hasMounted.current = true;
     return () => ctx.revert();
-  }, [filteredKey]);
+  }, [renderedKey]);
 
-  // FLIP re-layout whenever the filtered set changes via tag pills.
+  // FLIP re-layout whenever the filtered or expanded set changes + immediate ScrollTrigger refresh.
   useLayoutEffect(() => {
-    if (!hasMounted.current) return;
+    if (!hasMounted.current) return undefined;
     const state = flipState.current;
     flipState.current = null;
     const cards = gridRef.current?.querySelectorAll('[data-expo-card]');
@@ -157,15 +190,25 @@ export function ExpoMatrix({ spots, onOpen }) {
           return gsap.fromTo(
             els,
             { opacity: 0, scale: 0.92, y: 18 },
-            { opacity: 1, scale: 1, y: 0, duration: 0.48, stagger: 0.025, ease: 'power3.out', clearProps: 'transform,opacity' }
+            {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              duration: 0.48,
+              stagger: 0.025,
+              ease: 'power3.out',
+              clearProps: 'transform,opacity',
+            }
           );
         },
         onComplete: () => ScrollTrigger.refresh(),
       });
-    } else {
-      ScrollTrigger.refresh();
+      return undefined;
     }
-  }, [filtered]);
+
+    const refreshRaf = window.requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => window.cancelAnimationFrame(refreshRaf);
+  }, [renderedKey]);
 
   return (
     <div>
@@ -219,13 +262,76 @@ export function ExpoMatrix({ spots, onOpen }) {
         </div>
       </div>
 
-      <div
-        ref={gridRef}
-        className="mt-3 grid grid-flow-dense auto-rows-[170px] grid-cols-2 gap-2.5 sm:mt-4 sm:auto-rows-[190px] sm:grid-cols-3 sm:gap-3 lg:auto-rows-[200px] lg:grid-cols-4 xl:grid-cols-6"
-      >
-        {filtered.map((spot, index) => (
-          <ExpoCard key={spot.id} spot={spot} tileClass={getExpoTileClass(index)} onOpen={onOpen} />
-        ))}
+      <div ref={gridRef} className="mt-4 sm:mt-6">
+        {isAnyFilterActive ? (
+          <div className="grid grid-flow-dense auto-rows-[170px] grid-cols-2 gap-2.5 sm:auto-rows-[190px] sm:grid-cols-3 sm:gap-3 lg:auto-rows-[200px] lg:grid-cols-4 xl:grid-cols-6">
+            {filtered.map((spot, index) => (
+              <ExpoCard key={spot.id} spot={spot} tileClass={getExpoTileClass(index)} onOpen={onOpen} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-10 sm:gap-12">
+            {visibleChapters.map((chapter) => {
+              const chapterSpots = grouped[chapter.category] ?? [];
+              const expanded = expandedChapters.has(chapter.id);
+              const hasOverflow = chapterSpots.length > DEFAULT_VISIBLE;
+              const visibleSpots = hasOverflow && !expanded ? chapterSpots.slice(0, DEFAULT_VISIBLE) : chapterSpots;
+              const hiddenCount = Math.max(0, chapterSpots.length - DEFAULT_VISIBLE);
+
+              return (
+                <div key={chapter.id} data-expo-chapter={chapter.id}>
+                  <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                    <div className="flex items-center gap-2.5">
+                      <span className={`h-2 w-2 rounded-full ${chapter.dotClass}`} aria-hidden="true" />
+                      <span className="font-mono text-xs font-bold tracking-[0.2em] text-mist uppercase">
+                        {chapter.number}
+                      </span>
+                      <h3 className="font-display text-lg font-extrabold tracking-tight text-ink dark:text-slate-50 sm:text-xl">
+                        {chapter.title}
+                      </h3>
+                    </div>
+                    <span className="rounded-full border border-line bg-white/80 px-3 py-1 text-[11px] font-semibold text-ink-soft tabular-nums dark:border-white/10 dark:bg-[#131C2E] dark:text-slate-300">
+                      Showing {visibleSpots.length} of {chapterSpots.length}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-flow-dense auto-rows-[170px] grid-cols-2 gap-2.5 sm:auto-rows-[190px] sm:grid-cols-3 sm:gap-3 lg:auto-rows-[200px] lg:grid-cols-4 xl:grid-cols-6">
+                    {visibleSpots.map((spot, index) => (
+                      <ExpoCard key={spot.id} spot={spot} tileClass={getExpoTileClass(index)} onOpen={onOpen} />
+                    ))}
+                  </div>
+
+                  {hasOverflow && (
+                    <div className="mt-5 flex justify-center sm:mt-6">
+                      <button
+                        type="button"
+                        data-expo-chapter-expand={chapter.id}
+                        data-cursor="magnetic"
+                        aria-expanded={expanded}
+                        onClick={() => toggleChapterExpand(chapter.id)}
+                        className="glass inline-flex items-center gap-2 rounded-full border border-white/80 px-5 py-2.5 text-xs font-semibold tracking-wide text-ink shadow-[0_14px_34px_-16px_rgba(15,23,42,0.32)] transition-[transform,background-color,border-color,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-haze hover:shadow-[0_18px_40px_-16px_rgba(15,23,42,0.4)] active:scale-95 dark:border-white/15 dark:text-slate-100 dark:hover:border-white/30 dark:shadow-[0_14px_34px_-16px_rgba(0,0,0,0.85)] sm:px-6 sm:py-3 sm:text-sm"
+                      >
+                        {expanded ? (
+                          <>
+                            <span>Show less</span>
+                            <ChevronUp className="h-4 w-4 text-bd-green dark:text-emerald-400" strokeWidth={2.2} />
+                          </>
+                        ) : (
+                          <>
+                            <span>
+                              Show all {chapterSpots.length} in {chapter.title} (+{hiddenCount})
+                            </span>
+                            <ChevronDown className="h-4 w-4 text-bd-green dark:text-emerald-400" strokeWidth={2.2} />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {filtered.length === 0 && (

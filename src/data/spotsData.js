@@ -733,6 +733,336 @@ export const spotsData = [
       ],
     },
   },
+  {
+    id: 'debotakhum',
+    name: 'Debotakhum',
+    division: 'Chattogram',
+    district: 'Bandarban',
+    category: 'Hills',
+    tagline: 'Towering wet stone canyon walls above calm jade river waters.',
+    description:
+      'Hidden deep within Roangchhari Upazila in Bandarban, Debotakhum is a dramatic limestone and sandstone gorge flanked by seventy-foot moss-draped cliffs. Visitors pole narrow bamboo rafts silently between sheer canyon faces where shafts of tropical sunlight ignite deep emerald pools.',
+    bestTime:
+      'October to February (post-monsoon canyon water stays calm and emerald-clear for bamboo rafting)',
+    seasons: ['Winter'],
+    howToGo:
+      'Travel from Dhaka or Chattogram to Bandarban town, take local transport to Roangchhari Bazar for tourist police registration and a local guide, then trek past Kachaptali to Ponchiram Para.',
+    highlights: [
+      'Silent bamboo-raft voyages slicing between sheer seventy-foot rocky canyon walls',
+      'Sunlight beams illuminating tranquil emerald and jade natural water pools',
+      'Forest hill trails passing welcoming Marma villages of Kachaptali and Shilbandha',
+    ],
+    coordinates: { lat: 22.1478, lng: 92.3452 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%A4%E0%A6%BE%E0%A6%96%E0%A7%81%E0%A6%AE.jpg/1280px-%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%A4%E0%A6%BE%E0%A6%96%E0%A7%81%E0%A6%AE.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Debota_khum.jpg/1280px-Debota_khum.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%A4%E0%A6%BE%E0%A6%96%E0%A7%81%E0%A6%AE%E0%A7%87%E0%A6%B0_%E0%A6%85%E0%A6%AD%E0%A7%8D%E0%A6%AF%E0%A6%A8%E0%A7%8D%E0%A6%A4%E0%A6%B0.jpg/1280px-%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%A4%E0%A6%BE%E0%A6%96%E0%A7%81%E0%A6%AE%E0%A7%87%E0%A6%B0_%E0%A6%85%E0%A6%AD%E0%A7%8D%E0%A6%AF%E0%A6%A8%E0%A7%8D%E0%A6%A4%E0%A6%B0.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%A4%E0%A6%BE%E0%A6%96%E0%A7%81%E0%A6%AE%E0%A7%87%E0%A6%B0_%E0%A6%AA%E0%A6%BE%E0%A6%B9%E0%A6%BE%E0%A6%A1%E0%A6%BC.jpg/1280px-%E0%A6%A6%E0%A7%87%E0%A6%AC%E0%A6%A4%E0%A6%BE%E0%A6%96%E0%A7%81%E0%A6%AE%E0%A7%87%E0%A6%B0_%E0%A6%AA%E0%A6%BE%E0%A6%B9%E0%A6%BE%E0%A6%A1%E0%A6%BC.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'khoiyachora-waterfall',
+    name: 'Khoiyachora Waterfall',
+    division: 'Chattogram',
+    district: 'Chattogram',
+    category: 'Hills',
+    tagline: 'Nine tiered mountain cascades tucked inside the lush Mirsharai ridges.',
+    description:
+      'Known affectionately as the Queen of Waterfalls in the Chattogram hill range, Khoiyachora tumbles down nine distinct limestone steps shrouded in wild bamboo and tropical ferns. Reached along terraced rice fields and bubbling hillside streams, each upper tier rewards climbers with misty plunge pools and forest stillness.',
+    bestTime:
+      'June to October (monsoon rains awaken all nine forested rock tiers into roaring cascades)',
+    seasons: ['Monsoon'],
+    howToGo:
+      'Take an intercity highway coach or train from Dhaka or Chattogram to Boro Takia Bazar in Mirsharai, then ride a short CNG auto-rickshaw to the trailhead and trek roughly 45 minutes through paddy fields and streams.',
+    highlights: [
+      'Nine natural cascading rock steps carving through dense subtropical hill jungle',
+      'Crystalline plunge pools framed by cool spray and overhanging mountain foliage',
+      'Scenic stream-crossing trek skirting verdant Mirsharai hill terraces and rice paddies',
+    ],
+    coordinates: { lat: 22.7796, lng: 91.5924 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Khoiyachora_Waterfalls_03.jpg/1280px-Khoiyachora_Waterfalls_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Khoiyachora_Waterfalls_02.jpg/1280px-Khoiyachora_Waterfalls_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Khoiyachora_Waterfalls_04.jpg/1280px-Khoiyachora_Waterfalls_04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/17/Khoiyachora_Waterfalls_05.jpg/1280px-Khoiyachora_Waterfalls_05.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'bholaganj-sada-pathor',
+    name: 'Bholaganj Sada Pathor',
+    division: 'Sylhet',
+    district: 'Sylhet',
+    category: 'Hills',
+    tagline: 'Luminous white boulders washed by icy emerald currents beneath Meghalaya.',
+    description:
+      'Where the Dholai River spills out of the steep Khasi–Jaintia escarpments in Companiganj, endless sweeps of sun-bleached quartz boulders form a dazzling natural delta. Blue-green mountain currents braid through smooth white stones under drifting cloud banks framed by sheer green cliffs along the northern frontier.',
+    bestTime:
+      'June to October (glacier-clear mountain currents rush over gleaming white boulders from Meghalaya)',
+    seasons: ['Monsoon', 'Winter'],
+    howToGo:
+      'From Sylhet city, drive roughly one hour north along the Sylhet–Bholaganj highway to Bholaganj Zero Point boat station, then cross the Dholai River by traditional wooden country boat.',
+    highlights: [
+      'Expansive beds of gleaming white boulders polished by cool turquoise Himalayan streams',
+      'Wooden country boat rides across shallow braided channels facing emerald border peaks',
+      'Mist-wreathed Khasi hill waterfalls cascading across the frontier skyline',
+    ],
+    coordinates: { lat: 25.1745, lng: 91.7518 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Bholaganj_Sada_Pathor.jpg/1280px-Bholaganj_Sada_Pathor.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Shada_Pathor_02.jpg/1280px-Shada_Pathor_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Sada_Pathor_Boat_Station%2C_Bholaganj.jpg/1280px-Sada_Pathor_Boat_Station%2C_Bholaganj.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Sada_Pathor%2C_Bholaganj%2C_Companyganj%2C_Sylhet.jpg/1280px-Sada_Pathor%2C_Bholaganj%2C_Companyganj%2C_Sylhet.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'nilachal',
+    name: 'Nilachal',
+    division: 'Chattogram',
+    district: 'Bandarban',
+    category: 'Hills',
+    tagline: 'Bandarban’s sunset sanctuary floating 2,000 feet above coastal mist.',
+    description:
+      'Crowning Tiger Hill just south of Bandarban town, Nilachal rises nearly 2,000 feet above sea level with sweeping, unobstructed views over layered Chittagong Hill Tracts valleys. Known as the Darjeeling of Bengal, its stone terraces welcome drifting monsoon cloud seas by morning and amber-violet horizon sunsets toward Cox’s Bazar on clear winter evenings.',
+    bestTime:
+      'August to February (drifting monsoon clouds and crisp winter sunsets over Bandarban ridges)',
+    seasons: ['Monsoon', 'Winter', 'Year-Round'],
+    howToGo:
+      'Travel by overnight coach from Dhaka or Chattogram to Bandarban town, then climb just 5 kilometers uphill along the Tigerpara ridge road by Chander Gari, CNG auto-rickshaw, or jeep.',
+    highlights: [
+      'Sweeping hilltop terraces gazing across terraced valleys toward the Bay of Bengal horizon',
+      'Clouds drifting directly over garden pavilions during monsoon dawns and post-rain twilight',
+      'Scenic ridge-top viewpoints easily paired with nearby Meghla and Shoilo Propat',
+    ],
+    coordinates: { lat: 22.1645, lng: 92.2096 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Bandarban_Nilachal_Sunset.JPG/1280px-Bandarban_Nilachal_Sunset.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/View_of_Nilachal_hill_after_rain%2C_Bandarban_%282%29.jpg/1280px-View_of_Nilachal_hill_after_rain%2C_Bandarban_%282%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Nilachal%2C_Bandarban_%282Q7A0620%29.jpg/1280px-Nilachal%2C_Bandarban_%282Q7A0620%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Nilachal%2C_Bandarban_%282Q7A0671%29.jpg/1280px-Nilachal%2C_Bandarban_%282Q7A0671%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'guliakhali-sea-beach',
+    name: 'Guliakhali Sea Beach',
+    division: 'Chattogram',
+    district: 'Chattogram',
+    category: 'Sea',
+    tagline: 'Velvet green sea-grass meadows carved by winding tidal mirrors.',
+    description:
+      'Set along the Sandwip Channel west of Sitakunda, Guliakhali breaks every mold of a conventional sandy shore. At ebb tide, sprawling green sea-grass meadows veined with curved water channels catch the amber sky like shattered mirrors beside tangled keora mangrove roots.',
+    bestTime:
+      'October to March (low tides expose lush emerald sea-grass carpets threaded by mirrored channels)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Take an intercity bus or train from Dhaka or Chattogram to Sitakunda Bazar, then ride 5 kilometers west through lush coastal farmland by CNG auto-rickshaw straight to the embankment.',
+    highlights: [
+      'Natural green sea-grass dunes divided by calm, sky-reflecting tidal water veins',
+      'Sculpted keora mangrove roots framing tranquil sunset horizons over the Sandwip Channel',
+      'Quiet wooden fisherman skiffs resting beside coastal mudflats at golden hour',
+    ],
+    coordinates: { lat: 22.5966, lng: 91.6177 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/17/Guliakhali_Sea_Beach%2C_Sitakundu.jpg/1280px-Guliakhali_Sea_Beach%2C_Sitakundu.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Guliakhali_mangrove_sea_beach.jpg/1280px-Guliakhali_mangrove_sea_beach.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/58/Guliakhali_Sea_Beach%2C_Sitakundu_%282%29.jpg/1280px-Guliakhali_Sea_Beach%2C_Sitakundu_%282%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Guliakhali_Sea_Beach_Sitakunda.jpg/1280px-Guliakhali_Sea_Beach_Sitakunda.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'parki-beach',
+    name: 'Parki Beach',
+    division: 'Chattogram',
+    district: 'Chattogram',
+    category: 'Sea',
+    tagline: 'A tranquil casuarina-shaded spit where the Karnaphuli meets the bay.',
+    description:
+      'Tucked quietly across the Karnaphuli River in Anwara Upazila, Parki Beach traces a sweeping 15-kilometer arc where river estuary meets the open Bay of Bengal. Whispering jhau-bon pine corridors shield the soft sand from city clamor, offering views of distant anchored ships gliding across amber evening swells.',
+    bestTime:
+      'November to March (calm estuary horizons framed by shaded casuarina groves and sunset silhouettes)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'From Chattogram city, travel south through the Bangabandhu Tunnel beneath the Karnaphuli River or cross the Karnaphuli Bridge into Anwara, then follow coastal signs directly to Parki Beach.',
+    highlights: [
+      'Shaded casuarina tree avenues opening onto wide, peaceful estuarine sands',
+      'Panoramic twilight silhouettes of coastal vessels drifting past the Karnaphuli mouth',
+      'Gentle surf and seasonal red-crab trails along the quieter southern headland',
+    ],
+    coordinates: { lat: 22.1997, lng: 91.8124 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Calm_Noon_at_Parki_Beach_on_a_Non-Weekend_04.jpg/1280px-Calm_Noon_at_Parki_Beach_on_a_Non-Weekend_04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Calm_Noon_at_Parki_Beach_on_a_Non-Weekend_06.jpg/1280px-Calm_Noon_at_Parki_Beach_on_a_Non-Weekend_06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Calm_Noon_at_Parki_Beach_on_a_Non-Weekend_09.jpg/1280px-Calm_Noon_at_Parki_Beach_on_a_Non-Weekend_09.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Crystal_Gold_Ship_at_Parki_Beach%2C_Chittagong.jpg/1280px-Crystal_Gold_Ship_at_Parki_Beach%2C_Chittagong.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'himchari',
+    name: 'Himchari',
+    division: 'Chattogram',
+    district: "Cox's Bazar",
+    category: 'Sea',
+    tagline: 'Emerald cliffside waterfalls overlooking endless Bay of Bengal surf.',
+    description:
+      'Standing 12 kilometers south of Cox’s Bazar along Marine Drive, Himchari National Park unites forested coastal hill ridges directly with crashing ocean waves. Visitors climb wooden ridge steps through dense evergreen forest to gaze across the uninterrupted blue curvature of the Bay of Bengal while hill springs cascade cleanly onto the cliff trail below.',
+    bestTime:
+      'July to February (monsoon feeds the hillside waterfall; winter unveils endless Bay of Bengal cliff panoramas)',
+    seasons: ['Monsoon', 'Winter'],
+    howToGo:
+      "From Kolatoli Circle in Cox's Bazar, take a 20-minute scenic coastal ride south along Marine Drive by open Chander Gari, CNG auto-rickshaw, or car right to the Himchari entrance.",
+    highlights: [
+      'Elevated hilltop viewpoints pairing lush evergreen ridges with sweeping Bay of Bengal surf',
+      'Refreshing coastal hill waterfall flowing straight down toward the sandy shoreline',
+      'Rich coastal woodland sheltering tropical birds along the scenic Marine Drive corridor',
+    ],
+    coordinates: { lat: 21.3536, lng: 92.0258 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Himchari%2C_Cox%27s_Bazar_%282Q7A1950%29.jpg/1280px-Himchari%2C_Cox%27s_Bazar_%282Q7A1950%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Himchari_Waterfall_%2803%29.jpg/1280px-Himchari_Waterfall_%2803%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Himchari_Waterfall_%2801%29.jpg/1280px-Himchari_Waterfall_%2801%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/Himchari_Waterfall_%2802%29.jpg/1280px-Himchari_Waterfall_%2802%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'sonadia-island',
+    name: 'Sonadia Island',
+    division: 'Chattogram',
+    district: "Cox's Bazar",
+    category: 'Sea',
+    tagline: 'Wild coastal dunes, crimson sand crabs, and tranquil mangrove lagoons.',
+    description:
+      'Separated from mainland Cox’s Bazar by winding tidal creeks west of Maheshkhali, Sonadia Island preserves one of Bangladesh’s last untamed barrier-beach ecosystems. Unspoiled white shell-strewn sands, natural mangrove mudflats, and scarlet carpets of fleeing sand crabs welcome flocks of critically endangered shorebirds and nesting sea turtles.',
+    bestTime:
+      'November to February (calm crossings reveal untouched barrier dunes, red crabs, and rare migratory shorebirds)',
+    seasons: ['Winter'],
+    howToGo:
+      "From Cox's Bazar Kasturi Ghat (No. 6 Jetty), board a local speedboat or wooden trawler across the Moheshkhali Channel via Ghotibhanga to reach Sonadia's sandy western shore.",
+    highlights: [
+      'Miles of unblemished shell beaches shimmering with crimson ghost-crab colonies',
+      'Quiet tidal mangrove creeks rich with winter migratory spoon-billed sandpipers and herons',
+      'Timeless coastal fishing hamlets and golden mirror-flat low-tide lagoons',
+    ],
+    coordinates: { lat: 21.4833, lng: 91.9 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Sonadia_Beach%2C_%28photo-Zahirul_Islam-MLA%29.jpg/1280px-Sonadia_Beach%2C_%28photo-Zahirul_Islam-MLA%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Fishing_at_Sonadia_Island.jpg/1280px-Fishing_at_Sonadia_Island.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Mangrove_Forest_and_Tidal_Mudflats_on_Sonadia_Island%2C_Maheshkhali%2C_Cox%27s_Bazar%2C_Bangladesh.jpg/1280px-Mangrove_Forest_and_Tidal_Mudflats_on_Sonadia_Island%2C_Maheshkhali%2C_Cox%27s_Bazar%2C_Bangladesh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/%E0%A6%B2%E0%A6%BE%E0%A6%B2_%E0%A6%97%E0%A6%BE%E0%A6%B2%E0%A6%BF%E0%A6%9A%E0%A6%BE%E0%A6%AF%E0%A6%BC_%E0%A6%89%E0%A6%AA%E0%A6%95%E0%A7%82%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%9C%E0%A7%80%E0%A6%AC%E0%A6%A8.jpg/1280px-%E0%A6%B2%E0%A6%BE%E0%A6%B2_%E0%A6%97%E0%A6%BE%E0%A6%B2%E0%A6%BF%E0%A6%9A%E0%A6%BE%E0%A6%AF%E0%A6%BC_%E0%A6%89%E0%A6%AA%E0%A6%95%E0%A7%82%E0%A6%B2%E0%A7%87%E0%A6%B0_%E0%A6%9C%E0%A7%80%E0%A6%AC%E0%A6%A8.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'maheshkhali-island',
+    name: 'Maheshkhali Island',
+    division: 'Chattogram',
+    district: "Cox's Bazar",
+    category: 'Sea',
+    tagline: 'Bangladesh’s only hilly island, crowned by ancient hilltop temples.',
+    description:
+      'Framed between the Moheshkhali Channel and the open Bay of Bengal, Maheshkhali stands apart as Bangladesh’s sole mountainous coastal island. Green betel-leaf gardens climb beside salt pans and coastal mangrove belts, leading up stone staircases to the historic Adinath Temple and golden Buddhist pagodas overlooking sunlit harbor waters.',
+    bestTime:
+      'October to March (smooth speedboat crossings across the channel to Bangladesh’s only hilly island)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      "Take a 15-minute speedboat or scenic wooden ferry from Cox's Bazar No. 6 Jetty (Kasturi Ghat) across the Moheshkhali Channel straight to Gorakghata jetty.",
+    highlights: [
+      'Centuries-old Adinath Temple perched atop Moinak Hill overlooking coastal mangroves',
+      'Tranquil Rakhine Buddhist monasteries, golden statues, and handwoven village stalls',
+      'Glittering salt evaporation pans and lush hillside sweet-paan gardens beside the bay',
+    ],
+    coordinates: { lat: 21.55, lng: 91.95 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Maheshkhali_view_by_Tanweer.JPG/1280px-Maheshkhali_view_by_Tanweer.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Maheshkhali.JPG/1280px-Maheshkhali.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Falling_Guardians%3B_Mangroves_of_Maheshkhali_2.jpg/1280px-Falling_Guardians%3B_Mangroves_of_Maheshkhali_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/Falling_Guardians%3B_Mangroves_of_Maheshkhali_3.jpg/1280px-Falling_Guardians%3B_Mangroves_of_Maheshkhali_3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'char-kukri-mukri',
+    name: 'Char Kukri Mukri',
+    division: 'Barishal',
+    district: 'Bhola',
+    category: 'Sea',
+    tagline: 'Deltaic mangrove barrier island and serene estuarine bird sanctuary.',
+    description:
+      'Nicknamed the Island of Beauty along the outer edge of Bhola district where the Meghna estuary embraces the Bay of Bengal, Char Kukri Mukri blends towering coastal mangrove woodlands with isolated sandy shores. Elevated timber watchtowers rise above winding tidal creeks frequented by spotted deer, fishing cats, and winter flocks of migratory pelicans and herons.',
+    bestTime:
+      'November to February (calm estuarine tides, coastal mangrove creeks, and winter waterfowl sanctuaries)',
+    seasons: ['Winter'],
+    howToGo:
+      'Board an overnight river launch from Dhaka’s Sadarghat to Char Fasson (Betua Ghat) or travel by highway to Bhola, continue south to Kacchapia Ghat, and cross by wooden engine boat to the island.',
+    highlights: [
+      'Peaceful Narikel Bagan beach and deserted outer-delta sandbanks facing open sea',
+      'Forest observation watchtowers soaring above mangrove canopies and winding creeks',
+      'Protected coastal wildlife refuge sheltering spotted deer and winter shorebird colonies',
+    ],
+    coordinates: { lat: 21.9195, lng: 90.6486 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/Watch_Tower_of_Char_Kukri_Mukri.jpg/1280px-Watch_Tower_of_Char_Kukri_Mukri.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Forests_of_Char_Kukri_Mukri.jpg/1280px-Forests_of_Char_Kukri_Mukri.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Chor.Kukri-Mukri.2.jpg/1280px-Chor.Kukri-Mukri.2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Chor.Kukri-Mukri.6.jpg/1280px-Chor.Kukri-Mukri.6.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'teknaf-marine-drive',
+    name: 'Teknaf Marine Drive',
+    division: 'Chattogram',
+    district: "Cox's Bazar",
+    category: 'Sea',
+    tagline: 'An eighty-kilometer ribbon road between jungle peaks and open ocean.',
+    description:
+      'Unfolding all the way from Kolatoli in Cox’s Bazar down to the tip of the Teknaf Peninsula, this iconic 80-kilometer oceanfront highway is one of Asia’s longest coastal drives. Steep evergreen hills flank the eastern shoulder while rolling turquoise swells and Sampan-dotted golden shores stretch beside the road all the way to Shamlapur and Sabrang.',
+    bestTime:
+      'November to March (golden coastal sunshine along 80 km of unbroken cliff-and-surf highway)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      "Begin at Kolatoli Circle in Cox's Bazar by open Chander Gari, convertible jeep, scooter, or car and follow the paved coastal corridor south past Himchari, Inani, and Shamlapur toward Teknaf.",
+    highlights: [
+      'Unbroken 80 km cliff-and-ocean highway hugging the rugged Bay of Bengal coast',
+      'Hand-built wooden Sampan boats resting along tranquil stretches near Shamlapur and Patuartek',
+      'Golden coastal sunsets descending directly over open ocean horizon turns',
+    ],
+    coordinates: { lat: 21.045, lng: 92.145 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Cox%27s_bazar_marine_drive.JPG/1280px-Cox%27s_bazar_marine_drive.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Cox_Bazar_Marine_Drive_1.JPG/1280px-Cox_Bazar_Marine_Drive_1.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Cox%27s_bazar_marine_drive-6.JPG/1280px-Cox%27s_bazar_marine_drive-6.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Marine_drive%2C_Cox%27s_Bazar_02.jpg/1280px-Marine_drive%2C_Cox%27s_Bazar_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
 ];
 
 export default spotsData;

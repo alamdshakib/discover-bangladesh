@@ -9,7 +9,6 @@ import { ChapterSection } from '../chapters/ChapterSection.jsx';
 import { ExpoMatrix } from '../spots/ExpoMatrix.jsx';
 
 const CHAPTER_IDS = CHAPTERS.map((c) => c.id);
-const SHOWCASE_TITLE_WORDS = ['24', 'places,', 'four', 'chapters.'];
 
 /**
  * Dual-view showcase: Editorial scrollytelling (default) ⇄ Expo bento matrix,
@@ -21,6 +20,8 @@ export function Showcase() {
   const requestedMode = expoMode ? 'expo' : 'editorial';
   const [displayMode, setDisplayMode] = useState(requestedMode);
   const [seasonFilter, setSeasonFilter] = useState('all');
+
+  const titleWords = useMemo(() => [String(spots.length), 'places,', 'four', 'chapters.'], [spots.length]);
 
   const headerRef = useRef(null);
   const filterTrackRef = useRef(null);
@@ -262,11 +263,11 @@ export function Showcase() {
               className="mt-2 font-display leading-[0.94] font-black tracking-[-0.055em] text-ink transition-colors duration-300 will-change-transform dark:text-slate-50"
               style={{ fontSize: 'clamp(2.4rem, 6vw, 5.5rem)' }}
             >
-              {SHOWCASE_TITLE_WORDS.map((word, idx) => (
-                <span key={word} className="inline-block overflow-hidden py-0.5 align-bottom">
+              {titleWords.map((word, idx) => (
+                <span key={`${word}-${idx}`} className="inline-block overflow-hidden py-0.5 align-bottom">
                   <span data-showcase-word className="inline-block will-change-transform">
                     {word}
-                    {idx < SHOWCASE_TITLE_WORDS.length - 1 ? '\u00A0' : ''}
+                    {idx < titleWords.length - 1 ? '\u00A0' : ''}
                   </span>
                 </span>
               ))}
@@ -356,7 +357,7 @@ export function Showcase() {
                         aria-hidden="true"
                       />
                     )}
-                    <span>{option.label}</span>
+                    <span>{option.key === 'all' ? `${option.label} (${spots.length})` : option.label}</span>
                     {option.key !== 'all' && (
                       <span
                         className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums transition-colors duration-200 ${
@@ -416,11 +417,17 @@ export function Showcase() {
         {displayMode === 'editorial' ? (
           <div className="flex flex-col gap-16 sm:gap-20 lg:gap-28">
             {visibleChapters.map((chapter) => (
-              <ChapterSection key={chapter.id} chapter={chapter} spots={grouped[chapter.category]} onOpen={openSpot} />
+              <ChapterSection
+                key={chapter.id}
+                chapter={chapter}
+                spots={grouped[chapter.category]}
+                isFiltered={seasonFilter !== 'all'}
+                onOpen={openSpot}
+              />
             ))}
           </div>
         ) : (
-          <ExpoMatrix spots={filteredSpots} onOpen={openSpot} />
+          <ExpoMatrix spots={filteredSpots} isSeasonFiltered={seasonFilter !== 'all'} onOpen={openSpot} />
         )}
       </div>
     </section>

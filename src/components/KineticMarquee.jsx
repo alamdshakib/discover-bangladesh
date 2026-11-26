@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { getScrollState, gsap, MEDIA } from '@animations';
+import { useShowcase } from '@hooks';
 
-const TOP_TRACK_ITEMS = [
-  '24 DESTINATIONS',
+const STATIC_TOP_TRACK_ITEMS = [
   '8 DIVISIONS',
   'SAJEK',
   "COX'S BAZAR",
@@ -27,10 +27,15 @@ const BOTTOM_TRACK_ITEMS = [
  * Lenis scroll velocity, reverse on upward scroll, and pause automatically off-screen.
  */
 export function KineticMarquee({
-  topItems = TOP_TRACK_ITEMS,
+  topItems,
   bottomItems = BOTTOM_TRACK_ITEMS,
   className = '',
 }) {
+  const { spots } = useShowcase();
+  const resolvedTopItems = useMemo(
+    () => topItems ?? [`${spots.length} DESTINATIONS`, ...STATIC_TOP_TRACK_ITEMS],
+    [topItems, spots.length]
+  );
   const wrapperRef = useRef(null);
   const topTrackRef = useRef(null);
   const bottomTrackRef = useRef(null);
@@ -159,8 +164,8 @@ export function KineticMarquee({
 
       {/* Row 1: Primary editorial track */}
       <div ref={topTrackRef} data-marquee-row="top" className="flex w-max will-change-transform">
-        {renderTrackGroup(topItems, topGroupRef, 'top', false)}
-        {renderTrackGroup(topItems, null, 'top', true)}
+        {renderTrackGroup(resolvedTopItems, topGroupRef, 'top', false)}
+        {renderTrackGroup(resolvedTopItems, null, 'top', true)}
       </div>
 
       {/* Hairline center rule */}

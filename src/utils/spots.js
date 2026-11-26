@@ -83,7 +83,7 @@ export function isBestRightNow(spot, date = new Date()) {
 }
 
 export const SEASON_FILTER_OPTIONS = [
-  { key: 'all', label: 'All (24)' },
+  { key: 'all', label: 'All' },
   { key: 'best-now', label: 'Best Right Now' },
   { key: 'winter', label: 'Winter (Nov–Feb)' },
   { key: 'monsoon', label: 'Monsoon (Jun–Sep)' },

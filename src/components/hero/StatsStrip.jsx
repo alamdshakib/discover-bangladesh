@@ -11,8 +11,8 @@ const CARD_TONES = [
 ];
 
 /**
- * Bidirectional 4-card overview strip (08 / 64 / 24 / 04) with staggered level elevation,
- * live odometer roll-up on every enter / enterBack, and luminous hairline sweep on the dark 24 card.
+ * Bidirectional 4-card overview strip with staggered level elevation,
+ * live odometer roll-up on every enter / enterBack, and luminous hairline sweep on the featured spots card.
  */
 export function StatsStrip() {
   const { spots } = useShowcase();
@@ -121,7 +121,7 @@ export function StatsStrip() {
               data-stat-card
               className={`relative flex min-h-[148px] flex-col justify-between overflow-hidden rounded-3xl border p-5 transition-colors duration-300 will-change-transform sm:min-h-[180px] sm:p-7 ${CARD_TONES[index]}`}
             >
-              {/* Subtle luminous hairline sweep across the featured dark 24 card (zero skew utility) */}
+              {/* Subtle luminous hairline sweep across the featured dark spots card (zero skew utility) */}
               {isFeatured && (
                 <>
                   <span

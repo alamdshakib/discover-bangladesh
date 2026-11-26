@@ -786,7 +786,7 @@ export function SpotAtlas() {
                 ref={svgRef}
                 viewBox={`0 0 ${SVG_W} ${SVG_H}`}
                 role="img"
-                aria-label="Interactive vector map of Bangladesh showing 8 divisions and 24 tourist destinations"
+                aria-label={`Interactive vector map of Bangladesh showing 8 divisions and ${spots.length} tourist destinations`}
                 className="h-full w-full overflow-visible"
               >
                 <defs>
@@ -1065,7 +1065,7 @@ export function SpotAtlas() {
                     </g>
                   )}
 
-                  {/* 8. 24 Color-Coded GPS Pins with Layered Sonar Radar Rings & Numbered Stop Badges */}
+                  {/* 8. Color-Coded GPS Pins with Layered Sonar Radar Rings & Numbered Stop Badges */}
                   <g>
                     {projectedSpots.map(({ spot, px, py }) => {
                       const stopNumber = journeyOrderById.get(spot.id);
