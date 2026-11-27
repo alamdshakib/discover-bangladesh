@@ -2,12 +2,14 @@ import {
   ChapterAtmosphere,
   CinemaLightbox,
   CinematicIntro,
+  CommandPalette,
   Footer,
   GlobalMotion,
   JourneyDrawer,
   Navbar,
   ScrollCompassHUD,
   SpotDetail,
+  TripFinderModal,
 } from '@components';
 import { ShowcaseProvider } from '@context/ShowcaseProvider.jsx';
 import { useLenis } from '@hooks';
@@ -36,6 +38,8 @@ export default function App() {
         <Footer />
         <ScrollCompassHUD />
         <JourneyDrawer />
+        <TripFinderModal />
+        <CommandPalette />
         <SpotDetail />
         <CinemaLightbox />
       </div>

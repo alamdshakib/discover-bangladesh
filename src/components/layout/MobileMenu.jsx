@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { ArrowUp, BookOpen, LayoutGrid, List, Map, X } from 'lucide-react';
+import { ArrowUp, BookOpen, LayoutGrid, List, Map, Sparkles, X } from 'lucide-react';
 import { CHAPTERS, SECTION_IDS } from '@data';
 import { useScrollLock, useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
@@ -15,7 +15,7 @@ const MOBILE_VIEW_MODES = [
 
 /** Slide-down mobile menu drawer (< md) with sequential level link stagger. */
 export function MobileMenu({ open, onClose }) {
-  const { spots, viewMode, setViewMode } = useShowcase();
+  const { spots, viewMode, setViewMode, openTripFinder } = useShowcase();
   const drawerRef = useRef(null);
   const closeRef = useRef(null);
   const counts = countByCategory(spots);
@@ -106,6 +106,24 @@ export function MobileMenu({ open, onClose }) {
         <div data-mobile-nav-item className="mt-4 will-change-transform">
           <SearchBar inline onNavigate={onClose} />
         </div>
+
+        <button
+          type="button"
+          data-mobile-nav-item
+          onClick={() => {
+            onClose();
+            window.setTimeout(() => openTripFinder(), 100);
+          }}
+          className="mt-2.5 flex w-full items-center justify-between rounded-3xl border border-emerald-600/25 bg-emerald-500/[0.08] px-4 py-3 text-left transition-colors will-change-transform active:scale-[0.99] dark:border-emerald-400/30 dark:bg-emerald-400/[0.12]"
+        >
+          <span className="flex items-center gap-2 text-sm font-bold text-ink dark:text-emerald-100">
+            <Sparkles className="h-4 w-4 text-bd-green dark:text-emerald-300" strokeWidth={2.2} />
+            <span>✦ Find My Trip Quiz</span>
+          </span>
+          <span className="rounded-full bg-white/80 px-2.5 py-0.5 text-[11px] font-semibold text-ink-soft dark:bg-white/10 dark:text-emerald-200">
+            3 Steps
+          </span>
+        </button>
 
         <div
           data-mobile-nav-item

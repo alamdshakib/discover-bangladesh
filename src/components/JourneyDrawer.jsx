@@ -73,7 +73,13 @@ function JourneyDrawerDialog({ onClose }) {
     const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
     const onKey = (e) => {
-      if (document.querySelector('[data-spot-detail], [data-cinema-lightbox]')) return;
+      if (
+        document.querySelector(
+          '[data-trip-finder], [data-command-palette], [data-spot-detail], [data-cinema-lightbox]'
+        )
+      ) {
+        return;
+      }
       if (e.key === 'Escape') {
         e.preventDefault();
         requestClose();

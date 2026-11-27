@@ -30,3 +30,5 @@ export { ChapterAtmosphere } from './ChapterAtmosphere.jsx';
 export { CinemaLightbox } from './CinemaLightbox.jsx';
 export { EditorialStatement } from './EditorialStatement.jsx';
 export { IndexView } from './IndexView.jsx';
+export { TripFinderModal } from './TripFinderModal.jsx';
+export { CommandPalette } from './CommandPalette.jsx';

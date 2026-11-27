@@ -56,6 +56,8 @@ export function ShowcaseProvider({ children }) {
   const [journeyIds, setJourneyIds] = useState(() => readInitialJourneyIds());
   const [routeMode, setRouteMode] = useState(() => readInitialJourneyIds().length >= 2);
   const [journeyDrawerOpen, setJourneyDrawerOpen] = useState(false);
+  const [tripFinderOpen, setTripFinderOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   // Sync journey to localStorage (`db_my_journey`) & shareable URL `?trip=...`
   useEffect(() => {
@@ -117,6 +119,26 @@ export function ShowcaseProvider({ children }) {
     setJourneyIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   }, []);
 
+  const addManyToJourney = useCallback((ids) => {
+    if (!Array.isArray(ids) || ids.length === 0) return;
+    setJourneyIds((prev) => {
+      const seen = new Set(prev);
+      const next = [...prev];
+      ids.forEach((id) => {
+        if (spotsById.has(id) && !seen.has(id)) {
+          seen.add(id);
+          next.push(id);
+        }
+      });
+      return next;
+    });
+  }, []);
+
+  const openTripFinder = useCallback(() => setTripFinderOpen(true), []);
+  const closeTripFinder = useCallback(() => setTripFinderOpen(false), []);
+  const openCommandPalette = useCallback(() => setCommandPaletteOpen(true), []);
+  const closeCommandPalette = useCallback(() => setCommandPaletteOpen(false), []);
+
   const moveJourneySpot = useCallback((index, direction) => {
     setJourneyIds((prev) => {
       const target = index + direction;
@@ -175,6 +197,7 @@ export function ShowcaseProvider({ children }) {
       journeyMetrics,
       isInJourney: (id) => journeySet.has(id),
       toggleJourneySpot,
+      addManyToJourney,
       moveJourneySpot,
       removeJourneySpot,
       clearJourney,
@@ -183,6 +206,14 @@ export function ShowcaseProvider({ children }) {
       journeyDrawerOpen,
       setJourneyDrawerOpen,
       visualizeJourneyOnMap,
+      tripFinderOpen,
+      setTripFinderOpen,
+      openTripFinder,
+      closeTripFinder,
+      commandPaletteOpen,
+      setCommandPaletteOpen,
+      openCommandPalette,
+      closeCommandPalette,
     };
   }, [
     viewMode,
@@ -199,12 +230,19 @@ export function ShowcaseProvider({ children }) {
     closeLightbox,
     journeyIds,
     toggleJourneySpot,
+    addManyToJourney,
     moveJourneySpot,
     removeJourneySpot,
     clearJourney,
     routeMode,
     journeyDrawerOpen,
     visualizeJourneyOnMap,
+    tripFinderOpen,
+    openTripFinder,
+    closeTripFinder,
+    commandPaletteOpen,
+    openCommandPalette,
+    closeCommandPalette,
   ]);
 
   return <ShowcaseContext.Provider value={value}>{children}</ShowcaseContext.Provider>;

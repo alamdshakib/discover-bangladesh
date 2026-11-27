@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowDownRight, Compass, Map, MapPin } from 'lucide-react';
+import { ArrowDownRight, Compass, Map, MapPin, Sparkles } from 'lucide-react';
 import { SITE_META, SECTION_IDS } from '@data';
 import { useBangladeshTime, useLiveWeather, useMagnetic, useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
@@ -38,7 +38,7 @@ const FILM_GRAIN_DATA_URI =
   "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
 export function Hero() {
-  const { spots, openSpot } = useShowcase();
+  const { spots, openSpot, openTripFinder } = useShowcase();
   const scopeRef = useRef(null);
   const frameRef = useRef(null);
 
@@ -903,6 +903,19 @@ export function Hero() {
                     </span>
                     <Map className="h-3.5 w-3.5 text-white/85 sm:h-4 sm:w-4" strokeWidth={2} />
                     <span>Interactive Map</span>
+                  </button>
+
+                  {/* ✦ Smart Trip Finder Quiz Pill */}
+                  <button
+                    type="button"
+                    data-hero-cta
+                    data-hero-trip-finder
+                    data-cursor="magnetic"
+                    onClick={openTripFinder}
+                    className="glass-dark group inline-flex h-10 items-center gap-1.5 rounded-full border border-emerald-300/35 px-4 text-xs font-semibold text-white transition hover:border-emerald-300/70 hover:bg-emerald-500/20 active:scale-95 sm:h-11 sm:px-5 sm:text-sm"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-300 transition-transform duration-300 group-hover:rotate-12" strokeWidth={2.2} />
+                    <span>Find My Trip</span>
                   </button>
                 </div>
               </div>

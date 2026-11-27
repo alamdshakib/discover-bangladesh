@@ -29,7 +29,7 @@ const COLLECTION_VIEWS = [
  * live destination count badge, and clean ScrollTrigger refreshes on every view swap.
  */
 export function Showcase() {
-  const { spots, viewMode, setViewMode, searchQuery, setSearchQuery, openSpot } = useShowcase();
+  const { spots, viewMode, setViewMode, searchQuery, setSearchQuery, openSpot, openTripFinder } = useShowcase();
   const requestedMode = viewMode || 'editorial';
   const [displayMode, setDisplayMode] = useState(requestedMode);
   const [seasonFilter, setSeasonFilter] = useState('all');
@@ -457,7 +457,22 @@ export function Showcase() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-2 sm:justify-start lg:justify-end">
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-start lg:justify-end">
+            <button
+              type="button"
+              data-open-trip-finder
+              data-cursor="magnetic"
+              onClick={openTripFinder}
+              className="group inline-flex items-center gap-1.5 rounded-full border border-emerald-600/25 bg-emerald-500/[0.09] px-3.5 py-2 text-xs font-semibold text-ink shadow-2xs transition hover:-translate-y-0.5 hover:border-emerald-600/45 hover:bg-emerald-500/[0.15] active:scale-95 dark:border-emerald-400/30 dark:bg-emerald-400/[0.12] dark:text-emerald-200 dark:hover:border-emerald-400/55 dark:hover:bg-emerald-400/[0.2]"
+            >
+              <Sparkles
+                className="h-3.5 w-3.5 text-bd-green transition-transform duration-300 group-hover:rotate-12 dark:text-emerald-300"
+                strokeWidth={2.2}
+                aria-hidden="true"
+              />
+              <span>✦ Find My Trip</span>
+            </button>
+
             <span
               ref={countBadgeRef}
               data-showcase-count
