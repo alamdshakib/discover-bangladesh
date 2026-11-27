@@ -3,6 +3,7 @@ import { CHAPTERS } from '@data';
 import { useMagnetic } from '@hooks';
 import { getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
+import { LiveWeatherPill } from '../ui/WeatherBadge.jsx';
 import { JourneyBookmarkButton } from '../ui/JourneyBookmarkButton.jsx';
 
 const chapterByCategory = Object.fromEntries(CHAPTERS.map((c) => [c.category, c]));
@@ -79,7 +80,8 @@ export function ExpoCard({ spot, tileClass, onOpen }) {
             {spot.district} · {spot.division}
           </span>
           {large && <span className="mt-2 hidden max-w-md text-sm text-white/80 sm:block">{spot.tagline}</span>}
-          <span className="mt-2 flex flex-wrap gap-1">
+          <span className="mt-2 flex flex-wrap items-center gap-1">
+            <LiveWeatherPill spot={spot} variant="expo" data-expo-weather={spot.id} />
             {spot.seasons.map((season) => (
               <span
                 key={season}

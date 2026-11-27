@@ -7,6 +7,7 @@ import { useShowcase, useTheme } from '@hooks';
 import { gsap, MEDIA } from '@animations';
 import { countByCategory, formatCoordinates, getImageSrc } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
+import { LiveWeatherPill } from '../ui/WeatherBadge.jsx';
 import { JourneyBookmarkButton } from '../ui/JourneyBookmarkButton.jsx';
 
 const SVG_W = 600;
@@ -709,13 +710,24 @@ export function SpotAtlas() {
                 data-atlas-preview
                 className="overflow-hidden rounded-3xl border border-line bg-canvas transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#0B111E]/75"
               >
-                <SmartImage
-                  src={getImageSrc(focus.images.cover, 'card')}
-                  fallbackSrc={focus.images.cover}
-                  alt={focus.name}
-                  className="h-44 w-full sm:h-56"
-                  imgClassName="h-full w-full object-cover"
-                />
+                <div className="relative">
+                  <SmartImage
+                    src={getImageSrc(focus.images.cover, 'card')}
+                    fallbackSrc={focus.images.cover}
+                    alt={focus.name}
+                    className="h-44 w-full sm:h-56"
+                    imgClassName="h-full w-full object-cover"
+                  />
+                  <div className="pointer-events-none absolute top-3 right-3 z-10">
+                    <LiveWeatherPill
+                      spot={focus}
+                      variant="atlas"
+                      showLabel
+                      data-atlas-weather={focus.id}
+                      className="pointer-events-auto"
+                    />
+                  </div>
+                </div>
                 <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:p-5">
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold tracking-[0.18em] text-mist uppercase">

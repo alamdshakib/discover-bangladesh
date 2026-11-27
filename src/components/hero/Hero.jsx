@@ -77,7 +77,7 @@ export function Hero() {
 
   const [activeIdx, setActiveIdx] = useState(0);
   const activeSpot = heroSlides[activeIdx] ?? heroSlides[0];
-  const { weather, loading: weatherLoading } = useLiveWeather(activeSpot?.coordinates);
+  const { weather, loading: weatherLoading } = useLiveWeather(activeSpot);
   const bstTime = useBangladeshTime();
 
   // Keep initial coordinate proxy synced on first mount

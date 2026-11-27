@@ -5,6 +5,7 @@ import { useMagnetic } from '@hooks';
 import { getImageSrc, getSeasonShort, getSpotImages } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 import { MetaPill } from '../ui/MetaPill.jsx';
+import { LiveWeatherPill } from '../ui/WeatherBadge.jsx';
 import { JourneyBookmarkButton } from '../ui/JourneyBookmarkButton.jsx';
 import { TravelNotes } from './TravelNotes.jsx';
 
@@ -135,9 +136,10 @@ export function SpotCard({ spot, span = 6, label, onOpen }) {
           }`}
         >
           <div className={wide ? 'lg:flex-1' : ''}>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <MetaPill icon={MapPin}>{spot.division}</MetaPill>
               <MetaPill>{spot.district}</MetaPill>
+              <LiveWeatherPill spot={spot} data-card-weather={spot.id} />
             </div>
             <h3 className="mt-3 font-display text-[1.6rem] leading-[1.08] font-bold tracking-[-0.03em] text-ink transition-colors duration-300 dark:text-slate-50 sm:text-[1.8rem]">
               <button

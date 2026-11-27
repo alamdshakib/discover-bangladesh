@@ -131,11 +131,79 @@ export function getCommonsPage(url) {
   return match ? `https://commons.wikimedia.org/wiki/File:${match[1]}` : null;
 }
 
-export function getMapsUrl({ lat, lng }) {
-  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+const BD_BOUNDS = {
+  minLat: 20,
+  maxLat: 27,
+  minLng: 88,
+  maxLng: 93,
+};
+
+function inBangladeshBounds(lat, lng) {
+  return (
+    typeof lat === 'number' &&
+    Number.isFinite(lat) &&
+    typeof lng === 'number' &&
+    Number.isFinite(lng) &&
+    lat >= BD_BOUNDS.minLat &&
+    lat <= BD_BOUNDS.maxLat &&
+    lng >= BD_BOUNDS.minLng &&
+    lng <= BD_BOUNDS.maxLng
+  );
 }
 
-export function formatCoordinates({ lat, lng }) {
+function orientLatLng(a, b) {
+  const numA = typeof a === 'number' ? a : Number(a);
+  const numB = typeof b === 'number' ? b : Number(b);
+  if (!Number.isFinite(numA) || !Number.isFinite(numB)) return null;
+  if (inBangladeshBounds(numA, numB)) return { lat: numA, lng: numB };
+  // Automatically un-swap [lng, lat] arrays or misordered pairs inside Bangladesh bounds
+  if (inBangladeshBounds(numB, numA)) return { lat: numB, lng: numA };
+  return null;
+}
+
+/**
+ * Safely extracts and validates `{ lat, lng }` inside Bangladesh bounds (`lat: 20..27`, `lng: 88..93`)
+ * from a spot object (`spot.coordinates` / `spot.coords`), `{ lat, lng }` object, `[lng, lat]` array, or `(lat, lng)` args.
+ */
+export function getSpotLatLng(input, maybeLng) {
+  if (typeof input === 'number' && typeof maybeLng === 'number') {
+    return orientLatLng(input, maybeLng);
+  }
+  if (!input || typeof input !== 'object') return null;
+
+  if (Array.isArray(input) && input.length >= 2) {
+    return orientLatLng(input[1], input[0]) ?? orientLatLng(input[0], input[1]);
+  }
+
+  const candidate = input.coordinates ?? input.coords ?? input;
+  if (Array.isArray(candidate) && candidate.length >= 2) {
+    return orientLatLng(candidate[1], candidate[0]) ?? orientLatLng(candidate[0], candidate[1]);
+  }
+
+  const rawLat = candidate.lat ?? candidate.latitude;
+  const rawLng = candidate.lng ?? candidate.lon ?? candidate.longitude;
+  if (rawLat !== undefined && rawLng !== undefined) {
+    return orientLatLng(rawLat, rawLng);
+  }
+
+  return null;
+}
+
+/** Canonical cache key (`lat,lng` rounded to 3 decimals) shared by batch & single weather lookups. */
+export function getCoordCacheKey(input, maybeLng) {
+  const resolved = getSpotLatLng(input, maybeLng);
+  return resolved ? `${resolved.lat.toFixed(3)},${resolved.lng.toFixed(3)}` : null;
+}
+
+export function getMapsUrl(input) {
+  const coords = getSpotLatLng(input) ?? input;
+  return `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`;
+}
+
+export function formatCoordinates(input) {
+  const coords = getSpotLatLng(input) ?? input;
+  const lat = Number(coords?.lat ?? 0);
+  const lng = Number(coords?.lng ?? 0);
   const ns = lat >= 0 ? 'N' : 'S';
   const ew = lng >= 0 ? 'E' : 'W';
   return `${Math.abs(lat).toFixed(4)}° ${ns}, ${Math.abs(lng).toFixed(4)}° ${ew}`;

@@ -6,18 +6,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Cloud,
-  CloudFog,
-  CloudLightning,
-  CloudRain,
   CloudSun,
   ExternalLink,
   MapPin,
   Maximize2,
-  Moon,
   Navigation,
   Route,
-  Sun,
   Wind,
   X,
 } from 'lucide-react';
@@ -35,6 +29,7 @@ import {
 } from '@utils';
 import { SmartImage } from '../ui/SmartImage.jsx';
 import { MetaPill } from '../ui/MetaPill.jsx';
+import { WeatherConditionIcon } from '../ui/WeatherBadge.jsx';
 import { JourneyBookmarkButton } from '../ui/JourneyBookmarkButton.jsx';
 
 const chapterByCategory = Object.fromEntries(CHAPTERS.map((c) => [c.category, c]));
@@ -246,29 +241,9 @@ function InfoCard({ icon: Icon, title, children, className = '' }) {
   );
 }
 
-function WeatherConditionIcon({ icon, className = 'h-4 w-4' }) {
-  switch (icon) {
-    case 'sun':
-      return <Sun className={className} strokeWidth={2.1} aria-hidden="true" />;
-    case 'moon':
-      return <Moon className={className} strokeWidth={2.1} aria-hidden="true" />;
-    case 'cloud':
-      return <Cloud className={className} strokeWidth={2.1} aria-hidden="true" />;
-    case 'fog':
-      return <CloudFog className={className} strokeWidth={2.1} aria-hidden="true" />;
-    case 'rain':
-      return <CloudRain className={className} strokeWidth={2.1} aria-hidden="true" />;
-    case 'storm':
-      return <CloudLightning className={className} strokeWidth={2.1} aria-hidden="true" />;
-    case 'cloud-sun':
-    default:
-      return <CloudSun className={className} strokeWidth={2.1} aria-hidden="true" />;
-  }
-}
-
 function DetailInfo({ spot, titleId, nextSpot, onNext }) {
   const chapter = chapterByCategory[spot.category];
-  const { weather, loading: weatherLoading } = useLiveWeather(spot.coordinates);
+  const { weather, loading: weatherLoading } = useLiveWeather(spot);
   const bstTime = useBangladeshTime();
   const weatherRowRef = useRef(null);
 

@@ -18,6 +18,7 @@ export { SpotAtlas } from './atlas/SpotAtlas.jsx';
 export { SmartImage } from './ui/SmartImage.jsx';
 export { ExpoSwitch } from './ui/ExpoSwitch.jsx';
 export { MetaPill } from './ui/MetaPill.jsx';
+export { LiveWeatherPill, WeatherConditionIcon } from './ui/WeatherBadge.jsx';
 export { ThemeToggle } from './ui/ThemeToggle.jsx';
 export { JourneyBookmarkButton } from './ui/JourneyBookmarkButton.jsx';
 export { JourneyDrawer } from './JourneyDrawer.jsx';
