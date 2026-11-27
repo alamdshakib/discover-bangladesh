@@ -212,14 +212,16 @@ export function SpotAtlas() {
   const showJourneyRoute = routeMode && journeyLegs.length > 0;
 
   const projectedSpots = useMemo(() => {
-    const items = spots.map((spot) => pointById[spot.id]);
+    const visibleItems =
+      !showJourneyRoute && category ? spots.filter((spot) => spot.category === category) : spots;
+    const items = visibleItems.map((spot) => pointById[spot.id]);
     // Render journey stops & focused pin last so markers and badges stay cleanly on top.
     return items.sort((a, b) => {
       const aFocus = a.spot.id === focus?.id ? 2 : showJourneyRoute && journeyOrderById.has(a.spot.id) ? 1 : 0;
       const bFocus = b.spot.id === focus?.id ? 2 : showJourneyRoute && journeyOrderById.has(b.spot.id) ? 1 : 0;
       return aFocus - bFocus;
     });
-  }, [spots, pointById, focus?.id, showJourneyRoute, journeyOrderById]);
+  }, [spots, pointById, focus?.id, showJourneyRoute, category, journeyOrderById]);
 
   const flightArc = useMemo(() => {
     if (!prevFocusId || !focusId || prevFocusId === focusId) return null;
@@ -237,6 +239,17 @@ export function SpotAtlas() {
       return nextId;
     });
   }, []);
+
+  const handleSelectCategory = useCallback(
+    (nextCategory) => {
+      setCategory(nextCategory);
+      if (nextCategory && focus?.category !== nextCategory) {
+        const firstMatch = spots.find((s) => s.category === nextCategory);
+        if (firstMatch) selectSpot(firstMatch.id);
+      }
+    },
+    [focus?.category, spots, selectSpot]
+  );
 
   // Animate 2D Flat ⇄ 3D Relief architectural tilt transition (perspective 1300px, rotateX 34deg, rotateZ -4deg)
   useLayoutEffect(() => {
@@ -638,25 +651,50 @@ export function SpotAtlas() {
             Bangladesh&apos;s eight divisions and open its travel story.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-1.5" role="group" aria-label="Highlight a landscape">
+          <div className="mt-6 flex flex-wrap gap-1.5" role="group" aria-label="Filter destinations by landscape">
+            <button
+              type="button"
+              data-atlas-filter="all"
+              data-cursor="magnetic"
+              aria-pressed={category === null}
+              onClick={() => handleSelectCategory(null)}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold tabular-nums transition-colors duration-200 active:scale-95 ${
+                category === null
+                  ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-[#0B111E]'
+                  : 'border-line bg-white text-ink hover:border-haze dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:border-white/25'
+              }`}
+            >
+              <span>All</span>
+              <span className={category === null ? 'text-white/60 dark:text-[#0B111E]/60' : 'text-mist'} aria-hidden="true">
+                ·
+              </span>
+              <span className={category === null ? 'text-white/80 dark:text-[#0B111E]/80' : 'text-mist'}>
+                {spots.length}
+              </span>
+            </button>
+
             {CHAPTERS.map((chapter) => {
               const on = category === chapter.category;
               return (
                 <button
                   key={chapter.id}
                   type="button"
+                  data-atlas-filter={chapter.category}
                   data-cursor="magnetic"
                   aria-pressed={on}
-                  onClick={() => setCategory(on ? null : chapter.category)}
-                  className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors duration-200 active:scale-95 ${
+                  onClick={() => handleSelectCategory(on ? null : chapter.category)}
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold tabular-nums transition-colors duration-200 active:scale-95 ${
                     on
                       ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-[#0B111E]'
                       : 'border-line bg-white text-ink hover:border-haze dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200 dark:hover:border-white/25'
                   }`}
                 >
                   <span className={`h-2 w-2 rounded-full ${chapter.dotClass}`} aria-hidden="true" />
-                  {chapter.title}
-                  <span className={on ? 'text-white/60 dark:text-[#0B111E]/60' : 'text-mist'}>
+                  <span>{chapter.title}</span>
+                  <span className={on ? 'text-white/60 dark:text-[#0B111E]/60' : 'text-mist'} aria-hidden="true">
+                    ·
+                  </span>
+                  <span className={on ? 'text-white/80 dark:text-[#0B111E]/80' : 'text-mist'}>
                     {counts[chapter.category] ?? 0}
                   </span>
                 </button>
@@ -1079,8 +1117,8 @@ export function SpotAtlas() {
                           ? '#10b981'
                           : '#006a4e'
                         : mapTheme.pins[spot.category] ?? '#1E293B';
-                      const dotRadius = (isRouteStop ? 8.5 : isFocus ? 7.5 : 4.8) * invScale;
-                      const strokeW = 2.2 * invScale;
+                      const dotRadius = (isRouteStop ? 8.2 : isFocus ? 7.6 : 3.6) * invScale;
+                      const strokeW = (isFocus || isRouteStop ? 2.2 : 1.45) * invScale;
 
                       const flipBelow = py < 70;
                       const tipW = Math.min(220, Math.max(88, spot.name.length * 7.2 + 22));
@@ -1128,13 +1166,13 @@ export function SpotAtlas() {
                           opacity={dimmed ? 0.34 : 1}
                           className="cursor-pointer transition-opacity duration-200 focus:outline-none"
                         >
-                          <circle r={13 / zoom} fill="transparent" />
+                          <circle r={Math.max(9.5, 11.5 / Math.sqrt(zoom))} fill="transparent" />
 
                           {isDark && !dimmed && (
                             <circle
-                              r={dotRadius * 2.1}
+                              r={dotRadius * (isFocus || isRouteStop ? 2.1 : 1.65)}
                               fill={color}
-                              opacity={isFocus || isRouteStop ? 0.55 : 0.35}
+                              opacity={isFocus || isRouteStop ? 0.58 : 0.28}
                               filter="url(#bd-pin-glow)"
                             />
                           )}

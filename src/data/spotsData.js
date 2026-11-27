@@ -1063,6 +1063,396 @@ export const spotsData = [
       ],
     },
   },
+  {
+    id: 'rema-kalenga-wildlife-sanctuary',
+    name: 'Rema-Kalenga Wildlife Sanctuary',
+    division: 'Sylhet',
+    district: 'Habiganj',
+    category: 'Forest',
+    tagline: 'Old-growth semi-evergreen rainforest echoing with rare gibbons and hornbills.',
+    description:
+      'Spanning nearly 1,800 hectares along the eastern Tarap Hills bordering Tripura, Rema-Kalenga is Bangladesh’s largest pristine dry evergreen wildlife sanctuary after the Sundarbans. Towering garjan and chapalish trees shelter endangered western hoolock gibbons, capped langurs, barking deer, and over 160 forest bird species beside tranquil woodland lakes.',
+    bestTime:
+      'November to March (dry forest trails ideal for spotting hoolock gibbons, capped langurs, and hornbills)',
+    seasons: ['Winter'],
+    howToGo:
+      'Travel from Dhaka to Shaistaganj or Chunarughat in Habiganj by highway coach or Sylhet intercity train, then continue by CNG auto-rickshaw along the Chanpur tea-garden road straight to the Rema-Kalenga beat office.',
+    highlights: [
+      'Guided dawn wildlife trails tracking endangered western hoolock gibbons and flying squirrels',
+      'Watchtower panoramas rising above untouched century-old garjan and bamboo canopies',
+      'Peaceful forest creeks, lotus ponds, and neighboring indigenous Tripura hamlets',
+    ],
+    coordinates: { lat: 24.1158, lng: 91.6305 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/Rema-Kalenga_Wildlif_Sanctuary.jpg/1280px-Rema-Kalenga_Wildlif_Sanctuary.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/Rema-Kalenga_Wildlif_Sanctuary_3.jpg/1280px-Rema-Kalenga_Wildlif_Sanctuary_3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Rema-Kalenga_Wildlif_Sanctuary_6.jpg/1280px-Rema-Kalenga_Wildlif_Sanctuary_6.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Rema-Kalenga_Wildlif_Sanctuary_8.jpg/1280px-Rema-Kalenga_Wildlif_Sanctuary_8.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'satchari-national-park',
+    name: 'Satchari National Park',
+    division: 'Sylhet',
+    district: 'Habiganj',
+    category: 'Forest',
+    tagline: 'Seven winding forest streams beneath emerald Raghunandan hills.',
+    description:
+      'Named after the seven clear mountain streams (chara) that thread through its undulating Raghunandan Reserve hills, Satchari National Park is an intimate tropical rainforest haven between Sreemangal and Habiganj. Shaded botanical trails weave past giant ficus trees, Tripura village orchards, and a forest watchtower alive with hornbills and thrushes.',
+    bestTime:
+      'October to March (misty rainforest trails and high birdwatching visibility across seven forest streams)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Board a Sylhet-bound highway bus or intercity train from Dhaka to Madhabpur or Shaistaganj, then ride the scenic old Dhaka–Sylhet highway directly to the Satchari National Park gate.',
+    highlights: [
+      'Quiet morning canopy trails alive with chestnut-tailed starlings, trogons, and hoolock gibbons',
+      'Walking beside crystalline hill-stream beds crisscrossing tall sal and agarwood stands',
+      'Steel tree-canopy watchtower overlooking waves of mist-draped Raghunandan hills',
+    ],
+    coordinates: { lat: 24.1225, lng: 91.4519 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0e/Satchari_National_Park%2C_Habiganj%2C_Sylhet.jpg/1280px-Satchari_National_Park%2C_Habiganj%2C_Sylhet.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Satchari_National_Park_%282%29.jpg/1280px-Satchari_National_Park_%282%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Chestnut-tailed_starling%2C_Satchari_National_Park_01.jpg/1280px-Chestnut-tailed_starling%2C_Satchari_National_Park_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/Common_myna_at_Satchari_National_Park.jpg/1280px-Common_myna_at_Satchari_National_Park.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'madhabkunda-waterfall-eco-park',
+    name: 'Madhabkunda Waterfall & Eco Park',
+    division: 'Sylhet',
+    district: 'Moulvibazar',
+    category: 'Forest',
+    tagline: 'A 200-foot cascade plunging through mossy Patharia reserve cliffs.',
+    description:
+      'Set deep inside the lush Patharia Hills Reserve Forest in Barlekha Upazila, Madhabkunda sends a mighty sheet of cool mountain water plunging nearly 200 feet over sculpted black sandstone cliffs. Encircled by towering forest groves, betel-nut palms, and tranquil eco-park trails, it remains one of Sylhet’s most celebrated woodland sanctuaries.',
+    bestTime:
+      'June to October (monsoon swells the 200-foot cascade surrounded by dense emerald eco-park woods)',
+    seasons: ['Monsoon', 'Year-Round'],
+    howToGo:
+      'Travel from Dhaka or Sylhet by intercity train to Kulaura Junction or highway bus to Barlekha, then continue along the forest access road straight to the Madhabkunda Eco Park gate.',
+    highlights: [
+      '200-foot natural forest waterfall thundering into a misty boulder-lined gorge',
+      'Shaded woodland footpaths meandering past rubber estates and Khasi betel groves',
+      'Moss-covered stone terraces inside the Patharia Reserve hills',
+    ],
+    coordinates: { lat: 24.6396, lng: 92.2248 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Madhabkunda_waterfall_%2825%29.JPG/1280px-Madhabkunda_waterfall_%2825%29.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Madhabkunda%2C_Bangladesh_%288996866684%29.jpg/1280px-Madhabkunda%2C_Bangladesh_%288996866684%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Front_view_of_Madhabkunda_waterfall_on_13_August_2022.jpg/1280px-Front_view_of_Madhabkunda_waterfall_on_13_August_2022.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/%E0%A6%AE%E0%A6%BE%E0%A6%A7%E0%A6%AC%E0%A6%95%E0%A7%81%E0%A6%A3%E0%A7%8D%E0%A6%A1_%E0%A6%9D%E0%A6%B0%E0%A7%8D%E0%A6%A3%E0%A6%BE%E0%A6%A7%E0%A6%BE%E0%A6%B0%E0%A6%BE.jpg/1280px-%E0%A6%AE%E0%A6%BE%E0%A6%A7%E0%A6%AC%E0%A6%95%E0%A7%81%E0%A6%A3%E0%A7%8D%E0%A6%A1_%E0%A6%9D%E0%A6%B0%E0%A7%8D%E0%A6%A3%E0%A6%BE%E0%A6%A7%E0%A6%BE%E0%A6%B0%E0%A6%BE.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'hakaluki-haor',
+    name: 'Hakaluki Haor',
+    division: 'Sylhet',
+    district: 'Moulvibazar',
+    category: 'Forest',
+    tagline: 'Bangladesh’s grandest freshwater haor basin and winter bird kingdom.',
+    description:
+      'Spanning over 18,000 hectares of interconnected beels, marsh grasslands, and flooded hijal groves between Moulvibazar and Sylhet, Hakaluki Haor is the largest wetland ecosystem in Bangladesh. During monsoon, sailing boats glide across a calm sky-reflecting inland sea; in winter, the receding marshes harbor hundreds of thousands of migratory waterfowl.',
+    bestTime:
+      'November to February for migratory waterfowl; July to September for vast monsoon boat horizons',
+    seasons: ['Winter', 'Monsoon'],
+    howToGo:
+      'Reach Kulaura or Fenchuganj from Dhaka by intercity train (Parabat, Upaban, or Jayantika Express) or highway coach, then board a local country boat from Bhabanipur or Fenchuganj Ghat.',
+    highlights: [
+      'Unbroken monsoon boat horizons uniting sky, lotus beds, and distant Meghalaya ridges',
+      'More than 230 interconnected beels forming Bangladesh’s premier winter waterfowl haven',
+      'Submerged hijal and barun swamp groves glowing golden across calm evening water',
+    ],
+    coordinates: { lat: 24.6639, lng: 92.0444 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Hakaluki_Haor%2C_Sylhet.jpg/1280px-Hakaluki_Haor%2C_Sylhet.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Hakaluki_Haor_by_Fardous_Kabir_01.jpg/1280px-Hakaluki_Haor_by_Fardous_Kabir_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Hakaluki_Haor_by_Fardous_Kabir_03.jpg/1280px-Hakaluki_Haor_by_Fardous_Kabir_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Hakaluki_Haor_by_Fardous_Kabir_05.jpg/1280px-Hakaluki_Haor_by_Fardous_Kabir_05.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'baikka-beel-wetland-sanctuary',
+    name: 'Baikka Beel Wetland Sanctuary',
+    division: 'Sylhet',
+    district: 'Moulvibazar',
+    category: 'Forest',
+    tagline: 'A mirrored lotus sanctuary alive with purple swamphens at sunrise.',
+    description:
+      'Nestled along the eastern fringe of Hail Haor just north of Sreemangal, Baikka Beel is a 100-hectare permanent wetland sanctuary conserved by local communities. Timber observation towers frame breathtaking dawns as flocks of migratory pintails, whistling ducks, ospreys, and crimson-legged purple swamphens glide across pink water lilies.',
+    bestTime:
+      'November to February (thousands of migratory purple swamphens, ducks, and egrets gather across lotus-filled water)',
+    seasons: ['Winter'],
+    howToGo:
+      'Arrive at Sreemangal by train or bus from Dhaka, then drive 30 minutes north through Baroora tea estates and Hail Haor embankments directly to the Baikka Beel observation towers.',
+    highlights: [
+      'Timber birdwatching hides offering intimate dawn views of migratory waterfowl flocks',
+      'Vibrant beds of wild pink lotus and water lilies mirroring sunrise hues',
+      'Protected native wetland fish and reed-bed sanctuary thriving year-round',
+    ],
+    coordinates: { lat: 24.3514, lng: 91.7014 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Sunrise_at_Baikka_Bil%2C_Moulovibazar_%287174718272%29.jpg/1280px-Sunrise_at_Baikka_Bil%2C_Moulovibazar_%287174718272%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Sunset_at_Baikka_Beel_%288494903058%29.jpg/1280px-Sunset_at_Baikka_Beel_%288494903058%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Flock_of_Birds_%287175071318%29.jpg/1280px-Flock_of_Birds_%287175071318%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Baikka_Bil%2C_Sylhet.jpg/1280px-Baikka_Bil%2C_Sylhet.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'nikli-haor',
+    name: 'Nikli Haor',
+    division: 'Dhaka',
+    district: 'Kishoreganj',
+    category: 'Forest',
+    tagline: 'A gleaming monsoon inland ocean speckled with island villages and hijal groves.',
+    description:
+      'Stretching effortlessly across the eastern plains of Kishoreganj, Nikli Haor awakens every monsoon into a luminous freshwater sea. Elevated brick-lined island villages appear suspended on the horizon while wooden country boats trace mirror-like waters past submerged koroch swamp woodlands toward nearby Chhatirchar.',
+    bestTime:
+      'July to October (monsoon waters transform the basin into an endless mirror sky lined with submerged hijal groves)',
+    seasons: ['Monsoon'],
+    howToGo:
+      'Take the Egarosindhur or Kishoreganj Express train from Dhaka Kamalapur to Kishoreganj Station (or drive via Bhairab), then ride a short CNG auto-rickshaw to Nikli Beribadh Boat Ghat.',
+    highlights: [
+      'Tranquil wooden boat voyages past the submerged koroch tree forest of Chhatirchar',
+      'Floating island hamlets linked by narrow earthen causeways against endless monsoon skies',
+      'Fiery sunsets burning directly onto flat glass-calm haor water',
+    ],
+    coordinates: { lat: 24.3247, lng: 90.9295 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Nikli_Haor_Ayon_1.jpg/1280px-Nikli_Haor_Ayon_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Nikli_haor-_under_water_field.jpg/1280px-Nikli_haor-_under_water_field.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Nikli_haor_boatman_2.jpg/1280px-Nikli_haor_boatman_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Nikli_haor_transportation.jpg/1280px-Nikli_haor_transportation.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'madhupur-national-park',
+    name: 'Madhupur National Park',
+    division: 'Dhaka',
+    district: 'Tangail',
+    category: 'Forest',
+    tagline: 'Sun-dappled primeval Sal woodland rising above central Bengal red terraces.',
+    description:
+      'Covering over 8,400 hectares across the ancient Pleistocene red laterite ridges of Tangail, Madhupur National Park preserves Bangladesh’s grandest remaining stretch of deciduous Sal forest. Broad rust-colored trails wind beneath soaring shorea canopies inhabited by rare capped langurs, rhesus macaques, peacocks, and welcoming Mandi indigenous communities.',
+    bestTime:
+      'November to March (golden sunlight filters through tall deciduous Sal forest canopies and quiet red-earth trails)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Take a highway coach from Dhaka’s Mohakhali or Gabtoli toward Madhupur / Mymensingh along the Tangail highway and alight directly at the Rasulpur or Dokhola Forest Range entrance.',
+    highlights: [
+      'Towering cathedral avenues of golden-lit Sal trees over ancient rust-red earth trails',
+      'Morning wildlife glimpses of endangered capped langurs, woodpeckers, and wild junglefowl',
+      'Peaceful Dokhola woodland rest house, picnic clearings, and nearby Garo pineapple orchards',
+    ],
+    coordinates: { lat: 24.6928, lng: 90.1069 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Modhupur_forest.jpg/1280px-Modhupur_forest.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/Madhupur_National_Park%2C_Tangail%2C_Dhaka.jpg/1280px-Madhupur_National_Park%2C_Tangail%2C_Dhaka.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Picher_2_Madhupur_National_Park.jpg/1280px-Picher_2_Madhupur_National_Park.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Picher_14_Madhupur_National_Park.jpg/1280px-Picher_14_Madhupur_National_Park.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'puthia-temple-complex',
+    name: 'Puthia Temple Complex',
+    division: 'Rajshahi',
+    district: 'Rajshahi',
+    category: 'Heritage',
+    tagline: 'A lakeside constellation of terracotta-carved Pancharatna and Shiva temples.',
+    description:
+      'Clustered gracefully around lotus-fringed Shyama Sarobar lake east of Rajshahi, Puthia preserves Bangladesh’s finest concentration of historic Hindu temple architecture alongside its stately Rajbari palace. Built between the seventeenth and nineteenth centuries by the Puthia Raj estate, its gleaming white Pancharatna Shiva Temple and crimson-brick Govinda shrines shimmer with epic terracotta panels.',
+    bestTime:
+      'October to March (cool dry skies illuminate ornate terracotta shrines mirrored in Shyama Sarobar lake)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Travel from Dhaka to Rajshahi by intercity train (Silk City, Padma, or Dhumketu Express) or flight, then ride 45 minutes east along the Rajshahi–Natore highway to Puthia Bazar.',
+    highlights: [
+      'Monumental five-spired white Pancharatna Shiva Temple rising above Shyama Sarobar water',
+      'Hand-carved terracotta panels on the Govinda Temple depicting Krishna Lila scenes',
+      'Symmetrical Indo-Saracenic Puthia Rajbari palace surrounded by tranquil moats and courtyards',
+    ],
+    coordinates: { lat: 24.3642, lng: 88.8364 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Shiva_temple_at_Puthia%2C_Rajshahi.JPG/1280px-Shiva_temple_at_Puthia%2C_Rajshahi.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Govinda_temple%2C_rajshahi.JPG/1280px-Govinda_temple%2C_rajshahi.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Pancharatna_Gobinda_Temple_in_Puthia%2C_detail_01.jpg/1280px-Pancharatna_Gobinda_Temple_in_Puthia%2C_detail_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Pancharatna_Gobinda_Temple_in_Puthia%2C_detail_03.jpg/1280px-Pancharatna_Gobinda_Temple_in_Puthia%2C_detail_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'baliati-palace',
+    name: 'Baliati Palace',
+    division: 'Dhaka',
+    district: 'Manikganj',
+    category: 'Heritage',
+    tagline: 'A monumental nineteenth-century Corinthian estate in rural Manikganj.',
+    description:
+      'Constructed across more than five hectares during the late nineteenth century by wealthy salt-merchant landlords of Saturia, Baliati Palace stands among the grandest colonial Zamindar complexes in Bengal. Four lion-crowned entrance arches lead into seven alabaster-walled palaces framed by stately Corinthian pillars, high wooden shutters, and a deep stone-stepped lotus pond.',
+    bestTime:
+      'November to February (mild winter light across Corinthian colonnades, lion gateways, and lotus ponds)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Drive or take a bus west from Dhaka’s Gabtoli terminal along the Aricha highway to Golra or Saturia in Manikganj (about two hours), then ride a short rickshaw north to Baliati Palace.',
+    highlights: [
+      'Four iconic stone-lion gateways opening onto an unbroken 400-foot neoclassical colonnade',
+      'Expansive brick-walled Rangmahal and residential wings preserving period stucco and staircases',
+      'Tranquil back courtyard overlooking a historic stepped water tank flanked by four ghats',
+    ],
+    coordinates: { lat: 23.9978, lng: 90.0439 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Baliati_Palace%2C_Saturia%2C_Manikganj_%2838%29.jpg/1280px-Baliati_Palace%2C_Saturia%2C_Manikganj_%2838%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Baliati_Palace_2.jpg/1280px-Baliati_Palace_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Baliati_Pond.jpg/1280px-Baliati_Pond.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Baliati_Zamindari_03.jpg/1280px-Baliati_Zamindari_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'mohera-zamindar-bari',
+    name: 'Mohera Zamindar Bari',
+    division: 'Dhaka',
+    district: 'Tangail',
+    category: 'Heritage',
+    tagline: 'Pastel neoclassical lodges set inside botanical gardens and still ponds.',
+    description:
+      'Built in the 1890s along the tranquil Louhojang river basin in Mirzapur, Mohera Zamindar Bari is celebrated as the best-restored estate complex in central Bangladesh. Ornate arched entrances, pastel-white Chowdhuri, Maharaj, Ananda, and Kalicharan lodges, botanical flower gardens, and the serene Vishakha Sagar pond preserve nineteenth-century rural elegance.',
+    bestTime:
+      'October to March (pleasant temperatures for strolling the manicured gardens, arched lodges, and Vishakha Sagar pond)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Travel roughly 65 km northwest from Dhaka along the Dhaka–Tangail highway to Natiapara Bus Stand in Mirzapur, then ride 4 kilometers east by local transport straight into Mohera.',
+    highlights: [
+      'Four distinct ornate colonial-era lodges: Maharaj, Ananda, Chowdhury, and Kalicharan',
+      'Iconic triumphal entry arch and manicured central flower lawns overlooking Vishakha Sagar',
+      'Immaculate stucco friezes, winding staircases, and shaded poolside pavilions',
+    ],
+    coordinates: { lat: 24.1226, lng: 90.0686 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Mohera_Jamidar_Bari.jpg/1280px-Mohera_Jamidar_Bari.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Mohera_Zamindar_Bari.jpg/1280px-Mohera_Zamindar_Bari.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Mohera_Zamindar_Bari_Museum.jpg/1280px-Mohera_Zamindar_Bari_Museum.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Mohera_Zamindar_Bari%2C_Tangail_02.jpg/1280px-Mohera_Zamindar_Bari%2C_Tangail_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'shilaidaha-kuthibari',
+    name: 'Shilaidaha Kuthibari',
+    division: 'Khulna',
+    district: 'Kushtia',
+    category: 'Heritage',
+    tagline: 'Rabindranath Tagore’s serene terracotta-red manor beside the Padma.',
+    description:
+      'Surrounded by quiet mango orchards near the southern banks of the Padma River in Kumarkhali, Shilaidaha Kuthibari was the beloved rural estate where Nobel laureate Rabindranath Tagore penned timeless poems of Gitanjali and Sonar Tari. Its three-story stepped brick manor houses wooden river houseboat relics, writing desks, and manuscripts.',
+    bestTime:
+      'November to February (serene winter afternoons exploring Tagore’s riverfront estate, mango orchards, and archives)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Cross the Padma Bridge from Dhaka by highway coach or board the Sundarban / Chitra Express train to Kushtia Court Station, then take a 25-minute ride east to Shilaidaha Kuthibari.',
+    highlights: [
+      'Distinguished tiered red-brick Tagore family manor crowned by peaceful rooftop verandas',
+      'Historic museum rooms preserving Tagore’s houseboat, study furniture, and rare photographs',
+      'Luminous winter light falling across surrounding bakul trees, lotus ponds, and orchards',
+    ],
+    coordinates: { lat: 23.9242, lng: 89.2225 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Tagore_Kuthibari.jpg/1280px-Tagore_Kuthibari.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Shilaidaha_Kuthibari_Bangladesh.JPG/1280px-Shilaidaha_Kuthibari_Bangladesh.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Shilaidaha_Kuthibari_Bangladesh_%2810%29.JPG/1280px-Shilaidaha_Kuthibari_Bangladesh_%2810%29.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Shilaidaha_Kuthibari_Bangladesh_%2811%29.JPG/1280px-Shilaidaha_Kuthibari_Bangladesh_%2811%29.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'curzon-hall',
+    name: 'Curzon Hall',
+    division: 'Dhaka',
+    district: 'Dhaka',
+    category: 'Heritage',
+    tagline: 'A crimson Indo-Saracenic landmark at the heart of Dhaka University.',
+    description:
+      'Inaugurated in 1904 along Ramna’s leafy avenues and today home to the Faculty of Science at the University of Dhaka, Curzon Hall marries Mughal horseshoe cusped arches and chhatri domes with European Renaissance masonry. Its deep-red terracotta brickwork and broad botanical courtyard stand among Dhaka’s proudest architectural icons.',
+    bestTime:
+      'November to February (golden winter sun glows across crimson-brick horseshoe arches and botanical lawns)',
+    seasons: ['Year-Round'],
+    howToGo:
+      'Located beside Doel Chattar and Shahidullah Hall in central Dhaka; steps away from Dhaka University Metro Rail Station or accessible via rickshaw and car across Ramna.',
+    highlights: [
+      'Deep crimson brickwork adorned with Mughal chhatri pavilions, domes, and horseshoe arches',
+      'Tranquil botanical garden courtyard and historic University of Dhaka campus avenues',
+      'Witness to historic moments in Bengal’s 1952 Language Movement and cultural awakening',
+    ],
+    coordinates: { lat: 23.7272, lng: 90.4017 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Curzon_Hall_-_Northern_Facade_-_University_of_Dhaka_-_Dhaka_2015-05-31_1992.JPG/1280px-Curzon_Hall_-_Northern_Facade_-_University_of_Dhaka_-_Dhaka_2015-05-31_1992.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Curzon_Hall%2C_Dhaka_University_14.jpg/1280px-Curzon_Hall%2C_Dhaka_University_14.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/34/Curzon_Hall%2C_Dhaka_University_01.jpg/1280px-Curzon_Hall%2C_Dhaka_University_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Curzon_Hall%2C_Dhaka_University_03.jpg/1280px-Curzon_Hall%2C_Dhaka_University_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
+  {
+    id: 'bagha-mosque',
+    name: 'Bagha Mosque',
+    division: 'Rajshahi',
+    district: 'Rajshahi',
+    category: 'Heritage',
+    tagline: 'A 1523 Bengal Sultanate jewel celebrated for terracotta mango carvings.',
+    description:
+      'Constructed in 1523 CE by Sultan Nasiruddin Nusrat Shah beside a grand fifty-two-bigha brick-stepped water tank southeast of Rajshahi, Bagha Shahi Mosque exemplifies classical Husain Shahi architecture. Its curved Bengali brick cornice, octagonal corner towers, and finely sculpted terracotta reliefs of Rajshahi mango clusters rank among South Asia’s most delicate brick artworks.',
+    bestTime:
+      'November to February (crisp northern skies highlight sixteenth-century Bengal Sultanate terracotta mango reliefs)',
+    seasons: ['Winter', 'Year-Round'],
+    howToGo:
+      'Reach Rajshahi by intercity train or flight from Dhaka (or take the highway bus toward Charghat/Bagha), then drive roughly one hour southeast along the Padma basin road to Bagha Bazar.',
+    highlights: [
+      'Signature curved Husain Shahi cornice and ten-domed brick prayer hall dating to 1523 CE',
+      'Delicate terracotta floral panels famously depicting traditional Rajshahi mango clusters',
+      'Expansive historic brick-lined Bagha Dighi reservoir beside the mosque courtyard',
+    ],
+    coordinates: { lat: 24.1933, lng: 88.835 },
+    images: {
+      cover:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Bagha_Mosque_02.jpg/1280px-Bagha_Mosque_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      gallery: [
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Bagha_Mosque%2C_Rajshahi%2C_Bangladesh_03.jpg/1280px-Bagha_Mosque%2C_Rajshahi%2C_Bangladesh_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Bagha_Shahi_Mosque.jpg/1280px-Bagha_Shahi_Mosque.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Bagha_Mosque_long_view.jpg/1280px-Bagha_Mosque_long_view.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+      ],
+    },
+  },
 ];
 
 export default spotsData;
