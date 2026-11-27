@@ -18,18 +18,27 @@ export default function App() {
 
   return (
     <ShowcaseProvider>
-      <CinematicIntro />
-      <GlobalMotion />
-      <ChapterAtmosphere />
-      <Navbar />
-      <main className="relative z-0">
-        <HomePage />
-      </main>
-      <Footer />
-      <ScrollCompassHUD />
-      <JourneyDrawer />
-      <SpotDetail />
-      <CinemaLightbox />
+      <div
+        data-page-wrapper
+        className="relative min-h-screen"
+        style={{
+          '--chapter-accent': '#10b981',
+          '--chapter-glow': 'rgba(16, 185, 129, 0.16)',
+        }}
+      >
+        <CinematicIntro />
+        <GlobalMotion />
+        <ChapterAtmosphere />
+        <Navbar />
+        <main className="relative z-0">
+          <HomePage />
+        </main>
+        <Footer />
+        <ScrollCompassHUD />
+        <JourneyDrawer />
+        <SpotDetail />
+        <CinemaLightbox />
+      </div>
     </ShowcaseProvider>
   );
 }

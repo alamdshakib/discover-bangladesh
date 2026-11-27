@@ -4,9 +4,13 @@ import { gsap, MEDIA, ScrollTrigger } from '@animations';
 
 /**
  * Sticky glassmorphic chapter index (01–04) with a gliding liquid glass pill,
- * sentinel-tracked pinned frost/elevation transition under the Navbar at `top-[72px]`.
+ * sentinel-tracked pinned frost/elevation transition under the Navbar at `top-[72px]`,
+ * and live `--chapter-accent` / `--chapter-glow` atmospheric tinting.
  */
-export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTop }) {
+export function ChapterDock({ chapters, counts, activeId, viewMode = 'editorial', expoMode, onJump, onTop }) {
+  const effectiveMode = viewMode ?? (expoMode ? 'expo' : 'editorial');
+  const isNonEditorial = effectiveMode !== 'editorial';
+
   const trackRef = useRef(null);
   const indicatorRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -35,12 +39,12 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
   // Keep the active pill centered inside the horizontally scrollable track on mobile.
   useEffect(() => {
     const track = trackRef.current;
-    if (!track || !activeId) return;
+    if (!track || !activeId || isNonEditorial) return;
     const pill = track.querySelector(`[data-chapter-pill="${activeId}"]`);
     if (!pill) return;
     const left = pill.offsetLeft - track.clientWidth / 2 + pill.clientWidth / 2;
     track.scrollTo({ left, behavior: 'smooth' });
-  }, [activeId]);
+  }, [activeId, isNonEditorial]);
 
   // Smoothly glide & liquid-morph the active glass pill across chapters.
   useLayoutEffect(() => {
@@ -51,7 +55,7 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
     const reduce = window.matchMedia(MEDIA.reduceMotion).matches;
 
     const syncIndicator = (instant = false) => {
-      if (expoMode || !activeId) {
+      if (isNonEditorial || !activeId) {
         gsap.to(indicator, { opacity: 0, duration: reduce || instant ? 0 : 0.25, overwrite: 'auto' });
         return;
       }
@@ -97,7 +101,7 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
     const onResize = () => syncIndicator(true);
     window.addEventListener('resize', onResize, { passive: true });
     return () => window.removeEventListener('resize', onResize);
-  }, [activeId, expoMode]);
+  }, [activeId, isNonEditorial]);
 
   return (
     <>
@@ -109,9 +113,17 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
           aria-label="Chapter index"
           className={`glass pointer-events-auto max-w-full rounded-full border p-1.5 transition-[transform,background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out ${
             pinned
-              ? 'scale-[0.97] border-white/90 bg-white/88 shadow-[0_22px_48px_-18px_rgba(15,23,42,0.48)] backdrop-blur-2xl dark:border-emerald-400/25 dark:bg-[#131C2E]/92 dark:shadow-[0_24px_52px_-18px_rgba(0,0,0,0.88)]'
+              ? 'scale-[0.97] border-white/90 bg-white/88 backdrop-blur-2xl dark:border-white/20 dark:bg-[#131C2E]/92'
               : 'scale-100 border-white/70 shadow-[0_18px_40px_-22px_rgba(15,23,42,0.45)] dark:border-white/10 dark:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.8)]'
           }`}
+          style={
+            pinned
+              ? {
+                  boxShadow:
+                    '0 22px 48px -18px rgba(15, 23, 42, 0.45), 0 0 28px -6px var(--chapter-glow, rgba(16, 185, 129, 0.2))',
+                }
+              : undefined
+          }
         >
           <div ref={trackRef} className="no-scrollbar relative flex snap-x snap-mandatory items-center gap-1 overflow-x-auto">
             {/* Gliding liquid glass active chapter pill */}
@@ -119,18 +131,36 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
               ref={indicatorRef}
               data-chapter-liquid-pill
               aria-hidden="true"
-              className="pointer-events-none absolute top-0 left-0 z-0 rounded-full border border-white/20 bg-ink/95 opacity-0 shadow-[0_8px_22px_-8px_rgba(15,23,42,0.55)] backdrop-blur-md transition-colors duration-300 will-change-transform dark:border-white/40 dark:bg-white/95 dark:shadow-[0_8px_22px_-8px_rgba(255,255,255,0.35)]"
+              className="pointer-events-none absolute top-0 left-0 z-0 rounded-full border border-white/20 bg-ink/95 opacity-0 backdrop-blur-md transition-colors duration-300 will-change-transform dark:border-white/40 dark:bg-white/95"
+              style={{
+                boxShadow: '0 8px 24px -6px var(--chapter-glow, rgba(16, 185, 129, 0.35))',
+              }}
             />
 
-            {expoMode && (
+            {effectiveMode === 'expo' && (
               <span className="relative z-10 flex shrink-0 snap-start items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-xs font-semibold tracking-wide text-white dark:bg-white dark:text-[#0B111E]">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-bd-red" aria-hidden="true" />
-                Expo
+                <span
+                  className="h-1.5 w-1.5 animate-pulse rounded-full"
+                  style={{ backgroundColor: 'var(--chapter-accent, #10b981)' }}
+                  aria-hidden="true"
+                />
+                Expo Bento
+              </span>
+            )}
+
+            {effectiveMode === 'index' && (
+              <span className="relative z-10 flex shrink-0 snap-start items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-xs font-semibold tracking-wide text-white dark:bg-white dark:text-[#0B111E]">
+                <span
+                  className="h-1.5 w-1.5 animate-pulse rounded-full"
+                  style={{ backgroundColor: 'var(--chapter-accent, #10b981)' }}
+                  aria-hidden="true"
+                />
+                Index
               </span>
             )}
 
             {chapters.map((chapter) => {
-              const isActive = !expoMode && activeId === chapter.id;
+              const isActive = !isNonEditorial && activeId === chapter.id;
               return (
                 <button
                   key={chapter.id}
@@ -145,9 +175,20 @@ export function ChapterDock({ chapters, counts, activeId, expoMode, onJump, onTo
                       : 'text-ink hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/10'
                   }`}
                 >
+                  {isActive && (
+                    <span
+                      data-chapter-active-dot
+                      aria-hidden="true"
+                      className="h-1.5 w-1.5 shrink-0 rounded-full transition-colors duration-500"
+                      style={{
+                        backgroundColor: 'var(--chapter-accent, #10b981)',
+                        boxShadow: '0 0 8px var(--chapter-accent, #10b981)',
+                      }}
+                    />
+                  )}
                   <span
                     className={`font-display text-[11px] font-bold transition-colors duration-300 ${
-                      isActive ? 'text-white/60 dark:text-[#0B111E]/60' : 'text-mist'
+                      isActive ? 'text-white/65 dark:text-[#0B111E]/65' : 'text-mist'
                     }`}
                   >
                     {chapter.number}

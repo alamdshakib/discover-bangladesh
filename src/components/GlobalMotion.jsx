@@ -211,7 +211,11 @@ export function GlobalMotion() {
       >
         <div
           ref={beamRef}
-          className="h-full w-full origin-left scale-x-0 bg-gradient-to-r from-emerald-500 via-sky-400 to-amber-400 shadow-[0_0_12px_rgba(16,185,129,0.75)] will-change-transform"
+          className="h-full w-full origin-left scale-x-0 will-change-transform"
+          style={{
+            background: 'linear-gradient(90deg, #10b981 0%, var(--chapter-accent, #10b981) 100%)',
+            boxShadow: '0 0 12px var(--chapter-glow, rgba(16, 185, 129, 0.75))',
+          }}
         />
       </div>
 

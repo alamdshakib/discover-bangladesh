@@ -9,7 +9,7 @@ import { ThemeToggle } from '../ui/ThemeToggle.jsx';
 import { MobileMenu } from './MobileMenu.jsx';
 
 export function Navbar() {
-  const { expoMode, setExpoMode } = useShowcase();
+  const { viewMode, setViewMode } = useShowcase();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
@@ -62,11 +62,19 @@ export function Navbar() {
           data-past-hero={pastHero ? 'true' : 'false'}
           className={`glass mx-auto flex items-center gap-1.5 rounded-full border transition-[max-width,height,padding,background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-2.5 ${
             pastHero
-              ? 'h-12 max-w-[1600px] border-white/90 bg-white/86 pr-1.5 pl-2.5 shadow-[0_20px_46px_-20px_rgba(15,23,42,0.52),0_0_0_1px_rgba(16,185,129,0.16)] backdrop-blur-2xl dark:border-emerald-400/25 dark:bg-[#131C2E]/92 dark:shadow-[0_20px_50px_-18px_rgba(0,0,0,0.88),0_0_26px_-8px_rgba(16,185,129,0.28)] sm:h-[52px] sm:pl-4 md:max-w-[1160px] lg:max-w-[1260px]'
+              ? 'h-12 max-w-[1600px] border-white/90 bg-white/86 pr-1.5 pl-2.5 shadow-[0_20px_46px_-20px_rgba(15,23,42,0.52)] backdrop-blur-2xl dark:border-white/20 dark:bg-[#131C2E]/92 dark:shadow-[0_20px_50px_-18px_rgba(0,0,0,0.88)] sm:h-[52px] sm:pl-4 md:max-w-[1220px] lg:max-w-[1340px]'
               : scrolled
                 ? 'h-14 max-w-[1600px] border-white/75 pr-1.5 pl-3 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.45)] dark:border-white/12 dark:shadow-[0_18px_40px_-20px_rgba(0,0,0,0.75)] sm:pl-5'
                 : 'h-14 max-w-[1600px] border-white/70 pr-1.5 pl-3 shadow-none dark:border-white/10 sm:pl-5'
           }`}
+          style={
+            pastHero
+              ? {
+                  boxShadow:
+                    '0 20px 46px -20px rgba(15, 23, 42, 0.48), 0 0 0 1px var(--chapter-glow, rgba(16, 185, 129, 0.16))',
+                }
+              : undefined
+          }
         >
           <button
             ref={logoRef}
@@ -89,13 +97,18 @@ export function Navbar() {
             </span>
           </button>
 
-          <SearchBar className="mx-auto hidden w-full max-w-md md:block" />
+          <SearchBar className="mx-auto hidden w-full max-w-xs md:block lg:max-w-sm xl:max-w-md" />
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-0">
             <ExpoSwitch
-              checked={expoMode}
-              onChange={setExpoMode}
-              className="hover:bg-white/80 dark:hover:bg-white/10"
+              value={viewMode}
+              onChange={(nextMode) => {
+                if (nextMode === viewMode) {
+                  scrollToTarget(`#${SECTION_IDS.showcase}`, { offset: -88 });
+                } else {
+                  setViewMode(nextMode);
+                }
+              }}
             />
             <ThemeToggle />
             <button
@@ -103,7 +116,7 @@ export function Navbar() {
               type="button"
               data-cursor="magnetic"
               onClick={() => scrollToTarget(`#${SECTION_IDS.atlas}`)}
-              className={`hidden items-center gap-2 rounded-full bg-ink font-semibold text-white transition-all duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200 md:inline-flex ${
+              className={`hidden shrink-0 items-center gap-2 rounded-full bg-ink font-semibold whitespace-nowrap text-white transition-all duration-300 hover:bg-ink-soft active:scale-95 dark:bg-white dark:text-[#0B111E] dark:hover:bg-slate-200 md:inline-flex ${
                 pastHero ? 'h-10 px-4 text-xs' : 'h-11 px-5 text-sm'
               }`}
             >

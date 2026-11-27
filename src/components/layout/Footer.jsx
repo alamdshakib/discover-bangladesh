@@ -11,7 +11,7 @@ const BASE_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 0.30) 0%, rgb
 const GLOW_GRADIENT = 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(226, 248, 240, 0.72) 100%)';
 
 export function Footer() {
-  const { spots, expoMode, setExpoMode, journeySpots } = useShowcase();
+  const { spots, viewMode, setViewMode, journeySpots } = useShowcase();
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const footerRef = useRef(null);
   const cardRef = useRef(null);
@@ -253,8 +253,8 @@ export function Footer() {
   };
 
   const handleChapterJump = (chapter) => {
-    if (expoMode) {
-      setExpoMode(false);
+    if (viewMode !== 'editorial') {
+      setViewMode('editorial');
       window.setTimeout(() => scrollToTarget(`#${chapter.id}`, { offset: -148 }), 420);
       return;
     }

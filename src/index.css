@@ -135,6 +135,8 @@ html.theme-transitioning *::after {
 
 @layer base {
   html {
+    --chapter-accent: #10b981;
+    --chapter-glow: rgba(16, 185, 129, 0.16);
     background-color: var(--color-canvas);
     color: var(--color-ink);
     color-scheme: light;

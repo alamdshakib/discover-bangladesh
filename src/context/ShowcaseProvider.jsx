@@ -45,8 +45,11 @@ function readInitialJourneyIds() {
   return [];
 }
 
+const VALID_VIEW_MODES = new Set(['editorial', 'expo', 'index']);
+
 export function ShowcaseProvider({ children }) {
-  const [expoMode, setExpoMode] = useState(false);
+  const [viewMode, setViewModeState] = useState('editorial');
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeSpotId, setActiveSpotId] = useState(null);
   const [lightboxState, setLightboxState] = useState(null);
 
@@ -76,7 +79,28 @@ export function ShowcaseProvider({ children }) {
     }
   }, [journeyIds]);
 
-  const toggleExpo = useCallback(() => setExpoMode((v) => !v), []);
+  const setViewMode = useCallback((next) => {
+    setViewModeState((prev) => {
+      const resolved = typeof next === 'function' ? next(prev) : next;
+      return VALID_VIEW_MODES.has(resolved) ? resolved : 'editorial';
+    });
+  }, []);
+
+  const expoMode = viewMode === 'expo';
+  const setExpoMode = useCallback(
+    (value) => {
+      setViewMode((prev) => {
+        const boolVal = typeof value === 'function' ? value(prev === 'expo') : Boolean(value);
+        return boolVal ? 'expo' : 'editorial';
+      });
+    },
+    [setViewMode]
+  );
+
+  const toggleExpo = useCallback(
+    () => setViewMode((prev) => (prev === 'expo' ? 'editorial' : 'expo')),
+    [setViewMode]
+  );
   const openSpot = useCallback((id) => {
     if (spotsById.has(id)) setActiveSpotId(id);
   }, []);
@@ -133,6 +157,10 @@ export function ShowcaseProvider({ children }) {
 
     return {
       spots: spotsData,
+      viewMode,
+      setViewMode,
+      searchQuery,
+      setSearchQuery,
       expoMode,
       setExpoMode,
       toggleExpo,
@@ -157,7 +185,11 @@ export function ShowcaseProvider({ children }) {
       visualizeJourneyOnMap,
     };
   }, [
+    viewMode,
+    setViewMode,
+    searchQuery,
     expoMode,
+    setExpoMode,
     toggleExpo,
     activeSpotId,
     openSpot,

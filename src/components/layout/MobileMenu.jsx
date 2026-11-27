@@ -1,16 +1,21 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { ArrowUp, Map, X } from 'lucide-react';
+import { ArrowUp, BookOpen, LayoutGrid, List, Map, X } from 'lucide-react';
 import { CHAPTERS, SECTION_IDS } from '@data';
 import { useScrollLock, useShowcase } from '@hooks';
 import { gsap, MEDIA, scrollToTarget } from '@animations';
 import { countByCategory } from '@utils';
 import { SearchBar } from '../search/SearchBar.jsx';
-import { ExpoSwitch } from '../ui/ExpoSwitch.jsx';
 import { ThemeToggle } from '../ui/ThemeToggle.jsx';
+
+const MOBILE_VIEW_MODES = [
+  { key: 'editorial', label: 'Editorial', icon: BookOpen },
+  { key: 'expo', label: 'Expo Bento', icon: LayoutGrid },
+  { key: 'index', label: 'Index', icon: List },
+];
 
 /** Slide-down mobile menu drawer (< md) with sequential level link stagger. */
 export function MobileMenu({ open, onClose }) {
-  const { spots, expoMode, setExpoMode } = useShowcase();
+  const { spots, viewMode, setViewMode } = useShowcase();
   const drawerRef = useRef(null);
   const closeRef = useRef(null);
   const counts = countByCategory(spots);
@@ -104,16 +109,35 @@ export function MobileMenu({ open, onClose }) {
 
         <div
           data-mobile-nav-item
-          className="mt-4 flex items-center justify-between rounded-3xl border border-line bg-white p-2 pl-4 transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#131C2E]"
+          className="mt-4 rounded-3xl border border-line bg-white p-3 transition-colors duration-300 will-change-transform dark:border-white/10 dark:bg-[#131C2E]"
         >
-          <div>
-            <p className="text-sm font-semibold text-ink dark:text-slate-50">Expo Mode</p>
-            <p className="text-xs text-mist">High-density bento matrix with filters</p>
+          <p className="px-1 text-xs font-semibold tracking-[0.16em] text-mist uppercase">Collection View</p>
+          <div
+            role="radiogroup"
+            aria-label="Collection view mode"
+            className="mt-2 grid grid-cols-3 gap-1 rounded-2xl bg-canvas p-1 dark:bg-white/[0.05]"
+          >
+            {MOBILE_VIEW_MODES.map(({ key, label, icon: Icon }) => {
+              const selected = viewMode === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => navigate(`#${SECTION_IDS.showcase}`, () => setViewMode(key))}
+                  className={`flex items-center justify-center gap-1 rounded-xl px-1.5 py-2.5 text-[11px] font-semibold whitespace-nowrap transition-colors active:scale-95 sm:gap-1.5 sm:px-2 sm:text-xs ${
+                    selected
+                      ? 'bg-ink text-white shadow-xs dark:bg-white dark:text-[#0B111E]'
+                      : 'text-ink-soft hover:text-ink dark:text-slate-300 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden="true" />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
           </div>
-          <ExpoSwitch
-            checked={expoMode}
-            onChange={(value) => navigate(`#${SECTION_IDS.showcase}`, () => setExpoMode(value))}
-          />
         </div>
 
         <div
@@ -135,11 +159,11 @@ export function MobileMenu({ open, onClose }) {
               data-mobile-nav-item
               onClick={() =>
                 navigate(
-                  expoMode ? `#${SECTION_IDS.showcase}` : `#${chapter.id}`,
+                  viewMode !== 'editorial' ? `#${SECTION_IDS.showcase}` : `#${chapter.id}`,
                   () => {
-                    if (expoMode) setExpoMode(false);
+                    if (viewMode !== 'editorial') setViewMode('editorial');
                   },
-                  expoMode ? undefined : { offset: -148 }
+                  viewMode !== 'editorial' ? undefined : { offset: -148 }
                 )
               }
               className="flex flex-col items-start rounded-3xl border border-line bg-white p-4 text-left transition-colors duration-300 will-change-transform active:scale-95 dark:border-white/10 dark:bg-[#131C2E]"

@@ -135,24 +135,28 @@ export function ScrollCompassHUD() {
             transform={`rotate(${deg} 32 32)`}
           />
         ))}
-        {/* Live scroll progress stroke */}
+        {/* Live scroll progress stroke tinted by active chapter accent */}
         <circle
           ref={ringRef}
           cx="32"
           cy="32"
           r={RING_RADIUS}
           fill="none"
-          stroke="currentColor"
-          className="text-bd-green dark:text-emerald-400"
+          style={{ stroke: 'var(--chapter-accent, #10b981)' }}
+          className="transition-[stroke] duration-500"
           strokeWidth="2"
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={CIRCUMFERENCE}
           transform="rotate(-90 32 32)"
         />
-        {/* Rotating precision compass needle */}
+        {/* Rotating precision compass needle tinted by active chapter accent */}
         <g ref={needleRef} style={{ transformOrigin: '32px 32px' }}>
-          <polygon points="32,11.5 34.3,21 29.7,21" className="fill-bd-green dark:fill-emerald-400" />
+          <polygon
+            points="32,11.5 34.3,21 29.7,21"
+            style={{ fill: 'var(--chapter-accent, #10b981)' }}
+            className="transition-[fill] duration-500"
+          />
           <polygon points="32,52.5 33.6,44 30.4,44" fill="currentColor" opacity="0.28" />
         </g>
       </svg>

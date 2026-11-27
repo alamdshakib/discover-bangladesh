@@ -28,3 +28,5 @@ export { ScrollCompassHUD } from './ScrollCompassHUD.jsx';
 export { KineticMarquee } from './KineticMarquee.jsx';
 export { ChapterAtmosphere } from './ChapterAtmosphere.jsx';
 export { CinemaLightbox } from './CinemaLightbox.jsx';
+export { EditorialStatement } from './EditorialStatement.jsx';
+export { IndexView } from './IndexView.jsx';

@@ -8,8 +8,9 @@ import { getImageSrc, searchSpots } from '@utils';
  * `inline` renders results in-flow (used inside the mobile menu drawer).
  */
 export function SearchBar({ inline = false, onNavigate, className = '' }) {
-  const { spots, openSpot } = useShowcase();
-  const [query, setQuery] = useState('');
+  const { spots, openSpot, searchQuery, setSearchQuery } = useShowcase();
+  const query = searchQuery ?? '';
+  const setQuery = setSearchQuery;
   const [focused, setFocused] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const rootRef = useRef(null);
